@@ -39,7 +39,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-400">
-          Proyek Penguatan Teknis & Evaluasi Akademik Rekayasa Web · PostgreSQL, Redis & AI Fallback Bertingkat
+          Dikembangkan oleh <strong className="text-slate-600 dark:text-slate-300">FuzzySpot</strong> · Proyek Penguatan Teknis & Evaluasi Akademik Rekayasa Web · PostgreSQL, Redis & AI Fallback Bertingkat
         </div>
       </div>
     </footer>
