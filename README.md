@@ -2,9 +2,7 @@
 
 <img src="public/fuzzyspot-logo.png" alt="FuzzySpot Logo" width="340" />
 
-# 🌋 SIGAP Gempa
 ### *Sistem Informasi Gempabumi, Simulasi Dampak Seismik & Asisten Mitigasi Cerdas*
-**Developed by FuzzySpot**
 <br />
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
