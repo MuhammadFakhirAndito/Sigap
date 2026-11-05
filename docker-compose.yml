@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sigap_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sigap_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sigap_password_secure}
+      POSTGRES_DB: ${POSTGRES_DB:-sigap_gempa}
+    ports:
+      # Hanya bind ke localhost (127.0.0.1) agar tidak terekspos ke internet publik sesuai PRD bagian 6
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sigap_user} -d ${POSTGRES_DB:-sigap_gempa}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sigap_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: sigap_redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-sigap_redis_password}"]
+    ports:
+      # Hanya bind ke localhost (127.0.0.1) agar tidak terekspos ke internet publik sesuai PRD bagian 6
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-sigap_redis_password}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sigap_network
+
+volumes:
+  postgres_data:
+    name: sigap_postgres_data
+  redis_data:
+    name: sigap_redis_data
+
+networks:
+  sigap_network:
+    name: sigap_network
+    driver: bridge
+

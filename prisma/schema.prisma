@@ -1,0 +1,140 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum StatusTsunami {
+  AMAN
+  BERPOTENSI
+  TIDAK_DINYATAKAN
+}
+
+enum JenisGempa {
+  TERKINI
+  DIRASAKAN
+  AUTO
+}
+
+enum KategoriArtikel {
+  PENGERTIAN
+  PROSES
+  PENANGGULANGAN
+  MITIGASI
+  LAINNYA
+}
+
+enum ChatSource {
+  LLM
+  FALLBACK
+  CACHE
+}
+
+enum TipeLokasi {
+  DARAT
+  LAUT
+}
+
+enum SyncResultStatus {
+  SUCCESS
+  FAILED
+}
+
+model Gempa {
+  id            String        @id @default(cuid())
+  bmkgKey       String        @unique // "${DateTime}_${Coordinates}"
+  waktuUtc      DateTime
+  lat           Float
+  lon           Float
+  magnitudo     Float
+  kedalamanKm   Float
+  wilayah       String
+  potensiTeks   String
+  statusTsunami StatusTsunami @default(TIDAK_DINYATAKAN)
+  dirasakan     String?
+  shakemapUrl   String?
+  jenis         JenisGempa    @default(TERKINI)
+  createdAt     DateTime      @default(now())
+
+  @@index([waktuUtc(sort: Desc)])
+  @@index([magnitudo])
+}
+
+model Berita {
+  id            String   @id @default(cuid())
+  judul         String
+  sumber        String
+  url           String   @unique
+  tanggalTerbit DateTime
+  ringkasan     String?
+  createdAt     DateTime @default(now())
+}
+
+model Artikel {
+  id        String          @id @default(cuid())
+  slug      String          @unique
+  judul     String
+  kategori  KategoriArtikel
+  isi       String          @db.Text
+  urutan    Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  sumber    Sumber[]
+}
+
+model Sumber {
+  id           String    @id @default(cuid())
+  judul        String
+  penerbit     String
+  url          String
+  tanggalAkses DateTime  @default(now())
+  artikel      Artikel[]
+}
+
+model FaqGempa {
+  id         String   @id @default(cuid())
+  kataKunci  String[]
+  pertanyaan String
+  jawaban    String   @db.Text
+  aktif      Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model ChatLog {
+  id             String     @id @default(cuid())
+  pertanyaan     String     @db.Text
+  jawaban        String     @db.Text
+  source         ChatSource @default(LLM)
+  model          String?
+  responseTimeMs Int?
+  isHelpful      Boolean?
+  ipHash         String?
+  createdAt      DateTime   @default(now())
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model SkenarioSimulasi {
+  id               String     @id @default(cuid())
+  nama             String
+  magnitudo        Float
+  kedalamanKm      Float
+  lat              Float
+  lon              Float
+  tipeLokasi       TipeLokasi @default(LAUT)
+  deskripsiSingkat String?
+  urutan           Int        @default(0)
+  createdAt        DateTime   @default(now())
+}
+
+model SyncStatus {
+  id            String           @id // misal "bmkg_sync"
+  lastSuccessAt DateTime?
+  lastAttemptAt DateTime         @default(now())
+  lastStatus    SyncResultStatus @default(SUCCESS)
+  errorMessage  String?
+  updatedAt     DateTime         @updatedAt
+}
