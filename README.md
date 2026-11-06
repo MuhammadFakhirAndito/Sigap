@@ -1,9 +1,7 @@
 <div align="center">
 
-<img src="public/fuzzyspot-logo.png" alt="FuzzySpot Logo" width="340" />
-
+# 🌋 SIGAP Gempa
 ### *Sistem Informasi Gempabumi, Simulasi Dampak Seismik & Asisten Mitigasi Cerdas*
-<br />
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -267,5 +265,4 @@ SIGAP/
 
 ## 📄 Lisensi & Hak Cipta
 
-Proyek ini dikembangkan oleh **Tim FuzzySpot** sebagai karya rekayasa sistem web kebencanaan dan bahan evaluasi akademik. Terbuka di bawah lisensi [MIT License](LICENSE).
-© 2026 FuzzySpot. All rights reserved.
+Proyek ini dikembangkan sebagai karya rekayasa sistem web kebencanaan dan bahan evaluasi akademik. Terbuka di bawah lisensi [MIT License](LICENSE).
