@@ -199,6 +199,20 @@ npm start
 
 ---
 
+## Skrip Otomasi & Pemeliharaan Shell (.sh)
+
+SIGAP menyediakan kumpulan skrip shell UNIX di folder `scripts/` untuk otomasi pemeliharaan basis data, penjadwalan cron, dan deployment di lingkungan server/VPS:
+
+| Skrip Shell | Perintah NPM | Fungsi & Kepatuhan PRD |
+| :--- | :--- | :--- |
+| `scripts/backup.sh` | `npm run db:backup` | **Backup Terjadwal (FR-DB-15)**: Eksekusi `pg_dump` dari container PostgreSQL, kompresi gzip (`.sql.gz`), dan rotasi otomatis berkas backup lebih dari 7 hari. |
+| `scripts/restore.sh` | `npm run db:restore` | **Disaster Recovery (TC-DB-07, NFR-DB-05)**: Mengembalikan dump basis data ke PostgreSQL secara aman untuk pengujian pemulihan data. |
+| `scripts/sync-cron.sh` | `npm run cron:sync` | **Pemicu Cron BMKG (FR-DB-01)**: Memicu pembaruan telemetri BMKG berkala via cURL dengan autentikasi Bearer token. |
+| `scripts/cleanup-logs.sh` | - | **Retensi Metrik Chat (NFR-DB)**: Membersihkan rekaman `ChatLog` yang telah melampaui masa simpan 30 hari. |
+| `scripts/deploy.sh` | `npm run deploy` | **Otomasi Deployment VPS (TC-DB-08)**: Memeriksa dependensi, menyalakan Docker Compose, menjalankan migrasi database, dan build aplikasi. |
+
+---
+
 ## Spesifikasi Endpoint API
 
 | Method | Endpoint | Deskripsi | Parameter Query / Body |
@@ -224,6 +238,8 @@ npm start
 | **TC-DB-04** | Mengirim 11 pesan chat dalam 1 menit | Pesan ke-11 ditolak dengan kode status 429 (*Rate Limit Exceeded*) | Lolos |
 | **TC-DB-05** | Memaksa kuota Gemini habis | Otomatis beralih ke model cadangan, lalu ke modul FAQ rule-based | Lolos |
 | **TC-DB-06** | Pengecekan port dari luar VPS | Port 5432 & 6379 tidak dapat diakses publik (bind ke 127.0.0.1) | Lolos |
+| **TC-DB-07** | Restore backup ke database kosong | Data kembali lengkap via skrip `restore.sh` (NFR-DB-05) | Lolos |
+| **TC-DB-08** | Migrasi database di server produksi | Eksekusi `prisma db push` / `prisma migrate deploy` di VPS via `deploy.sh` | Lolos |
 | **TC-DB-09** | Pemindaian kredensial di repositori | `DATABASE_URL` dan API key tidak ditemukan (dilindungi `.gitignore`) | Lolos |
 | **TC-DB-10** | Pengubahan slider simulator gempa | MMI, radius kerusakan, energi TNT, dan tsunami risk berubah instan | Lolos |
 | **TC-DB-11** | Klik tombol "Simulasikan" pada tabel riwayat | Parameter baris gempa otomatis terisi ke dalam simulator dampak | Lolos |
@@ -239,6 +255,12 @@ SIGAP/
 │   ├── schema.prisma          # Skema deklaratif PostgreSQL (8 Model + Relasi)
 │   └── seed.ts                # Skrip inisialisasi konten edukasi, FAQ, & skenario
 ├── public/                    # Aset statis & ikon
+├── scripts/                   # Skrip otomasi Shell (.sh)
+│   ├── backup.sh              # Backup database terjadwal (pg_dump + gzip + retensi)
+│   ├── restore.sh             # Pemulihan database disaster recovery
+│   ├── deploy.sh              # Otomasi deployment dan update di VPS
+│   ├── sync-cron.sh           # Pemicu cron sinkronisasi BMKG periodik
+│   └── cleanup-logs.sh        # Retensi dan pembersihan ChatLog berkala
 ├── src/
 │   ├── app/
 │   │   ├── api/               # Endpoint API (gempa, chat, health, sync, simulasi)

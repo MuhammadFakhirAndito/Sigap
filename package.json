@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:backup": "bash scripts/backup.sh",
+    "db:restore": "bash scripts/restore.sh",
+    "cron:sync": "bash scripts/sync-cron.sh",
+    "deploy": "bash scripts/deploy.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
