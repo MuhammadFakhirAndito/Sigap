@@ -1,7 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Database, HardDrive, Globe, RefreshCw, CheckCircle2, AlertTriangle, XCircle, Clock, Server, Terminal } from 'lucide-react';
+import { ShieldCheck, Database, HardDrive, Globe, RefreshCw, CheckCircle2, AlertTriangle, XCircle, Terminal } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 interface HealthData {
   status: 'healthy' | 'degraded';
@@ -83,23 +88,25 @@ export default function StatusPage() {
           </div>
         </div>
 
-        <button
+        <Button
+          variant="outline"
           onClick={fetchHealth}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="gap-2 rounded-xl border-slate-200 bg-white text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-rose-500' : ''}`} />
+          <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin text-rose-500')} />
           Perbarui Status
-        </button>
+        </Button>
       </div>
 
       {/* Status Utama */}
-      <div
-        className={`rounded-3xl border p-6 ${
+      <Alert
+        className={cn(
+          'rounded-3xl border p-6',
           health?.status === 'healthy'
             ? 'border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/60 dark:bg-emerald-950/20'
             : 'border-amber-200 bg-amber-50/50 dark:border-amber-900/60 dark:bg-amber-950/20'
-        }`}
+        )}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -124,12 +131,12 @@ export default function StatusPage() {
             Latensi Total: <span className="font-bold text-slate-800 dark:text-slate-200">{health?.totalLatencyMs || 0} ms</span>
           </div>
         </div>
-      </div>
+      </Alert>
 
       {/* Grid 3 Komponen Inti */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* PostgreSQL */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
+        <Card className="rounded-3xl border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Database className="h-5 w-5 text-blue-600" />
@@ -138,13 +145,13 @@ export default function StatusPage() {
               </span>
             </div>
             {health?.components.database.ok ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+              <Badge variant="secondary" className="gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60">
                 <CheckCircle2 className="h-3 w-3" /> Online
-              </span>
+              </Badge>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-full">
+              <Badge variant="destructive" className="gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/60">
                 <XCircle className="h-3 w-3" /> Terdegradasi
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -166,10 +173,10 @@ export default function StatusPage() {
           <div className="text-[11px] text-slate-400 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
             Port 5432 dilindungi di localhost VPS via firewall & Docker network internal (TC-DB-06).
           </div>
-        </div>
+        </Card>
 
         {/* Redis Cache & Rate Limit */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
+        <Card className="rounded-3xl border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <HardDrive className="h-5 w-5 text-red-600" />
@@ -178,13 +185,13 @@ export default function StatusPage() {
               </span>
             </div>
             {health?.components.cache.ok ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+              <Badge variant="secondary" className="gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60">
                 <CheckCircle2 className="h-3 w-3" /> Redis Aktif
-              </span>
+              </Badge>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full">
+              <Badge variant="secondary" className="gap-1 text-[11px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/60">
                 <AlertTriangle className="h-3 w-3" /> In-Memory Fallback
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -206,10 +213,10 @@ export default function StatusPage() {
           <div className="text-[11px] text-slate-400 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
             Mengatur rate limiting IP (10 req/menit), pembatas kuota harian Gemini, dan cache respons.
           </div>
-        </div>
+        </Card>
 
         {/* BMKG API Endpoint */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
+        <Card className="rounded-3xl border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Globe className="h-5 w-5 text-cyan-600" />
@@ -218,13 +225,13 @@ export default function StatusPage() {
               </span>
             </div>
             {health?.components.bmkgApi.ok ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+              <Badge variant="secondary" className="gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60">
                 <CheckCircle2 className="h-3 w-3" /> Terjangkau
-              </span>
+              </Badge>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-full">
+              <Badge variant="destructive" className="gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/60">
                 <XCircle className="h-3 w-3" /> Gangguan Server
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -246,11 +253,11 @@ export default function StatusPage() {
           <div className="text-[11px] text-slate-400 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
             Jika BMKG padam, SIGAP otomatis menyajikan data terakhir dari PostgreSQL (TC-DB-02).
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Manual Sync Trigger Section */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
+      <Card className="rounded-3xl border-slate-200 bg-white p-6 sm:p-8 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
@@ -262,14 +269,14 @@ export default function StatusPage() {
             </p>
           </div>
 
-          <button
+          <Button
             onClick={triggerSync}
             disabled={syncing}
-            className="shrink-0 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 transition-colors flex items-center gap-2"
+            className="shrink-0 gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 transition-colors"
           >
-            <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin text-rose-500' : ''}`} />
+            <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin text-rose-500')} />
             {syncing ? 'Menghubungi BMKG...' : 'Jalankan Sinkronisasi Sekarang'}
-          </button>
+          </Button>
         </div>
 
         {syncResult && (
@@ -296,8 +303,7 @@ export default function StatusPage() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
-

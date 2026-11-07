@@ -1,7 +1,13 @@
 import Link from 'next/link';
-import { Activity, ShieldAlert, Waves, Flame, Clock, MapPin, ChevronRight, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Activity, ShieldAlert, Waves, Flame, Clock, MapPin, ChevronRight, AlertTriangle } from 'lucide-react';
 import { getLatestEarthquakeData } from '@/lib/bmkg';
 import { prisma } from '@/lib/prisma';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,17 +16,10 @@ export default async function HomePage() {
   const latest = latestResult.data;
 
   // Ambil status sinkronisasi & 4 gempa terbaru
-  let syncInfo = null;
-  let recentList: any[] = [];
+  let syncInfo: { lastSuccessAt: Date | null } | null = null;
 
   try {
-    [syncInfo, recentList] = await Promise.all([
-      prisma.syncStatus.findUnique({ where: { id: 'bmkg_sync' } }),
-      prisma.gempa.findMany({
-        orderBy: { waktuUtc: 'desc' },
-        take: 4,
-      }),
-    ]);
+    syncInfo = await prisma.syncStatus.findUnique({ where: { id: 'bmkg_sync' } });
   } catch (err) {
     console.warn('Database offline / belum migrasi:', err);
   }
@@ -71,10 +70,13 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Heading & Quick Overview */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-              <Activity className="h-3.5 w-3.5 animate-pulse" />
+            <Badge
+              variant="secondary"
+              className="gap-2 bg-rose-100 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 text-xs py-1 px-3"
+            >
+              <Activity className="h-3.5 w-3.5 animate-pulse text-rose-600" />
               Sistem Tanggap & Mitigasi Gempa Indonesia
-            </div>
+            </Badge>
 
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
               Pantau Cepat, <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-amber-500">Simulasikan Dampak</span>, dan Siaga Bencana.
@@ -85,19 +87,20 @@ export default async function HomePage() {
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link
-                href="/simulasi"
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-rose-600/25 hover:from-rose-700 hover:to-amber-700 hover:scale-105 active:scale-95 transition-all"
-              >
-                <Flame className="h-4 w-4" />
-                Mulai Simulasi Gempa
+              <Link href="/simulasi">
+                <Button className="h-11 gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 px-5 text-sm font-semibold text-white shadow-lg shadow-rose-600/25 hover:from-rose-700 hover:to-amber-700 hover:scale-105 active:scale-95 transition-all">
+                  <Flame className="h-4 w-4" />
+                  Mulai Simulasi Gempa
+                </Button>
               </Link>
-              <Link
-                href="/riwayat"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 transition-all"
-              >
-                Riwayat & Arsip Gempa
-                <ChevronRight className="h-4 w-4" />
+              <Link href="/riwayat">
+                <Button
+                  variant="outline"
+                  className="h-11 gap-2 rounded-xl border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 transition-all"
+                >
+                  Riwayat & Arsip Gempa
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </Link>
             </div>
           </div>
@@ -105,7 +108,7 @@ export default async function HomePage() {
           {/* Right Column: Hero Live Earthquake Card */}
           <div className="lg:col-span-5">
             {latest ? (
-              <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900">
+              <Card className="rounded-3xl border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900">
                 {/* Header Card */}
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div className="flex items-center gap-2">
@@ -113,9 +116,9 @@ export default async function HomePage() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
                     </span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                    <Badge variant="outline" className="border-rose-200 text-rose-600 dark:border-rose-900 dark:text-rose-400 font-bold uppercase tracking-wider text-[11px]">
                       Gempabumi Terkini (M5.0+)
-                    </span>
+                    </Badge>
                   </div>
                   <span className="text-xs text-slate-400 flex items-center gap-1">
                     <Clock className="h-3 w-3" />
@@ -158,45 +161,54 @@ export default async function HomePage() {
                   </div>
 
                   {/* Tsunami Status Alert */}
-                  <div
-                    className={`flex items-center gap-2 rounded-xl p-3 text-xs font-medium ${
+                  <Alert
+                    className={cn(
+                      'p-3 text-xs',
                       isTsunamiWarning
-                        ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-900'
-                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900'
-                    }`}
-                  >
-                    {isTsunamiWarning ? (
-                      <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
-                    ) : (
-                      <Waves className="h-4 w-4 shrink-0 text-emerald-600" />
+                        ? 'border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900 dark:bg-rose-950/70 dark:text-rose-300'
+                        : 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-300'
                     )}
-                    <span>{latest.Potensi || 'Tidak ada data potensi tsunami'}</span>
-                  </div>
+                  >
+                    <div className="flex items-center gap-2">
+                      {isTsunamiWarning ? (
+                        <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+                      ) : (
+                        <Waves className="h-4 w-4 shrink-0 text-emerald-600" />
+                      )}
+                      <AlertDescription className="font-medium">
+                        {latest.Potensi || 'Tidak ada data potensi tsunami'}
+                      </AlertDescription>
+                    </div>
+                  </Alert>
                 </div>
 
                 {/* Card Action Buttons (FR-DB-19) */}
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <Link
                     href={`/simulasi?mag=${latest.Magnitude}&depth=${latest.Kedalaman.replace(/[^0-9.]/g, '')}&lat=${latest.Coordinates.split(',')[0]?.trim()}&lon=${latest.Coordinates.split(',')[1]?.trim()}&region=${encodeURIComponent(latest.Wilayah)}`}
-                    className="flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 transition-colors"
                   >
-                    <Flame className="h-3.5 w-3.5 text-amber-400" />
-                    Simulasikan Gempa Ini
+                    <Button className="w-full gap-1.5 rounded-xl bg-slate-900 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 transition-colors">
+                      <Flame className="h-3.5 w-3.5 text-amber-400" />
+                      Simulasikan Gempa Ini
+                    </Button>
                   </Link>
 
-                  <Link
-                    href="/riwayat"
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    Lihat Semua Riwayat
+                  <Link href="/riwayat">
+                    <Button
+                      variant="outline"
+                      className="w-full gap-1.5 rounded-xl border-slate-200 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      Lihat Semua Riwayat
+                    </Button>
                   </Link>
                 </div>
-              </div>
+              </Card>
             ) : (
-              <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
-                <RefreshCw className="mx-auto h-8 w-8 text-slate-400 animate-spin" />
-                <p className="mt-3 text-sm text-slate-500">Memuat data gempa terkini...</p>
-              </div>
+              <Card className="rounded-3xl border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900 space-y-3">
+                <Skeleton className="h-8 w-8 rounded-full mx-auto" />
+                <Skeleton className="h-4 w-40 mx-auto" />
+                <p className="text-xs text-slate-500">Menghubungkan layanan data gempa...</p>
+              </Card>
             )}
           </div>
         </div>
@@ -215,68 +227,84 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1 */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 mb-4">
-              <Flame className="h-6 w-6" />
-            </div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-              Simulasi Dampak Interaktif
-            </h3>
-            <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-              Kalkulasi instan skala MMI (I–XII), estimasi energi TNT, radius isoseismal, hingga perbandingan ketahanan bangunan standar vs tahan gempa.
-            </p>
-            <Link href="/simulasi" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:underline">
-              Buka Simulasi <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+          <Card className="rounded-2xl border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+            <CardHeader className="p-0 space-y-2">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
+                <Flame className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
+                Simulasi Dampak Interaktif
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pt-2">
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Kalkulasi instan skala MMI (I–XII), estimasi energi TNT, radius isoseismal, hingga perbandingan ketahanan bangunan standar vs tahan gempa.
+              </p>
+              <Link href="/simulasi" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:underline">
+                Buka Simulasi <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </CardContent>
+          </Card>
 
           {/* Card 2 */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 mb-4">
-              <Waves className="h-6 w-6" />
-            </div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-              Golden Time & Gelombang P-S
-            </h3>
-            <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-              Ketahui selisih detik berharga antara kedatangan gelombang primer (P) dan sekunder (S) untuk tindakan penyelamatan darurat.
-            </p>
-            <Link href="/simulasi" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:underline">
-              Pelajari Rambatan <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+          <Card className="rounded-2xl border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+            <CardHeader className="p-0 space-y-2">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                <Waves className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
+                Golden Time & Gelombang P-S
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pt-2">
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Ketahui selisih detik berharga antara kedatangan gelombang primer (P) dan sekunder (S) untuk tindakan penyelamatan darurat.
+              </p>
+              <Link href="/simulasi" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:underline">
+                Pelajari Rambatan <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </CardContent>
+          </Card>
 
           {/* Card 3 */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 mb-4">
-              <ShieldAlert className="h-6 w-6" />
-            </div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-              Chatbot AI Berkonteks Gempa
-            </h3>
-            <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-              Didukung model Gemini dengan Lightweight RAG gempa BMKG faktual dan fallback bertingkat rule-based saat server AI offline.
-            </p>
-            <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-blue-600">
-              Klik Ikon Chat di Pojok Kanan
-            </span>
-          </div>
+          <Card className="rounded-2xl border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+            <CardHeader className="p-0 space-y-2">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
+                <ShieldAlert className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
+                Chatbot AI Berkonteks Gempa
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pt-2">
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Didukung model Gemini dengan Lightweight RAG gempa BMKG faktual dan fallback bertingkat rule-based saat server AI offline.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-blue-600">
+                Klik Ikon Chat di Pojok Kanan
+              </span>
+            </CardContent>
+          </Card>
 
           {/* Card 4 */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 mb-4">
-              <Activity className="h-6 w-6" />
-            </div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-              Observabilitas Sistem & DB
-            </h3>
-            <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-              Arsitektur tangguh dengan PostgreSQL, Redis cache, rate limiting IP, logging metrik waktu respons, dan feedback kepuasan laporan kuliah.
-            </p>
-            <Link href="/status" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:underline">
-              Pantau Sistem <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+          <Card className="rounded-2xl border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+            <CardHeader className="p-0 space-y-2">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                <Activity className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
+                Observabilitas Sistem & DB
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pt-2">
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Arsitektur tangguh dengan PostgreSQL, Redis cache, rate limiting IP, logging metrik waktu respons, dan feedback kepuasan laporan kuliah.
+              </p>
+              <Link href="/status" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:underline">
+                Pantau Sistem <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

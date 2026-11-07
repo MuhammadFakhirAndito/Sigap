@@ -2,6 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User, ThumbsUp, ThumbsDown, Sparkles, AlertCircle, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface ChatMessage {
   id: string;
@@ -142,25 +148,29 @@ export default function ChatbotWidget() {
                 </span>
               </div>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setIsOpen(false)}
-              className="rounded-lg p-1 text-white/80 hover:bg-white/10 hover:text-white"
+              className="h-8 w-8 rounded-lg text-white/80 hover:bg-white/10 hover:text-white"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
 
           {/* Quick Prompts */}
           <div className="flex gap-1.5 overflow-x-auto border-b border-slate-100 bg-slate-50 p-2 text-xs dark:border-slate-800 dark:bg-slate-950/60 scrollbar-none">
             {quickQuestions.map((q, i) => (
-              <button
+              <Button
                 key={i}
+                variant="outline"
+                size="sm"
                 onClick={() => handleSend(q)}
                 disabled={loading}
-                className="shrink-0 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition-colors dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-rose-900 dark:hover:bg-rose-950/40"
+                className="shrink-0 rounded-full border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition-colors dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-rose-900 dark:hover:bg-rose-950/40 h-7"
               >
                 {q}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -169,7 +179,7 @@ export default function ChatbotWidget() {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2.5 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={cn('flex gap-2.5', msg.sender === 'user' ? 'justify-end' : 'justify-start')}
               >
                 {msg.sender === 'bot' && (
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-400">
@@ -178,11 +188,12 @@ export default function ChatbotWidget() {
                 )}
 
                 <div
-                  className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm ${
+                  className={cn(
+                    'max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm',
                     msg.sender === 'user'
                       ? 'bg-rose-600 text-white rounded-tr-xs'
                       : 'bg-slate-100 text-slate-900 rounded-tl-xs dark:bg-slate-800 dark:text-slate-100'
-                  }`}
+                  )}
                 >
                   <p className="whitespace-pre-line leading-relaxed">{msg.text}</p>
 
@@ -191,22 +202,22 @@ export default function ChatbotWidget() {
                     <div className="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {msg.source === 'LLM' && (
-                          <span className="inline-flex items-center gap-0.5 font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded">
+                          <Badge variant="secondary" className="gap-0.5 font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded text-[10px]">
                             <Sparkles className="h-3 w-3" /> {msg.model || 'Gemini AI'}
-                          </span>
+                          </Badge>
                         )}
                         {msg.source === 'FALLBACK' && (
-                          <span className="inline-flex items-center gap-0.5 font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded">
+                          <Badge variant="secondary" className="gap-0.5 font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded text-[10px]">
                             <AlertCircle className="h-3 w-3" /> FAQ Rule-Based
-                          </span>
+                          </Badge>
                         )}
                         {msg.source === 'CACHE' && (
-                          <span className="inline-flex items-center gap-0.5 font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/50 px-1.5 py-0.5 rounded">
+                          <Badge variant="secondary" className="gap-0.5 font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/50 px-1.5 py-0.5 rounded text-[10px]">
                             Cache 1 Jam
-                          </span>
+                          </Badge>
                         )}
                         {msg.responseTimeMs !== undefined && (
-                          <span className="flex items-center gap-0.5 text-slate-400">
+                          <span className="flex items-center gap-0.5 text-slate-400 text-[10px]">
                             <Clock className="h-3 w-3" /> {msg.responseTimeMs}ms
                           </span>
                         )}
@@ -215,30 +226,36 @@ export default function ChatbotWidget() {
                       {/* Evaluasi Kepuasan (FR-DB-21) */}
                       {msg.logId && (
                         <div className="flex items-center gap-1">
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleFeedback(msg.id, msg.logId!, true)}
                             disabled={msg.feedbackGiven !== null}
-                            className={`p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors ${
+                            className={cn(
+                              'h-6 w-6 p-0 rounded',
                               msg.feedbackGiven === 'up'
                                 ? 'text-emerald-600 font-bold'
                                 : 'text-slate-400 hover:text-emerald-600'
-                            }`}
+                            )}
                             title="Jawaban ini membantu"
                           >
                             <ThumbsUp className="h-3.5 w-3.5" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleFeedback(msg.id, msg.logId!, false)}
                             disabled={msg.feedbackGiven !== null}
-                            className={`p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors ${
+                            className={cn(
+                              'h-6 w-6 p-0 rounded',
                               msg.feedbackGiven === 'down'
                                 ? 'text-rose-600 font-bold'
                                 : 'text-slate-400 hover:text-rose-600'
-                            }`}
+                            )}
                             title="Jawaban ini kurang tepat"
                           >
                             <ThumbsDown className="h-3.5 w-3.5" />
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -273,21 +290,21 @@ export default function ChatbotWidget() {
             className="border-t border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950"
           >
             <div className="flex items-center gap-2">
-              <input
+              <Input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Tanyakan mitigasi gempa atau data terkini..."
                 disabled={loading}
-                className="flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-rose-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                className="flex-1 rounded-xl text-xs h-9 bg-white dark:bg-slate-900"
               />
-              <button
+              <Button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-600 text-white shadow-xs hover:bg-rose-700 disabled:opacity-50 transition-colors"
+                className="h-9 w-9 rounded-xl bg-rose-600 text-white shadow-xs hover:bg-rose-700 disabled:opacity-50 transition-colors p-0"
               >
                 <Send className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
             <div className="mt-1 text-[10px] text-center text-slate-400">
               Evaluasi laporan kuliah: Waktu respons & feedback dicatat otomatis
@@ -298,4 +315,3 @@ export default function ChatbotWidget() {
     </>
   );
 }
-

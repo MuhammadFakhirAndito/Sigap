@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Activity, History, Flame, BookOpen, ShieldCheck, Waves } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -40,13 +42,14 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg transition-all ${
+                className={cn(
+                  'flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg transition-all',
                   isActive
                     ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 font-semibold shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-900'
-                }`}
+                )}
               >
-                <Icon className={`h-4 w-4 ${isActive ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`} />
+                <Icon className={cn('h-4 w-4', isActive ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400')} />
                 {link.label}
               </Link>
             );
@@ -54,22 +57,24 @@ export default function Navbar() {
         </nav>
 
         {/* Mobile Navigation bar */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex md:hidden items-center gap-1">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                title={link.label}
-                className={`p-2 rounded-lg ${
-                  isActive
-                    ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
-                    : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
+              <Link key={link.href} href={link.href} title={link.label}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    'h-9 w-9',
+                    isActive
+                      ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
+                      : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </Button>
               </Link>
             );
           })}
@@ -78,4 +83,3 @@ export default function Navbar() {
     </header>
   );
 }
-

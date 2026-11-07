@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Waves, ExternalLink, Shield } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function Footer() {
   return (
@@ -38,11 +39,11 @@ export default function Footer() {
             </Link>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-400">
+        <Separator className="my-4 bg-slate-200 dark:bg-slate-800" />
+        <div className="text-center text-xs text-slate-400">
           Proyek Penguatan Teknis & Evaluasi Akademik Rekayasa Web · PostgreSQL, Redis & AI Fallback Bertingkat
         </div>
       </div>
     </footer>
   );
 }
-
