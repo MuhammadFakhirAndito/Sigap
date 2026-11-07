@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌋 SIGAP Gempa
+# SIGAP Gempa
 ### *Sistem Informasi Gempabumi, Simulasi Dampak Seismik & Asisten Mitigasi Cerdas*
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -13,21 +13,21 @@
 [![Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-8E75C2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
 <p align="center">
-  Platform komprehensif tanggap kebencanaan gempabumi yang menggabungkan telemetri data terbuka BMKG, simulasi estimasi dampak kerusakan fisik (*client-side*), arsitektur basis data berkeandalan tinggi (anti-downtime), serta asisten chatbot AI dengan mekanisme pertahanan berlapis (*fallback bertingkat*).
+  Platform komprehensif tanggap kebencanaan gempabumi yang menggabungkan telemetri data terbuka BMKG, simulasi estimasi dampak kerusakan fisik (<em>client-side</em>), arsitektur basis data berkeandalan tinggi (anti-downtime), serta asisten chatbot AI dengan mekanisme pertahanan berlapis (<em>fallback bertingkat</em>).
 </p>
 
-[Fitur Unggulan](#-fitur-unggulan) •
-[Arsitektur Sistem](#-arsitektur-sistem) •
-[Model Basis Data](#-model-basis-data) •
-[Panduan Instalasi](#-panduan-instalasi--menjalankan-sistem) •
-[Spesifikasi API](#-spesifikasi-endpoint-api) •
-[Kriteria Uji PRD](#-kriteria-pengujian--penerimaan-prd)
+[Fitur Unggulan](#fitur-unggulan) •
+[Arsitektur Sistem](#arsitektur-sistem) •
+[Model Basis Data](#model-basis-data) •
+[Panduan Instalasi](#panduan-instalasi--menjalankan-sistem) •
+[Spesifikasi API](#spesifikasi-endpoint-api) •
+[Kriteria Uji PRD](#kriteria-pengujian--penerimaan-prd)
 
 </div>
 
 ---
 
-## 📌 Ringkasan Masalah & Solusi
+## Ringkasan Masalah & Solusi
 
 Layanan informasi kebencanaan publik sering kali menghadapi kendala ketersediaan:
 1. **Ketergantungan Tunggal**: Ketika server penyedia telemetri publik (seperti BMKG) mengalami kelebihan beban atau gangguan saat gempa besar terjadi, masyarakat kehilangan akses informasi.
@@ -41,7 +41,7 @@ Layanan informasi kebencanaan publik sering kali menghadapi kendala ketersediaan
 
 ---
 
-## 🏛️ Arsitektur Sistem
+## Arsitektur Sistem
 
 Berikut adalah topologi arsitektur sistem SIGAP Gempa:
 
@@ -76,14 +76,14 @@ flowchart TD
 
 ---
 
-## ⚡ Fitur Unggulan
+## Fitur Unggulan
 
-### 1. 🛰️ Sinkronisasi Seismik BMKG & Graceful Degradation
+### 1. Sinkronisasi Seismik BMKG & Graceful Degradation
 * **Idempotensi Sinkronisasi**: Menggunakan mekanisme *upsert* berbasis kunci komposit unik `bmkgKey` (`${DateTime}_${Coordinates}`) untuk menjamin tidak ada duplikasi data.
 * **Anti-Downtime Guarantee**: Halaman riwayat tetap menyajikan data tersimpan di PostgreSQL ketika koneksi ke BMKG terputus, dilengkapi label akurat status pembaruan terakhir dari tabel `SyncStatus`.
 * **Indeks Kueri Cepat**: Pengindeksan pada kolom `waktuUtc (DESC)` dan `magnitudo` memastikan pencarian 15 baris per halaman selesai dalam < 50 milidetik.
 
-### 2. 🌋 Mesin Simulator Dampak & Risiko Seismik
+### 2. Simulator Dampak & Risiko Seismik
 * **Perhitungan Intensitas Puncak ($I_0$)**:
   Menggunakan model redaman kedalaman Esteva & Rosenblueth:
   $$I_0 = 1.5 \times M - 3.5 \times \log_{10}(h) + 3.0 \quad (\text{dibatasi Skala MMI I–XII})$$
@@ -100,7 +100,7 @@ flowchart TD
 * **Komparasi Struktur Bangunan**:
   Evaluasi kerentanan rumah non-rekayasa (tanpa tulangan) vs bangunan tahan gempa standar **SNI 1726**.
 
-### 3. 🤖 Chatbot AI Mitigasi Cerdas (Lightweight RAG)
+### 3. Chatbot AI Mitigasi (Lightweight RAG)
 * **Injeksi Data Faktual**: Backend otomatis menyisipkan data `autogempa` terbaru dan 3 riwayat gempa terakhir ke dalam *system prompt* LLM agar asisten selalu menjawab pertanyaan gempa terkini secara akurat.
 * **Fallback Bertingkat Tiga Lapis**:
   $$\text{Model Utama (Gemini)} \xrightarrow{\text{Quota / 429}} \text{Model Cadangan} \xrightarrow{\text{Offline}} \text{FAQ Berbasis Aturan (DB)}$$
@@ -110,12 +110,12 @@ flowchart TD
 * **Metrik Evaluasi Akademik**:
   Pencatatan waktu latensi pemrosesan (`responseTimeMs`) dan penilaian kepuasan pengguna (👍 / 👎) via `PATCH /api/chat/feedback` untuk bahan analisis kuantitatif laporan kuliah.
 
-### 4. 🛡️ Observabilitas & Healthcheck Terpadu
+### 4. Observabilitas & Healthcheck Terpadu
 * Endpoint `GET /api/health` memeriksa status kesehatan PostgreSQL, Redis, keterjangkauan API BMKG, dan waktu sinkronisasi terakhir dalam satu respons JSON terstruktur.
 
 ---
 
-## 🗄️ Model Basis Data
+## Model Basis Data
 
 Dikelola secara deklaratif menggunakan **Prisma ORM**:
 
@@ -132,7 +132,7 @@ Dikelola secara deklaratif menggunakan **Prisma ORM**:
 
 ---
 
-## 🚀 Panduan Instalasi & Menjalankan Sistem
+## Panduan Instalasi & Menjalankan Sistem
 
 ### Prasyarat:
 * Node.js versi 20+ (disarankan Node.js v26 LTS / versi terbaru).
@@ -199,7 +199,7 @@ npm start
 
 ---
 
-## 📡 Spesifikasi Endpoint API
+## Spesifikasi Endpoint API
 
 | Method | Endpoint | Deskripsi | Parameter Query / Body |
 | :--- | :--- | :--- | :--- |
@@ -214,24 +214,24 @@ npm start
 
 ---
 
-## 🧪 Kriteria Pengujian & Penerimaan PRD
+## Kriteria Pengujian & Penerimaan PRD
 
 | ID Uji | Skenario Pengujian | Hasil yang Diharapkan | Status Implementasi |
 | :---: | :--- | :--- | :---: |
-| **TC-DB-01** | Sinkronisasi BMKG dijalankan berulang kali | Data tidak terduplikasi (`bmkgKey` unik) dan `lastSuccessAt` terbarui | ✅ Lolos |
-| **TC-DB-02** | Simulasi server BMKG padam | Halaman riwayat tetap menyajikan data lokal + stempel waktu sinkronisasi | ✅ Lolos |
-| **TC-DB-03** | Simulasi PostgreSQL/Redis mati | Halaman utama berdegradasi anggun (tidak crash), `/api/health` mencatat *degraded* | ✅ Lolos |
-| **TC-DB-04** | Mengirim 11 pesan chat dalam 1 menit | Pesan ke-11 ditolak dengan kode status 429 (*Rate Limit Exceeded*) | ✅ Lolos |
-| **TC-DB-05** | Memaksa kuota Gemini habis | Otomatis beralih ke model cadangan, lalu ke modul FAQ rule-based | ✅ Lolos |
-| **TC-DB-06** | Pengecekan port dari luar VPS | Port 5432 & 6379 tidak dapat diakses publik (bind ke 127.0.0.1) | ✅ Lolos |
-| **TC-DB-09** | Pemindaian kredensial di repositori | `DATABASE_URL` dan API key tidak ditemukan (dilindungi `.gitignore`) | ✅ Lolos |
-| **TC-DB-10** | Pengubahan slider simulator gempa | MMI, radius kerusakan, energi TNT, dan tsunami risk berubah instan | ✅ Lolos |
-| **TC-DB-11** | Klik tombol "Simulasikan" pada tabel riwayat | Parameter baris gempa otomatis terisi ke dalam simulator dampak | ✅ Lolos |
-| **TC-DB-12** | Pertanyaan gempa terkini & feedback 👍 / 👎 | Chatbot menjawab faktual via RAG, `ChatLog` mencatat `responseTimeMs` & `isHelpful` | ✅ Lolos |
+| **TC-DB-01** | Sinkronisasi BMKG dijalankan berulang kali | Data tidak terduplikasi (`bmkgKey` unik) dan `lastSuccessAt` terbarui | Lolos |
+| **TC-DB-02** | Simulasi server BMKG padam | Halaman riwayat tetap menyajikan data lokal + stempel waktu sinkronisasi | Lolos |
+| **TC-DB-03** | Simulasi PostgreSQL/Redis mati | Halaman utama berdegradasi anggun (tidak crash), `/api/health` mencatat *degraded* | Lolos |
+| **TC-DB-04** | Mengirim 11 pesan chat dalam 1 menit | Pesan ke-11 ditolak dengan kode status 429 (*Rate Limit Exceeded*) | Lolos |
+| **TC-DB-05** | Memaksa kuota Gemini habis | Otomatis beralih ke model cadangan, lalu ke modul FAQ rule-based | Lolos |
+| **TC-DB-06** | Pengecekan port dari luar VPS | Port 5432 & 6379 tidak dapat diakses publik (bind ke 127.0.0.1) | Lolos |
+| **TC-DB-09** | Pemindaian kredensial di repositori | `DATABASE_URL` dan API key tidak ditemukan (dilindungi `.gitignore`) | Lolos |
+| **TC-DB-10** | Pengubahan slider simulator gempa | MMI, radius kerusakan, energi TNT, dan tsunami risk berubah instan | Lolos |
+| **TC-DB-11** | Klik tombol "Simulasikan" pada tabel riwayat | Parameter baris gempa otomatis terisi ke dalam simulator dampak | Lolos |
+| **TC-DB-12** | Pertanyaan gempa terkini & feedback umpan balik | Chatbot menjawab faktual via RAG, `ChatLog` mencatat `responseTimeMs` & `isHelpful` | Lolos |
 
 ---
 
-## 📁 Struktur Direktori Proyek
+## Struktur Direktori Proyek
 
 ```plaintext
 SIGAP/
@@ -263,6 +263,6 @@ SIGAP/
 
 ---
 
-## 📄 Lisensi & Hak Cipta
+## Lisensi & Hak Cipta
 
 Proyek ini dikembangkan sebagai karya rekayasa sistem web kebencanaan dan bahan evaluasi akademik. Terbuka di bawah lisensi [MIT License](LICENSE).
