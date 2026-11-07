@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="flex items-center gap-2">
             <Waves className="h-5 w-5 text-rose-600" />
             <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
-              SIGAP Gempa (Sistem Informasi Gempabumi, Simulasi & Mitigasi Cerdas)
+              SIGAP (Sistem Informasi, Simulasi Dampak & Mitigasi Cerdas)
             </span>
           </div>
 

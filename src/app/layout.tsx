@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'SIGAP Gempa — Sistem Informasi, Simulasi Dampak & Mitigasi Cerdas',
+  title: 'SIGAP — Sistem Informasi, Simulasi Dampak & Mitigasi Cerdas',
   description:
     'Aplikasi pemantauan gempa bumi real-time terintegrasi BMKG, simulasi estimasi dampak kerusakan (skala MMI, radius, tsunami risk), dan asisten chatbot mitigasi cerdas.',
 };

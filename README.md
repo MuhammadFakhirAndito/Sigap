@@ -1,6 +1,6 @@
 <div align="center">
 
-# SIGAP Gempa
+# SIGAP
 ### *Sistem Informasi Gempabumi, Simulasi Dampak Seismik & Asisten Mitigasi Cerdas*
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -34,7 +34,7 @@ Layanan informasi kebencanaan publik sering kali menghadapi kendala ketersediaan
 2. **Keterbatasan Pemahaman Numerik**: Informasi teknis seperti "Magnitudo 6.8 di kedalaman 10 km" sulit diterjemahkan masyarakat awam menjadi risiko nyata di lapangan (apakah rumah saya aman? seberapa besar guncangannya? apakah tsunami?).
 3. **Keterbatasan Kuota AI**: Integrasi Chatbot LLM rentan mengalami *error 429 (quota exceeded)* atau kegagalan jaringan saat diakses ribuan pengguna secara bersamaan.
 
-### Solusi SIGAP Gempa:
+### Solusi SIGAP:
 * **High-Reliability Caching & DB Fallback**: Data BMKG di-*upsert* ke **PostgreSQL** dan di-cache ke **Redis**. Jika server pusat padam, sistem tetap menyajikan riwayat terakhir secara *graceful* tanpa *crash*.
 * **Interactive Physics Engine**: Mesin kalkulasi ilmiah *client-side* untuk mengonversi magnitudo & kedalaman ke skala intensitas MMI (I–XII), radius isoseismal, pelepasan energi TNT, *Golden Time* gelombang P-S, dan komparasi ketahanan struktur SNI 1726.
 * **Tiered AI Assistant (Lightweight RAG)**: Chatbot AI yang menyuntikkan data gempa terkini ke *prompt*, diproteksi *rate limiter*, serta didukung *graceful fallback* ke model cadangan dan basis aturan FAQ offline.
@@ -43,7 +43,7 @@ Layanan informasi kebencanaan publik sering kali menghadapi kendala ketersediaan
 
 ## Arsitektur Sistem
 
-Berikut adalah topologi arsitektur sistem SIGAP Gempa:
+Berikut adalah topologi arsitektur sistem SIGAP:
 
 ```mermaid
 flowchart TD

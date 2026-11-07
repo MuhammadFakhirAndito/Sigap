@@ -167,7 +167,7 @@ export async function askChatbot(options: ChatRequestOptions): Promise<ChatRespo
 
   // 3. Persiapan Konteks RAG
   const gempaContext = await getLatestEarthquakeContext();
-  const systemPrompt = `Anda adalah Asisten Virtual SIGAP Gempa (Sistem Informasi Gempabumi dan Peringatan Dini Indonesia).
+  const systemPrompt = `Anda adalah Asisten Virtual SIGAP (Sistem Informasi dan Peringatan Dini Kebencanaan).
 Tugas Anda:
 1. Menjawab pertanyaan pengguna seputar gempa bumi, tsunami, mitigasi bencana, persiapan tas siaga, dan keselamatan dengan ramah, akurat, dan menenangkan.
 2. Gunakan data faktual gempa terbaru di bawah ini untuk menjawab jika pengguna menanyakan kejadian gempa terkini:

@@ -22,7 +22,7 @@ export default function ChatbotWidget() {
     {
       id: 'welcome',
       sender: 'bot',
-      text: 'Halo! Saya asisten virtual SIGAP Gempa. Anda dapat menanyakan informasi gempa terbaru, penjelasan potensi tsunami, protokol evakuasi, atau panduan tas siaga bencana.',
+      text: 'Halo! Saya asisten virtual SIGAP. Anda dapat menanyakan informasi gempa terbaru, penjelasan potensi tsunami, protokol evakuasi, atau panduan tas siaga bencana.',
       source: 'LLM',
     },
   ]);

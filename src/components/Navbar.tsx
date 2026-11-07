@@ -24,7 +24,7 @@ export default function Navbar() {
           </div>
           <div>
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              SIGAP <span className="text-rose-600">Gempa</span>
+              SIGAP
             </span>
             <span className="block text-[10px] font-medium uppercase tracking-wider text-slate-400">
               Mitigasi & Peringatan Cerdas

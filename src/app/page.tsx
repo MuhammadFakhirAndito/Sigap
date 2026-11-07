@@ -81,7 +81,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-              SIGAP Gempa menggabungkan data telemetri seismik BMKG dengan mesin simulasi redaman jarak dan asisten cerdas AI. Dilengkapi basis data berkeandalan tinggi untuk menjaga ketersediaan informasi saat server utama padam.
+              SIGAP menggabungkan data telemetri seismik BMKG dengan mesin simulasi redaman jarak dan asisten cerdas AI. Dilengkapi basis data berkeandalan tinggi untuk menjaga ketersediaan informasi saat server utama padam.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
