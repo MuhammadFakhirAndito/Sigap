@@ -205,6 +205,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
       tipeLokasi: TipeLokasi.LAUT,
       deskripsiSingkat: 'Simulasi skenario gempa megathrust berpotensi tsunami tinggi di pesisir Banten dan Lampung.',
       urutan: 1,
+      sumberId: 'sumber-bmkg-portal',
     },
     {
       id: 'skenario-sesar-lembang',
@@ -216,6 +217,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
       tipeLokasi: TipeLokasi.DARAT,
       deskripsiSingkat: 'Simulasi gempa kerak dangkal di daratan sesar aktif Lembang dengan intensitas guncangan tinggi di kawasan Bandung Raya.',
       urutan: 2,
+      sumberId: 'sumber-pvmbg-geologi',
     },
     {
       id: 'skenario-palu-donggala',
@@ -227,6 +229,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
       tipeLokasi: TipeLokasi.LAUT,
       deskripsiSingkat: 'Gempa sesar mendatar mendalam di Teluk Palu yang memicu tsunami lokal dan likuefaksi tanah masif.',
       urutan: 3,
+      sumberId: 'sumber-bmkg-portal',
     },
     {
       id: 'skenario-jogja-opak',
@@ -238,6 +241,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
       tipeLokasi: TipeLokasi.DARAT,
       deskripsiSingkat: 'Gempa darat dangkal di sepanjang sungai Opak yang mengakibatkan kerusakan berat pada bangunan non-tahan gempa.',
       urutan: 4,
+      sumberId: 'sumber-bmkg-portal',
     },
   ];
 
@@ -286,7 +290,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
 
   console.log(`✅ ${beritaData.length} Berita Referensi berhasil di-seed.`);
 
-  // 6. Inisialisasi SyncStatus
+  // 6. Inisialisasi SyncStatus & SyncLog Awal
   await prisma.syncStatus.upsert({
     where: { id: 'bmkg_sync' },
     update: {},
@@ -297,7 +301,20 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
     },
   });
 
-  console.log('✅ Inisialisasi status sinkronisasi selesai.');
+  await prisma.syncLog.upsert({
+    where: { id: 'seed-initial-sync-log' },
+    update: {},
+    create: {
+      id: 'seed-initial-sync-log',
+      sumber: 'all',
+      status: 'OK',
+      jumlahBaru: 0,
+      jumlahDiperbarui: 0,
+      durasiMs: 150,
+    },
+  });
+
+  console.log('✅ Inisialisasi status dan log sinkronisasi selesai.');
   console.log('🎉 Seeding database SIGAP Gempa berhasil sepenuhnya!');
 }
 

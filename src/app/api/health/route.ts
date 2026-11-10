@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cacheService } from '@/lib/redis';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const startTime = Date.now();
   let dbStatus = { ok: false, latencyMs: 0, message: '' };
   let redisStatus = { ok: false, mode: 'memory', message: '' };
@@ -61,17 +61,38 @@ export async function GET() {
     };
   }
 
-  // 4. Ambil metadata SyncStatus
-  let syncInfo = null;
-  try {
-    syncInfo = await prisma.syncStatus.findUnique({
-      where: { id: 'bmkg_sync' },
-    });
-  } catch {}
-
   const isDegraded = !dbStatus.ok || !redisStatus.ok || !bmkgStatus.ok;
   const overallStatus = isDegraded ? 'degraded' : 'healthy';
 
+  // Verifikasi apakah pemanggil menyertakan SYNC_SECRET (PRD v1.1 Keputusan #11, FR-DB-22, TC-DB-20)
+  const authHeader = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+  const secretHeader =
+    req.headers.get('SYNC_SECRET') ||
+    req.headers.get('sync_secret') ||
+    req.headers.get('x-sync-secret') ||
+    req.nextUrl.searchParams.get('secret');
+
+  const token = secretHeader || authHeader;
+  const expectedSecret = process.env.SYNC_SECRET || process.env.BMKG_SYNC_SECRET || 'sigap_sync_secret_key_change_me';
+  const hasValidSecret = Boolean(token && token === expectedSecret);
+
+  // Jika tanpa secret yang valid, kembalikan hanya status ringkas tanpa membocorkan detail infrastruktur (TC-DB-20)
+  if (!hasValidSecret) {
+    return NextResponse.json({
+      status: overallStatus,
+    });
+  }
+
+  // Ambil sinkronisasi sukses terakhir dari SyncLog (PRD v1.1 Keputusan #9 & 7.2)
+  let lastSuccessfulSync = null;
+  try {
+    lastSuccessfulSync = await prisma.syncLog.findFirst({
+      where: { status: 'OK' },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch {}
+
+  // Respons penuh untuk pemanggil berwenang dengan SYNC_SECRET
   return NextResponse.json({
     status: overallStatus,
     timestamp: new Date().toISOString(),
@@ -81,7 +102,14 @@ export async function GET() {
       cache: redisStatus,
       bmkgApi: bmkgStatus,
     },
-    syncStatus: syncInfo,
+    syncLogTerakhir: lastSuccessfulSync
+      ? {
+          waktuSukses: lastSuccessfulSync.createdAt,
+          sumber: lastSuccessfulSync.sumber,
+          jumlahBaru: lastSuccessfulSync.jumlahBaru,
+          jumlahDiperbarui: lastSuccessfulSync.jumlahDiperbarui,
+          durasiMs: lastSuccessfulSync.durasiMs,
+        }
+      : null,
   });
 }
-

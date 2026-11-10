@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const [items, totalCount, syncStatus] = await Promise.all([
+    const [items, totalCount, lastSyncLog] = await Promise.all([
       prisma.gempa.findMany({
         where,
         orderBy: { waktuUtc: 'desc' },
@@ -52,8 +52,9 @@ export async function GET(req: NextRequest) {
         take: limit,
       }),
       prisma.gempa.count({ where }),
-      prisma.syncStatus.findUnique({
-        where: { id: 'bmkg_sync' },
+      prisma.syncLog.findFirst({
+        where: { status: 'OK' },
+        orderBy: { createdAt: 'desc' },
       }),
     ]);
 
@@ -70,9 +71,9 @@ export async function GET(req: NextRequest) {
         hasPrevPage: page > 1,
       },
       sync: {
-        lastSuccessAt: syncStatus?.lastSuccessAt || null,
-        lastAttemptAt: syncStatus?.lastAttemptAt || null,
-        lastStatus: syncStatus?.lastStatus || 'UNINITIALIZED',
+        lastSuccessAt: lastSyncLog?.createdAt || null,
+        lastAttemptAt: lastSyncLog?.createdAt || null,
+        lastStatus: lastSyncLog ? 'SUCCESS' : 'UNINITIALIZED',
       },
     });
   } catch (err: any) {

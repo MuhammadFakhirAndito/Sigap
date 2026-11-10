@@ -16,9 +16,9 @@ if [ -f "${PROJECT_ROOT}/.env" ]; then
   export $(grep -v '^#' "${PROJECT_ROOT}/.env" | xargs -0 2>/dev/null || true)
 fi
 
-CONTAINER_NAME="${DB_CONTAINER_NAME:-sigap-postgres}"
+CONTAINER_NAME="${DB_CONTAINER_NAME:-sigap_postgres}"
 DB_USER="${POSTGRES_USER:-sigap_user}"
-DB_NAME="${POSTGRES_DB:-sigap_db}"
+DB_NAME="${POSTGRES_DB:-sigap_gempa}"
 
 # Tentukan file backup: argumen $1 atau file terbaru di folder backups
 BACKUP_FILE="${1:-}"

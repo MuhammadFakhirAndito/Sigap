@@ -107,12 +107,13 @@ model Artikel {
 }
 
 model Sumber {
-  id           String    @id @default(cuid())
+  id           String             @id @default(cuid())
   judul        String
   penerbit     String
-  url          String    @unique
-  tanggalAkses DateTime  @default(now())
+  url          String             @unique
+  tanggalAkses DateTime           @default(now())
   artikel      Artikel[]
+  skenario     SkenarioSimulasi[]
 }
 
 model FaqGempa {
@@ -148,6 +149,8 @@ model SkenarioSimulasi {
   tipeLokasi       TipeLokasi @default(LAUT)
   deskripsiSingkat String?
   urutan           Int        @default(0)
+  sumberId         String?
+  sumber           Sumber?    @relation(fields: [sumberId], references: [id])
   createdAt        DateTime   @default(now())
 }
 

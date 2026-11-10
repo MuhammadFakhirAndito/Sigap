@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Flame, Waves, Clock, Zap, MapPin, Building, AlertTriangle, Sliders } from 'lucide-react';
+import { Flame, Waves, Clock, Zap, MapPin, Building, AlertTriangle, Sliders, Info } from 'lucide-react';
 import { calculateEarthquakeSimulation } from '@/lib/simulation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -94,7 +94,7 @@ function SimulasiContent() {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
-      <div className="border-b border-slate-200 pb-5 dark:border-slate-800">
+      <div className="border-b border-slate-200 pb-5 dark:border-slate-800 space-y-4">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 text-white shadow-md shadow-rose-500/20">
             <Flame className="h-5 w-5" />
@@ -107,6 +107,14 @@ function SimulasiContent() {
               Uji parameter magnitudo dan kedalaman hiposentrum secara dinamis untuk mengestimasi skala intensitas MMI, radius kerusakan, Golden Time gelombang P-S, dan kerentanan struktur.
             </p>
           </div>
+        </div>
+
+        {/* Disclaimer Edukasi Resmi (PRD v1.1 Keputusan #10 & FR-DB-17) */}
+        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 flex items-center gap-2">
+          <Info className="h-4 w-4 shrink-0 text-amber-600" />
+          <span>
+            <strong>Disclaimer Edukasi:</strong> Seluruh output simulasi (skala MMI, radius, energi TNT, dan waktu rambat) adalah <em>estimasi edukasi, bukan data resmi BMKG</em>. Informasi resmi gempabumi dan peringatan dini tsunami hanya dirilis oleh BMKG.
+          </span>
         </div>
       </div>
 

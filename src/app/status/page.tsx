@@ -35,7 +35,9 @@ export default function StatusPage() {
   const fetchHealth = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/health');
+      // Akses detail dengan token pengembang untuk dashboard status
+      const secret = process.env.NEXT_PUBLIC_SYNC_SECRET || 'sigap_sync_secret_key_change_me';
+      const res = await fetch(`/api/health?secret=${secret}`);
       const data = await res.json();
       setHealth(data);
     } catch (err) {
@@ -55,10 +57,17 @@ export default function StatusPage() {
     setSyncing(true);
     setSyncResult(null);
     try {
-      const res = await fetch('/api/sync/bmkg', { method: 'POST' });
+      const secret = process.env.NEXT_PUBLIC_SYNC_SECRET || 'sigap_sync_secret_key_change_me';
+      const res = await fetch('/api/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'SYNC_SECRET': secret,
+        },
+      });
       const data = await res.json();
       if (res.ok) {
-        setSyncResult(`✅ Sinkronisasi berhasil! ${data.totalUpserted} data diperbarui.`);
+        setSyncResult(`✅ Sinkronisasi berhasil! ${data.totalUpserted} data diperbarui (${data.totalBaru} baru, ${data.totalDiperbarui} di-update).`);
         fetchHealth();
       } else {
         setSyncResult(`❌ Sinkronisasi gagal: ${data.error || data.message}`);
@@ -144,7 +153,7 @@ export default function StatusPage() {
                 PostgreSQL (Prisma)
               </span>
             </div>
-            {health?.components.database.ok ? (
+            {health?.components?.database?.ok ? (
               <Badge variant="secondary" className="gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60">
                 <CheckCircle2 className="h-3 w-3" /> Online
               </Badge>
@@ -159,13 +168,13 @@ export default function StatusPage() {
             <div className="flex justify-between">
               <span>Waktu Respon:</span>
               <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
-                {health?.components.database.latencyMs || 0} ms
+                {health?.components?.database?.latencyMs || 0} ms
               </span>
             </div>
             <div className="flex justify-between">
               <span>Status Koneksi:</span>
               <span className="font-medium text-slate-700 dark:text-slate-300">
-                {health?.components.database.message}
+                {health?.components?.database?.message || (health?.status === 'healthy' ? 'Normal' : 'Terdegradasi')}
               </span>
             </div>
           </div>
@@ -184,7 +193,7 @@ export default function StatusPage() {
                 Redis (Cache & RL)
               </span>
             </div>
-            {health?.components.cache.ok ? (
+            {health?.components?.cache?.ok ? (
               <Badge variant="secondary" className="gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60">
                 <CheckCircle2 className="h-3 w-3" /> Redis Aktif
               </Badge>
@@ -199,13 +208,13 @@ export default function StatusPage() {
             <div className="flex justify-between">
               <span>Mode Operasi:</span>
               <span className="font-mono font-semibold uppercase text-slate-800 dark:text-slate-200">
-                {health?.components.cache.mode}
+                {health?.components?.cache?.mode || 'FALLBACK'}
               </span>
             </div>
             <div className="flex justify-between">
               <span>Status Keterhubungan:</span>
               <span className="font-medium text-slate-700 dark:text-slate-300">
-                {health?.components.cache.message}
+                {health?.components?.cache?.message || 'In-Memory Cache Aktif'}
               </span>
             </div>
           </div>
@@ -224,7 +233,7 @@ export default function StatusPage() {
                 BMKG API Gateway
               </span>
             </div>
-            {health?.components.bmkgApi.ok ? (
+            {health?.components?.bmkgApi?.ok ? (
               <Badge variant="secondary" className="gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60">
                 <CheckCircle2 className="h-3 w-3" /> Terjangkau
               </Badge>
@@ -239,13 +248,13 @@ export default function StatusPage() {
             <div className="flex justify-between">
               <span>Ping Latensi:</span>
               <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
-                {health?.components.bmkgApi.latencyMs || 0} ms
+                {health?.components?.bmkgApi?.latencyMs || 0} ms
               </span>
             </div>
             <div className="flex justify-between">
               <span>Kondisi Respons:</span>
               <span className="font-medium text-slate-700 dark:text-slate-300">
-                {health?.components.bmkgApi.message}
+                {health?.components?.bmkgApi?.message || (health?.status === 'healthy' ? 'Normal' : 'Terdegradasi')}
               </span>
             </div>
           </div>

@@ -18,7 +18,7 @@ fi
 
 APP_URL="${APP_URL:-http://localhost:3000}"
 SYNC_ENDPOINT="${APP_URL}/api/sync"
-SECRET_TOKEN="${SYNC_SECRET:-${SYNC_SECRET_TOKEN:-sigap_secure_sync_token_2026}}"
+SECRET_TOKEN="${SYNC_SECRET:-${SYNC_SECRET_TOKEN:-sigap_sync_secret_key_change_me}}"
 
 echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Memicu sinkronisasi data BMKG ke ${SYNC_ENDPOINT}..."
 

@@ -228,24 +228,30 @@ SIGAP menyediakan kumpulan skrip shell UNIX di folder `scripts/` untuk otomasi p
 
 ---
 
-## Kriteria Pengujian & Penerimaan PRD (v0.2)
+## Kriteria Pengujian & Penerimaan PRD (v1.1 Final - 20 Skenario)
 
 | ID Uji | Skenario Pengujian | Hasil yang Diharapkan | Status Implementasi |
 | :---: | :--- | :--- | :---: |
 | **TC-DB-01** | Sinkronisasi BMKG dua kali berturut-turut | Jumlah baris `Gempa` tidak bertambah untuk data yang sama | Lolos |
-| **TC-DB-02** | Simulasi server BMKG padam | Halaman riwayat tetap menyajikan data lokal + stempel waktu sinkronisasi | Lolos |
-| **TC-DB-03** | Simulasi PostgreSQL/Redis mati | Halaman utama berdegradasi anggun (tidak crash), `/api/health` mencatat *degraded* | Lolos |
-| **TC-DB-04** | Mengirim 11 pesan chat dalam 1 menit | Pesan ke-11 ditolak dengan kode status 429 (*Rate Limit Exceeded*) | Lolos |
-| **TC-DB-05** | Memaksa kuota Gemini habis | Otomatis beralih ke model cadangan, lalu ke modul FAQ rule-based | Lolos |
+| **TC-DB-02** | Simulasi server BMKG padam | Halaman riwayat tetap menyajikan data lokal + waktu sinkronisasi sukses terakhir yang akurat dari `SyncLog` | Lolos |
+| **TC-DB-03** | Simulasi PostgreSQL/Redis mati | Halaman utama berdegradasi anggun (tidak crash); `/api/health` mencatat status `degraded` | Lolos |
+| **TC-DB-04** | Mengirim 11 pesan chat dalam 1 menit dari IP sama | Pesan ke-11 ditolak dengan pesan rate limit (kode status 429) | Lolos |
+| **TC-DB-05** | Paksa error 429 atau habiskan kuota model utama | Otomatis beralih ke model cadangan, lalu ke modul FAQ dengan pesan jelas | Lolos |
 | **TC-DB-06** | Pengecekan port dari luar VPS | Port 5432 & 6379 tidak dapat diakses publik (bind ke 127.0.0.1) | Lolos |
 | **TC-DB-07** | Restore backup ke database kosong | Data kembali lengkap via skrip `restore.sh` (NFR-DB-05) | Lolos |
 | **TC-DB-08** | Migrasi database di server produksi | Eksekusi `prisma db push` / `prisma migrate deploy` di VPS via `deploy.sh` | Lolos |
 | **TC-DB-09** | Pemindaian kredensial di repositori | `DATABASE_URL` dan API key tidak ditemukan (dilindungi `.gitignore`) | Lolos |
 | **TC-DB-10** | Jalankan `prisma db seed` dua kali | Jumlah baris tidak bertambah (semua entitas idempoten) | Lolos |
-| **TC-DB-11** | BMKG merevisi magnitudo gempa yang sama | Baris lama diperbarui berdasarkan `bmkgKey` waktu UTC murni, tidak ada duplikat | Lolos |
+| **TC-DB-11** | BMKG merevisi magnitudo gempa yang sama | Baris lama diperbarui berdasarkan `bmkgKey` waktu UTC murni, tanpa duplikat | Lolos |
 | **TC-DB-12** | Gempa muncul di `autogempa` lalu `terkini` | Satu baris data, kedua flag `isAuto` dan `isTerkini` aktif bersamaan | Lolos |
 | **TC-DB-13** | Matikan Postgres, kirim pertanyaan chatbot | Chatbot dijawab dari FAQ statis (`src/data/fallback/faq.ts`) tanpa crash | Lolos |
 | **TC-DB-14** | Panggil endpoint sinkronisasi tanpa `SYNC_SECRET` | Permintaan ditolak dengan kode HTTP 401 Unauthorized | Lolos |
+| **TC-DB-15** | Ubah magnitudo dan kedalaman di simulator gempa | MMI, radius, waktu rambat, dan indikator tsunami berubah dinamis tanpa kueri database | Lolos |
+| **TC-DB-16** | Masukkan M7.0, jarak episentrum 100 km, kedalaman 10 km | Energi ≈ 2.0 × 10¹⁵ J; tP ≈ 16.8 dtk dan tS ≈ 28.7 dtk (toleransi ±5%) | Lolos |
+| **TC-DB-17** | Klik tombol "Simulasikan" pada baris di riwayat | Halaman simulasi otomatis terbuka dengan parameter sesuai baris gempa tersebut | Lolos |
+| **TC-DB-18** | Tanya gempa terkini lalu beri umpan balik 👍 | Jawaban sesuai data gempa terbaru; `ChatLog` mencatat `responseTimeMs` dan `isHelpful = true` | Lolos |
+| **TC-DB-19** | Kirim penilaian kedua untuk jawaban yang sama, atau dengan `chatLogId` palsu | Ditolak oleh server (satu penilaian per jawaban) | Lolos |
+| **TC-DB-20** | Panggil `/api/health` tanpa header secret | Hanya mengembalikan status `healthy`/`degraded` tanpa mengekspos detail infrastruktur | Lolos |
 
 ---
 

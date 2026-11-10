@@ -15,11 +15,20 @@ export default async function HomePage() {
   const latestResult = await getLatestEarthquakeData();
   const latest = latestResult.data;
 
-  // Ambil status sinkronisasi & 4 gempa terbaru
-  let syncInfo: { lastSuccessAt: Date | null } | null = null;
+  // Ambil waktu sinkronisasi sukses terakhir dari SyncLog (PRD v1.1 Keputusan #9 & FR-DB-03)
+  let lastSyncDate: Date | null = null;
 
   try {
-    syncInfo = await prisma.syncStatus.findUnique({ where: { id: 'bmkg_sync' } });
+    const lastOkSync = await prisma.syncLog.findFirst({
+      where: { status: 'OK' },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (lastOkSync) {
+      lastSyncDate = lastOkSync.createdAt;
+    } else {
+      const fallbackStatus = await prisma.syncStatus.findUnique({ where: { id: 'bmkg_sync' } });
+      lastSyncDate = fallbackStatus?.lastSuccessAt || null;
+    }
   } catch (err) {
     console.warn('Database offline / belum migrasi:', err);
   }
@@ -48,10 +57,10 @@ export default async function HomePage() {
           </div>
           <div className="flex items-center gap-3">
             <span>
-              Sinkronisasi Terakhir:{' '}
+              Data Terakhir Disinkronkan:{' '}
               <span className="text-slate-100 font-mono">
-                {syncInfo?.lastSuccessAt
-                  ? new Date(syncInfo.lastSuccessAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB'
+                {lastSyncDate
+                  ? new Date(lastSyncDate).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB'
                   : 'Belum tercatat'}
               </span>
             </span>

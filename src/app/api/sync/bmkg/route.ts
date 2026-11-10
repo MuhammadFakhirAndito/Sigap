@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { syncBmkgData } from '@/lib/bmkg';
 
 export async function POST(req: NextRequest) {
-  // Verifikasi secret token untuk keamanan pemanggilan cron di VPS (PRD v0.2 Bagian 8.8 & TC-DB-14)
-  const expectedSecret = process.env.SYNC_SECRET || process.env.BMKG_SYNC_SECRET || 'sigap_secure_sync_token_2026';
+  // Verifikasi secret token untuk keamanan pemanggilan cron di VPS (PRD v1.1 Bagian 9.8 & TC-DB-14)
+  const expectedSecret = process.env.SYNC_SECRET || process.env.BMKG_SYNC_SECRET || 'sigap_sync_secret_key_change_me';
   
   const providedSecret =
     req.headers.get('SYNC_SECRET') ||
