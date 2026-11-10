@@ -196,6 +196,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
   // 4. Seed Skenario Simulasi Gempa
   const skenarioData = [
     {
+      id: 'skenario-megathrust-selat-sunda',
       nama: 'Gempa Megathrust Selat Sunda',
       magnitudo: 8.7,
       kedalamanKm: 15.0,
@@ -206,6 +207,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
       urutan: 1,
     },
     {
+      id: 'skenario-sesar-lembang',
       nama: 'Gempa Sesar Lembang (Bandung)',
       magnitudo: 6.8,
       kedalamanKm: 10.0,
@@ -216,6 +218,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
       urutan: 2,
     },
     {
+      id: 'skenario-palu-donggala',
       nama: 'Gempa Palu - Donggala 2018',
       magnitudo: 7.5,
       kedalamanKm: 10.0,
@@ -226,6 +229,7 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
       urutan: 3,
     },
     {
+      id: 'skenario-jogja-opak',
       nama: 'Gempa Yogyakarta (Sesar Opak) 2006',
       magnitudo: 5.9,
       kedalamanKm: 10.0,
@@ -238,8 +242,10 @@ Terapkan prinsip keselamatan internasional **Drop, Cover, and Hold On**:
   ];
 
   for (const skenario of skenarioData) {
-    await prisma.skenarioSimulasi.create({
-      data: skenario,
+    await prisma.skenarioSimulasi.upsert({
+      where: { id: skenario.id },
+      update: skenario,
+      create: skenario,
     });
   }
 

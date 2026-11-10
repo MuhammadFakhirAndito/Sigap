@@ -24,7 +24,9 @@ interface GempaItem {
   statusTsunami: string;
   dirasakan: string | null;
   shakemapUrl: string | null;
-  jenis: string;
+  isAuto?: boolean;
+  isTerkini?: boolean;
+  isDirasakan?: boolean;
 }
 
 interface PaginationMeta {

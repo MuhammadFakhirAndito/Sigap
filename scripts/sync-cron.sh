@@ -17,12 +17,13 @@ if [ -f "${PROJECT_ROOT}/.env" ]; then
 fi
 
 APP_URL="${APP_URL:-http://localhost:3000}"
-SYNC_ENDPOINT="${APP_URL}/api/sync/bmkg"
-SECRET_TOKEN="${SYNC_SECRET_TOKEN:-sigap_secure_sync_token_2026}"
+SYNC_ENDPOINT="${APP_URL}/api/sync"
+SECRET_TOKEN="${SYNC_SECRET:-${SYNC_SECRET_TOKEN:-sigap_secure_sync_token_2026}}"
 
 echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Memicu sinkronisasi data BMKG ke ${SYNC_ENDPOINT}..."
 
 RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${SYNC_ENDPOINT}" \
+  -H "SYNC_SECRET: ${SECRET_TOKEN}" \
   -H "Authorization: Bearer ${SECRET_TOKEN}" \
   -H "Content-Type: application/json" \
   --connect-timeout 10 \
@@ -36,3 +37,4 @@ if [ "$HTTP_CODE" -eq 200 ]; then
 else
   echo "⚠️ Sinkronisasi menghasilkan HTTP ${HTTP_CODE}: ${HTTP_BODY}" >&2
 fi
+

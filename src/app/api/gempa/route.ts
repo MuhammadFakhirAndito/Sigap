@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { JenisGempa } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -11,7 +10,9 @@ export async function GET(req: NextRequest) {
   const minMagStr = searchParams.get('minMag');
   const maxMagStr = searchParams.get('maxMag');
   const wilayah = searchParams.get('wilayah');
-  const jenis = searchParams.get('jenis') as JenisGempa | null;
+  const jenis = searchParams.get('jenis');
+  const startDateStr = searchParams.get('startDate');
+  const endDateStr = searchParams.get('endDate');
 
   const where: any = {};
 
@@ -21,6 +22,12 @@ export async function GET(req: NextRequest) {
     if (maxMagStr) where.magnitudo.lte = parseFloat(maxMagStr);
   }
 
+  if (startDateStr || endDateStr) {
+    where.waktuUtc = {};
+    if (startDateStr) where.waktuUtc.gte = new Date(startDateStr);
+    if (endDateStr) where.waktuUtc.lte = new Date(endDateStr);
+  }
+
   if (wilayah) {
     where.wilayah = {
       contains: wilayah,
@@ -28,8 +35,12 @@ export async function GET(req: NextRequest) {
     };
   }
 
-  if (jenis && Object.values(JenisGempa).includes(jenis)) {
-    where.jenis = jenis;
+  // Filter berdasarkan flag sumber (PRD v0.2 Bagian 6.1)
+  if (jenis) {
+    const jenisUpper = jenis.toUpperCase();
+    if (jenisUpper === 'TERKINI') where.isTerkini = true;
+    else if (jenisUpper === 'DIRASAKAN') where.isDirasakan = true;
+    else if (jenisUpper === 'AUTO') where.isAuto = true;
   }
 
   try {
@@ -61,21 +72,19 @@ export async function GET(req: NextRequest) {
       sync: {
         lastSuccessAt: syncStatus?.lastSuccessAt || null,
         lastAttemptAt: syncStatus?.lastAttemptAt || null,
-        lastStatus: syncStatus?.lastStatus || 'UNKNOWN',
+        lastStatus: syncStatus?.lastStatus || 'UNINITIALIZED',
       },
     });
   } catch (err: any) {
-    console.error('⚠️ Gagal mengambil data riwayat gempa dari database:', err);
+    console.warn('⚠️ Gagal mengambil riwayat gempa dari database:', err);
     return NextResponse.json(
       {
-        error: 'Database sementara tidak tersedia',
-        message: err.message,
         data: [],
-        pagination: { page: 1, limit, totalCount: 0, totalPages: 0, hasNextPage: false, hasPrevPage: false },
+        pagination: { page: 1, limit, totalCount: 0, totalPages: 1, hasNextPage: false, hasPrevPage: false },
         sync: null,
+        error: 'Database sedang offline atau belum diinisialisasi',
       },
-      { status: 503 }
+      { status: 200 }
     );
   }
 }
-

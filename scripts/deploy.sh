@@ -55,3 +55,4 @@ echo "✅ Deployment SIGAP selesai dengan sukses!"
 echo "Aplikasi siap dijalankan dengan: npm run start"
 echo "Atau dikelola via process manager: pm2 restart sigap"
 echo "=================================================="
+

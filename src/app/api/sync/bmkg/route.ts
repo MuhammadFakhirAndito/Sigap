@@ -2,24 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { syncBmkgData } from '@/lib/bmkg';
 
 export async function POST(req: NextRequest) {
-  // Verifikasi secret token untuk keamanan pemanggilan cron di VPS
-  const authHeader = req.headers.get('authorization');
-  const secretParam = req.nextUrl.searchParams.get('secret');
-  const expectedSecret = process.env.BMKG_SYNC_SECRET;
+  // Verifikasi secret token untuk keamanan pemanggilan cron di VPS (PRD v0.2 Bagian 8.8 & TC-DB-14)
+  const expectedSecret = process.env.SYNC_SECRET || process.env.BMKG_SYNC_SECRET || 'sigap_secure_sync_token_2026';
+  
+  const providedSecret =
+    req.headers.get('SYNC_SECRET') ||
+    req.headers.get('sync_secret') ||
+    req.headers.get('x-sync-secret') ||
+    req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
+    req.nextUrl.searchParams.get('secret');
 
-  const token = authHeader?.replace('Bearer ', '') || secretParam;
-
-  if (expectedSecret && token !== expectedSecret) {
-    // Izinkan jika dipanggil dari localhost
-    const host = req.headers.get('host') || '';
-    const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
-
-    if (!isLocal) {
-      return NextResponse.json(
-        { error: 'Akses ditolak: Secret token sinkronisasi tidak valid' },
-        { status: 401 }
-      );
-    }
+  if (!providedSecret || providedSecret !== expectedSecret) {
+    return NextResponse.json(
+      { error: 'Akses ditolak (401): Header SYNC_SECRET wajib disertakan dan harus valid (TC-DB-14)' },
+      { status: 401 }
+    );
   }
 
   const result = await syncBmkgData();
@@ -38,12 +35,12 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     message: 'Sinkronisasi data BMKG berhasil',
     totalUpserted: result.totalUpserted,
+    totalBaru: result.totalBaru,
+    totalDiperbarui: result.totalDiperbarui,
     timestamp: result.timestamp,
   });
 }
 
 export async function GET(req: NextRequest) {
-  // Mendukung GET request untuk webhook atau cron sederhana
   return POST(req);
 }
-

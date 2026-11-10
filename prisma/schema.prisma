@@ -13,12 +13,6 @@ enum StatusTsunami {
   TIDAK_DINYATAKAN
 }
 
-enum JenisGempa {
-  TERKINI
-  DIRASAKAN
-  AUTO
-}
-
 enum KategoriArtikel {
   PENGERTIAN
   PROSES
@@ -45,7 +39,7 @@ enum SyncResultStatus {
 
 model Gempa {
   id            String        @id @default(cuid())
-  bmkgKey       String        @unique // "${DateTime}_${Coordinates}"
+  bmkgKey       String        @unique // Waktu UTC/DateTime BMKG saja (FR-DB-01, TC-DB-11)
   waktuUtc      DateTime
   lat           Float
   lon           Float
@@ -56,11 +50,38 @@ model Gempa {
   statusTsunami StatusTsunami @default(TIDAK_DINYATAKAN)
   dirasakan     String?
   shakemapUrl   String?
-  jenis         JenisGempa    @default(TERKINI)
+  isAuto        Boolean       @default(false)
+  isTerkini     Boolean       @default(false)
+  isDirasakan   Boolean       @default(false)
   createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([waktuUtc(sort: Desc)])
   @@index([magnitudo])
+}
+
+model SyncLog {
+  id               String   @id @default(cuid())
+  sumber           String   // "autogempa" | "terkini" | "dirasakan" | "all"
+  status           String   // "OK" | "GAGAL"
+  jumlahBaru       Int      @default(0)
+  jumlahDiperbarui Int      @default(0)
+  pesanError       String?
+  durasiMs         Int
+  createdAt        DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model KuotaHarian {
+  id        String   @id @default(cuid())
+  model     String
+  tanggal   String   // Format: YYYY-MM-DD
+  jumlah    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([model, tanggal])
 }
 
 model Berita {
@@ -89,7 +110,7 @@ model Sumber {
   id           String    @id @default(cuid())
   judul        String
   penerbit     String
-  url          String
+  url          String    @unique
   tanggalAkses DateTime  @default(now())
   artikel      Artikel[]
 }

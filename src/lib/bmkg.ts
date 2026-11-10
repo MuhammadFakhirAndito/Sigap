@@ -1,6 +1,6 @@
 import { prisma } from './prisma';
 import { cacheService } from './redis';
-import { StatusTsunami, JenisGempa, SyncResultStatus } from '@prisma/client';
+import { StatusTsunami, SyncResultStatus } from '@prisma/client';
 
 export interface BmkgGempaRaw {
   Tanggal: string;
@@ -26,20 +26,21 @@ export interface BmkgResponse {
 const BMKG_BASE_URL = 'https://data.bmkg.go.id/DataMKG/TEKTONIK';
 
 /**
- * Normalisasi data gempa mentah dari BMKG ke skema database SIGAP
+ * Normalisasi data gempa mentah dari BMKG ke skema database SIGAP (PRD v0.2 Bagian 6.1)
+ * bmkgKey = DateTime BMKG murni agar revisi koordinat/magnitudo memperbarui baris lama (TC-DB-11)
  */
-export function normalizeBmkgGempa(raw: BmkgGempaRaw, jenis: JenisGempa) {
-  const [latStr, lonStr] = raw.Coordinates.split(',');
+export function normalizeBmkgGempa(raw: BmkgGempaRaw) {
+  const [latStr, lonStr] = (raw.Coordinates || '0,0').split(',');
   const lat = parseFloat(latStr.trim());
   const lon = parseFloat(lonStr.trim());
   const magnitudo = parseFloat(raw.Magnitude);
-  const kedalamanKm = parseFloat(raw.Kedalaman.replace(/[^0-9.]/g, ''));
-  const bmkgKey = `${raw.DateTime}_${raw.Coordinates}`;
+  const kedalamanKm = parseFloat((raw.Kedalaman || '10').replace(/[^0-9.]/g, ''));
+  const bmkgKey = raw.DateTime ? raw.DateTime.trim() : `${raw.Tanggal}_${raw.Jam}`;
 
   // Tentukan status tsunami berdasarkan teks potensi
   let statusTsunami: StatusTsunami = StatusTsunami.TIDAK_DINYATAKAN;
   const potensiLower = (raw.Potensi || '').toLowerCase();
-  if (potensiLower.includes('tidak berpotensi tsunami')) {
+  if (potensiLower.includes('tidak berpotensi tsunami') || potensiLower.includes('tidak ada potensi tsunami')) {
     statusTsunami = StatusTsunami.AMAN;
   } else if (potensiLower.includes('berpotensi tsunami')) {
     statusTsunami = StatusTsunami.BERPOTENSI;
@@ -65,18 +66,52 @@ export function normalizeBmkgGempa(raw: BmkgGempaRaw, jenis: JenisGempa) {
     statusTsunami,
     dirasakan: raw.Dirasakan || null,
     shakemapUrl,
-    jenis,
   };
 }
 
 /**
- * Sinkronisasi data dari BMKG ke PostgreSQL dengan penanganan toleransi error & upsert
+ * Upsert gempa dengan mempertahankan dan menyalakan flag sumber (isAuto, isTerkini, isDirasakan)
+ * Sesuai PRD v0.2: satu gempa bisa muncul di autogempa lalu terkini, kedua flag menyala (TC-DB-12)
+ */
+async function upsertGempaItem(
+  normalized: ReturnType<typeof normalizeBmkgGempa>,
+  sourceFlag: 'isAuto' | 'isTerkini' | 'isDirasakan'
+): Promise<'created' | 'updated'> {
+  const existing = await prisma.gempa.findUnique({
+    where: { bmkgKey: normalized.bmkgKey },
+  });
+
+  if (existing) {
+    await prisma.gempa.update({
+      where: { bmkgKey: normalized.bmkgKey },
+      data: {
+        ...normalized,
+        [sourceFlag]: true,
+      },
+    });
+    return 'updated';
+  } else {
+    await prisma.gempa.create({
+      data: {
+        ...normalized,
+        isAuto: sourceFlag === 'isAuto',
+        isTerkini: sourceFlag === 'isTerkini',
+        isDirasakan: sourceFlag === 'isDirasakan',
+      },
+    });
+    return 'created';
+  }
+}
+
+/**
+ * Sinkronisasi data dari BMKG ke PostgreSQL dengan penanganan toleransi error & SyncLog (FR-DB-01, FR-DB-04)
  */
 export async function syncBmkgData() {
   const syncStartTime = new Date();
   let success = false;
   let errorMsg: string | null = null;
-  let totalUpserted = 0;
+  let totalBaru = 0;
+  let totalDiperbarui = 0;
 
   try {
     // 1. Ambil autogempa (gempa terbaru)
@@ -89,16 +124,10 @@ export async function syncBmkgData() {
       const autoData: BmkgResponse = await autoRes.json();
       if (autoData.Infogempa?.gempa) {
         const item = autoData.Infogempa.gempa as BmkgGempaRaw;
-        const normalized = normalizeBmkgGempa(item, JenisGempa.AUTO);
-        
-        await prisma.gempa.upsert({
-          where: { bmkgKey: normalized.bmkgKey },
-          update: {
-            ...normalized,
-          },
-          create: normalized,
-        });
-        totalUpserted++;
+        const normalized = normalizeBmkgGempa(item);
+        const action = await upsertGempaItem(normalized, 'isAuto');
+        if (action === 'created') totalBaru++;
+        else totalDiperbarui++;
 
         // Simpan ke Redis cache
         await cacheService.set('bmkg:autogempa', JSON.stringify(item), 60);
@@ -120,15 +149,10 @@ export async function syncBmkgData() {
         : [];
 
       for (const item of list) {
-        const normalized = normalizeBmkgGempa(item, JenisGempa.TERKINI);
-        await prisma.gempa.upsert({
-          where: { bmkgKey: normalized.bmkgKey },
-          update: {
-            ...normalized,
-          },
-          create: normalized,
-        });
-        totalUpserted++;
+        const normalized = normalizeBmkgGempa(item);
+        const action = await upsertGempaItem(normalized, 'isTerkini');
+        if (action === 'created') totalBaru++;
+        else totalDiperbarui++;
       }
 
       await cacheService.set('bmkg:terkini', JSON.stringify(list), 300);
@@ -149,15 +173,10 @@ export async function syncBmkgData() {
         : [];
 
       for (const item of list) {
-        const normalized = normalizeBmkgGempa(item, JenisGempa.DIRASAKAN);
-        await prisma.gempa.upsert({
-          where: { bmkgKey: normalized.bmkgKey },
-          update: {
-            ...normalized,
-          },
-          create: normalized,
-        });
-        totalUpserted++;
+        const normalized = normalizeBmkgGempa(item);
+        const action = await upsertGempaItem(normalized, 'isDirasakan');
+        if (action === 'created') totalBaru++;
+        else totalDiperbarui++;
       }
     }
 
@@ -167,13 +186,33 @@ export async function syncBmkgData() {
     console.error('❌ Gagal sinkronisasi data BMKG:', err);
     errorMsg = err.message || 'Unknown network error';
   } finally {
+    const durasiMs = Date.now() - syncStartTime.getTime();
+
+    // Catat ke tabel SyncLog (FR-DB-04)
+    try {
+      await prisma.syncLog.create({
+        data: {
+          sumber: 'all',
+          status: success ? 'OK' : 'GAGAL',
+          jumlahBaru: totalBaru,
+          jumlahDiperbarui: totalDiperbarui,
+          pesanError: errorMsg,
+          durasiMs,
+        },
+      });
+    } catch (logErr) {
+      console.warn('⚠️ Tidak dapat mencatat SyncLog:', logErr);
+    }
+
     // Catat ke tabel SyncStatus
     try {
       await prisma.syncStatus.upsert({
         where: { id: 'bmkg_sync' },
         update: {
           lastAttemptAt: syncStartTime,
-          ...(success ? { lastSuccessAt: syncStartTime, lastStatus: SyncResultStatus.SUCCESS, errorMessage: null } : { lastStatus: SyncResultStatus.FAILED, errorMessage: errorMsg }),
+          ...(success
+            ? { lastSuccessAt: syncStartTime, lastStatus: SyncResultStatus.SUCCESS, errorMessage: null }
+            : { lastStatus: SyncResultStatus.FAILED, errorMessage: errorMsg }),
         },
         create: {
           id: 'bmkg_sync',
@@ -184,13 +223,15 @@ export async function syncBmkgData() {
         },
       });
     } catch (dbErr) {
-      console.warn('⚠️ Tidak dapat mencatat status sinkronisasi ke DB (mungkin DB belum migrasi):', dbErr);
+      console.warn('⚠️ Tidak dapat mencatat status sinkronisasi ke DB:', dbErr);
     }
   }
 
   return {
     success,
-    totalUpserted,
+    totalUpserted: totalBaru + totalDiperbarui,
+    totalBaru,
+    totalDiperbarui,
     timestamp: syncStartTime,
     errorMessage: errorMsg,
   };
@@ -220,7 +261,7 @@ export async function getLatestEarthquakeData() {
         return { data: json.Infogempa.gempa, source: 'BMKG' };
       }
     }
-  } catch (err) {
+  } catch {
     console.warn('⚠️ Gagal mengambil autogempa langsung dari BMKG, mengambil dari DB fallback...');
   }
 
@@ -254,4 +295,3 @@ export async function getLatestEarthquakeData() {
 
   return { data: null, source: 'UNAVAILABLE' };
 }
-

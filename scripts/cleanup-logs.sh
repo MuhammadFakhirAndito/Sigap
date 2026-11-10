@@ -35,3 +35,4 @@ CLEANUP_QUERY="DELETE FROM \"ChatLog\" WHERE \"createdAt\" < NOW() - INTERVAL '$
 DELETED_ROWS=$(docker exec -i "${CONTAINER_NAME}" psql -U "${DB_USER}" -d "${DB_NAME}" -t -c "${CLEANUP_QUERY}" || true)
 
 echo "✅ Pembersihan log selesai: ${DELETED_ROWS}"
+

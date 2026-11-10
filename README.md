@@ -228,11 +228,11 @@ SIGAP menyediakan kumpulan skrip shell UNIX di folder `scripts/` untuk otomasi p
 
 ---
 
-## Kriteria Pengujian & Penerimaan PRD
+## Kriteria Pengujian & Penerimaan PRD (v0.2)
 
 | ID Uji | Skenario Pengujian | Hasil yang Diharapkan | Status Implementasi |
 | :---: | :--- | :--- | :---: |
-| **TC-DB-01** | Sinkronisasi BMKG dijalankan berulang kali | Data tidak terduplikasi (`bmkgKey` unik) dan `lastSuccessAt` terbarui | Lolos |
+| **TC-DB-01** | Sinkronisasi BMKG dua kali berturut-turut | Jumlah baris `Gempa` tidak bertambah untuk data yang sama | Lolos |
 | **TC-DB-02** | Simulasi server BMKG padam | Halaman riwayat tetap menyajikan data lokal + stempel waktu sinkronisasi | Lolos |
 | **TC-DB-03** | Simulasi PostgreSQL/Redis mati | Halaman utama berdegradasi anggun (tidak crash), `/api/health` mencatat *degraded* | Lolos |
 | **TC-DB-04** | Mengirim 11 pesan chat dalam 1 menit | Pesan ke-11 ditolak dengan kode status 429 (*Rate Limit Exceeded*) | Lolos |
@@ -241,9 +241,11 @@ SIGAP menyediakan kumpulan skrip shell UNIX di folder `scripts/` untuk otomasi p
 | **TC-DB-07** | Restore backup ke database kosong | Data kembali lengkap via skrip `restore.sh` (NFR-DB-05) | Lolos |
 | **TC-DB-08** | Migrasi database di server produksi | Eksekusi `prisma db push` / `prisma migrate deploy` di VPS via `deploy.sh` | Lolos |
 | **TC-DB-09** | Pemindaian kredensial di repositori | `DATABASE_URL` dan API key tidak ditemukan (dilindungi `.gitignore`) | Lolos |
-| **TC-DB-10** | Pengubahan slider simulator gempa | MMI, radius kerusakan, energi TNT, dan tsunami risk berubah instan | Lolos |
-| **TC-DB-11** | Klik tombol "Simulasikan" pada tabel riwayat | Parameter baris gempa otomatis terisi ke dalam simulator dampak | Lolos |
-| **TC-DB-12** | Pertanyaan gempa terkini & feedback umpan balik | Chatbot menjawab faktual via RAG, `ChatLog` mencatat `responseTimeMs` & `isHelpful` | Lolos |
+| **TC-DB-10** | Jalankan `prisma db seed` dua kali | Jumlah baris tidak bertambah (semua entitas idempoten) | Lolos |
+| **TC-DB-11** | BMKG merevisi magnitudo gempa yang sama | Baris lama diperbarui berdasarkan `bmkgKey` waktu UTC murni, tidak ada duplikat | Lolos |
+| **TC-DB-12** | Gempa muncul di `autogempa` lalu `terkini` | Satu baris data, kedua flag `isAuto` dan `isTerkini` aktif bersamaan | Lolos |
+| **TC-DB-13** | Matikan Postgres, kirim pertanyaan chatbot | Chatbot dijawab dari FAQ statis (`src/data/fallback/faq.ts`) tanpa crash | Lolos |
+| **TC-DB-14** | Panggil endpoint sinkronisasi tanpa `SYNC_SECRET` | Permintaan ditolak dengan kode HTTP 401 Unauthorized | Lolos |
 
 ---
 
