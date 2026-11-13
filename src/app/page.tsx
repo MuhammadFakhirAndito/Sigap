@@ -166,172 +166,161 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)] overflow-x-hidden">
-      {/* Container utama: persis max-w-[1280px], di tengah, padding 24px (mobile 16px) */}
-      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6 flex-1 flex flex-col space-y-12 sm:space-y-16">
-        {/* HERO SECTION: Menyatukan NotchNavbar dan Panel Hero dalam satu arsitektur bentuk notch */}
+      {/* Container utama Verdro: px-3 pt-4 sm:px-6 */}
+      <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 pt-4 flex-1 flex flex-col space-y-12 sm:space-y-16">
+        {/* ================= HERO SHELL PERSIS INDEX-1.HTML ================= */}
         <section aria-label="Informasi gempa terkini" className="w-full">
-          {/* Notch Header di desktop menyatu langsung ke panel hero di bawahnya */}
-          <NotchNavbar />
+          <div className="relative mx-auto w-full rounded-[36px] bg-[var(--color-surface)] px-4 pb-14 pt-5 sm:px-8 md:rounded-[48px] md:px-12 md:pb-20 border border-[var(--color-border)] transition-colors duration-200">
+            {/* FLOATING PILL HEADER DI DALAM CONTAINER HERO */}
+            <NotchNavbar />
 
-          {/* Panel hero: Terhubung mulus dengan bahu kiri dan kanan header di desktop */}
-          <div className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] md:border-t-0 rounded-[40px] md:rounded-t-none md:rounded-b-[40px] p-6 sm:p-10 md:p-12 relative overflow-visible transition-colors duration-200">
-            {/* Grid hero asimetris sesuai rancangan blueprint */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-              {/* SISI KIRI: Badge BMKG, Bahasa, Formasi Batuan Tektonik Melayang, dan 3 Chip di Kiri Bawah */}
-              <div className="w-full lg:col-span-7 relative flex flex-col justify-between min-h-[440px] sm:min-h-[500px] lg:min-h-[560px]">
-                {/* Atas Kiri: Badge BMKG dan Toggle Bahasa (ID / EN) */}
-                <div className="space-y-3 relative z-20">
-                  <div className="bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full px-3 py-1 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-text-primary)] shadow-2xs">
-                    <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] shrink-0 animate-pulse" aria-hidden="true" />
-                    <span>BMKG</span>
-                  </div>
-
-                  <div className="flex flex-col text-[11px] font-semibold text-[var(--color-text-secondary)] space-y-0.5 select-none pl-1">
-                    <span className="text-[var(--color-text-primary)] font-bold">ID</span>
-                    <span className="text-[var(--color-text-secondary)]/60 hover:text-[var(--color-text-primary)] cursor-pointer transition-colors">EN</span>
-                  </div>
-                </div>
-
-                {/* Tengah-Kiri: Formasi Batuan Tektonik Melayang yang Menembus Batas Bawah Panel */}
-                <div className="relative lg:absolute lg:-bottom-24 xl:-bottom-32 lg:left-6 xl:left-10 w-full max-w-[500px] sm:max-w-[580px] lg:max-w-[680px] xl:max-w-[760px] mx-auto z-10 pointer-events-none select-none animate-floaty">
+            {/* HERO CONTENT: GRID ASIMETRIS PERSIS INDEX-1.HTML */}
+            <div className="relative mt-8 grid items-center gap-10 md:mt-12 lg:grid-cols-2 lg:gap-8">
+              {/* IMAGE COLUMN (KIRI) */}
+              <div className="relative order-2 lg:order-1">
+                <div className="relative mx-auto w-full max-w-[560px]">
+                  {/* Subtle soft primary blur behind the stone */}
+                  <div className="pointer-events-none absolute -inset-6 rounded-full bg-[var(--color-primary)]/10 blur-3xl" />
                   <img
                     src="/images/tectonic-island.png"
                     alt="Formasi geologis lempeng tektonik seismik Indonesia"
-                    className="w-full h-auto object-contain filter drop-shadow-[0_24px_40px_rgba(0,0,0,0.14)]"
+                    className="relative w-full h-auto max-h-[460px] object-contain animate-floaty filter drop-shadow-[0_30px_60px_rgba(13,13,13,0.12)] select-none pointer-events-none"
                   />
-                  {/* Efek Pulsa Seismik Halus di Balik Formasi Batuan */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-20 overflow-hidden">
-                    <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-full border border-[var(--color-primary)] animate-pulse" />
-                  </div>
                 </div>
 
-                {/* 3 Chip di Kiri Bawah (Persis di Sisi Kiri Bawah Batuan Sesuai Blueprint) */}
-                <div className="flex flex-wrap items-center gap-2.5 pt-6 sm:pt-8 relative z-20">
-                  <div className="bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-2xl p-3 sm:p-3.5 shadow-2xs min-w-[105px]">
-                    <span className="text-[10px] text-[var(--color-text-secondary)] font-medium block">
-                      Sumber resmi
-                    </span>
-                    <span className="text-xs font-bold text-[var(--color-primary)] block">
+                {/* Floating benefit chips at bottom edge of image */}
+                <div className="relative lg:absolute inset-x-0 -bottom-4 z-20 flex flex-wrap gap-2.5 pt-4 lg:pt-0 px-1 sm:px-4">
+                  <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-strong)]/95 px-3.5 py-2.5 shadow-[0_8px_30px_rgba(13,13,13,0.08)] backdrop-blur-sm">
+                    <p className="text-[10px] leading-none text-[var(--color-text-muted)]">Sumber resmi</p>
+                    <p className="mt-1.5 text-[12px] font-semibold leading-none text-[var(--color-text-primary)]">
                       BMKG Indonesia
-                    </span>
+                    </p>
                   </div>
 
-                  <div className="bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-2xl p-3 sm:p-3.5 shadow-2xs min-w-[105px]">
-                    <span className="text-[10px] text-[var(--color-text-secondary)] font-medium block">
-                      Perhitungan
-                    </span>
-                    <span className="text-xs font-bold text-[var(--color-primary)] block">
+                  <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-strong)]/95 px-3.5 py-2.5 shadow-[0_8px_30px_rgba(13,13,13,0.08)] backdrop-blur-sm">
+                    <p className="text-[10px] leading-none text-[var(--color-text-muted)]">Perhitungan</p>
+                    <p className="mt-1.5 text-[12px] font-semibold leading-none text-[var(--color-text-primary)]">
                       Estimasi MMI & P-S
-                    </span>
+                    </p>
                   </div>
 
-                  <div className="bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-2xl p-3 sm:p-3.5 shadow-2xs min-w-[105px]">
-                    <span className="text-[10px] text-[var(--color-text-secondary)] font-medium block">
-                      Asisten mitigasi
-                    </span>
-                    <span className="text-xs font-bold text-[var(--color-primary)] block">
+                  <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-strong)]/95 px-3.5 py-2.5 shadow-[0_8px_30px_rgba(13,13,13,0.08)] backdrop-blur-sm">
+                    <p className="text-[10px] leading-none text-[var(--color-text-muted)]">Asisten mitigasi</p>
+                    <p className="mt-1.5 text-[12px] font-semibold leading-none text-[var(--color-text-primary)]">
                       Chatbot SIGAP
-                    </span>
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* SISI KANAN: H1, Subcopy Resmi, CTA Utama, dan Kartu Gempa Kompak di Kanan Bawah */}
-              <div className="w-full lg:col-span-5 flex flex-col justify-between space-y-8 z-10 min-h-[440px] sm:min-h-[500px] lg:min-h-[560px]">
-                {/* Atas: H1, Subcopy, dan CTA */}
-                <div className="space-y-4">
-                  <h1 className="text-[clamp(2.5rem,4.2vw,4rem)] font-light tracking-[-0.03em] leading-[1.05] text-[var(--color-text-primary)]">
-                    <span className="text-[var(--color-primary)] font-normal">Pantau gempa terkini,</span>{" "}
-                    siap menghadapi yang berikutnya.
-                  </h1>
-
-                  <p className="text-sm sm:text-base text-[var(--color-text-secondary)] max-w-[42ch] leading-relaxed text-pretty">
-                    Data resmi BMKG, riwayat gempa, dan simulasi untuk memahami dampaknya.
-                  </p>
-
-                  <div className="pt-2">
-                    <Link
-                      href="/riwayat"
-                      className="bg-[var(--color-cta)] text-[var(--color-on-cta)] font-medium rounded-full pl-6 pr-2.5 py-2 min-h-[48px] text-sm hover:opacity-90 active:scale-[0.98] transition-opacity duration-150 inline-flex items-center gap-3 shadow-xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
-                    >
-                      <span>Lihat riwayat gempa</span>
-                      <span className="w-8 h-8 rounded-full bg-[var(--color-surface-raised)]/10 border border-white/10 flex items-center justify-center shrink-0">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
-                      </span>
-                    </Link>
+              {/* TEXT COLUMN (KANAN) */}
+              <div className="order-1 lg:order-2 lg:pl-6">
+                {/* Meta status & language toggle */}
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-3 py-1.5 text-[11px] font-medium text-[var(--color-text-primary)] shadow-2xs">
+                    <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] shrink-0 animate-pulse" aria-hidden="true" />
+                    <span>BMKG Terkini</span>
+                  </div>
+                  <div className="h-6 w-px bg-[var(--color-border)]" />
+                  <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-3 py-1.5 text-[11px] font-medium text-[var(--color-text-primary)] shadow-2xs select-none">
+                    <span className="font-bold text-[var(--color-text-primary)]">ID</span>
+                    <span className="text-[var(--color-text-secondary)]">—</span>
+                    <span className="text-[var(--color-text-secondary)]/70 hover:text-[var(--color-text-primary)] cursor-pointer transition-colors">
+                      EN
+                    </span>
                   </div>
                 </div>
 
-                {/* Bawah: Kartu Gempa Kompak di Kanan Bawah (Persis Blueprint Pengguna) */}
+                {/* H1 Typography */}
+                <h1 className="text-[38px] font-light leading-[1.05] tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-[50px] lg:text-[58px] xl:text-[68px]">
+                  <span className="text-[var(--color-primary)] font-normal">Pantau gempa terkini,</span><br className="hidden sm:block" />{" "}
+                  siap menghadapi yang berikutnya.
+                </h1>
+
+                <p className="mt-5 max-w-md text-sm leading-relaxed text-[var(--color-text-secondary)] md:text-base">
+                  Data resmi BMKG, riwayat gempa persisten, dan simulasi fisik untuk memahami dampaknya.
+                </p>
+
+                {/* Primary CTA Button (Pill Verdro dengan circular thumbnail) */}
+                <div className="mt-8 flex flex-wrap items-center gap-5">
+                  <Link
+                    href="/riwayat"
+                    className="inline-flex items-center gap-3 rounded-full bg-[var(--color-cta)] py-1.5 pl-6 pr-1.5 text-sm font-medium text-[var(--color-on-cta)] transition hover:bg-[var(--color-primary)] hover:text-white active:scale-95 shadow-xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary)]"
+                  >
+                    <span>Lihat riwayat gempa</span>
+                    <span className="h-10 w-10 overflow-hidden rounded-full bg-[var(--color-surface-strong)]/15 border border-white/10 flex items-center justify-center shrink-0">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
+                    </span>
+                  </Link>
+                </div>
+
+                {/* Floating Metric Card (Kanan Bawah Persis Index-1.html) */}
                 {latestQuake ? (
-                  <div className="w-[190px] sm:w-[215px] ml-auto bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-[28px] p-4 sm:p-5 flex flex-col items-center text-center shadow-xs">
-                    {/* Magnitudo Besar + label */}
-                    <div className="flex items-baseline justify-center gap-1.5 w-full">
-                      <span className="text-4xl sm:text-5xl font-bold text-[var(--color-primary)] tnum tracking-tight leading-none">
-                        {formatMagnitude(latestQuake.magnitudo)}
-                      </span>
-                      <span className="text-xs font-medium text-[var(--color-text-secondary)]">
-                        magnitudo
-                      </span>
-                    </div>
-
-                    {/* Radar Episentrum Konsentris */}
-                    <div className="my-2.5 flex items-center justify-center">
-                      <EpicenterGraphic depthKm={latestQuake.kedalamanKm} className="scale-75 -my-2" />
-                    </div>
-
-                    {/* Kedalaman & Waktu (WIB) */}
-                    <div className="text-[11px] font-semibold text-[var(--color-text-primary)] tnum tracking-tight whitespace-nowrap">
-                      <span>{latestQuake.kedalamanKm} km kedalaman</span>
-                      <span className="mx-1 text-[var(--color-text-secondary)]">·</span>
-                      <span>{formatWibTimeOnly(latestQuake.waktuUtc)}</span>
+                  <div className="mt-8 flex justify-start lg:justify-end">
+                    <div className="w-full max-w-[260px] rounded-3xl bg-[var(--color-surface-strong)] p-4 sm:p-5 shadow-[0_8px_30px_rgba(13,13,13,0.06)] border border-[var(--color-border)]">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[42px] font-light leading-none tracking-[-0.03em] tabular-nums text-[var(--color-text-primary)]">
+                            {formatMagnitude(latestQuake.magnitudo)}
+                            <span className="text-[var(--color-primary)] text-2xl font-normal ml-0.5">M</span>
+                          </p>
+                          <p className="mt-1.5 text-[11px] leading-tight text-[var(--color-text-secondary)]">
+                            magnitudo gempa
+                          </p>
+                        </div>
+                        <div className="relative h-16 w-16 shrink-0 flex items-center justify-center overflow-hidden rounded-2xl bg-[var(--color-surface)]">
+                          <EpicenterGraphic depthKm={latestQuake.kedalamanKm} className="scale-75" />
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center gap-2 border-t border-[var(--color-border)] pt-3 text-[11px] text-[var(--color-text-secondary)] tnum">
+                        <Clock className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
+                        <span>{latestQuake.kedalamanKm} km · {formatWibTimeOnly(latestQuake.waktuUtc)}</span>
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="w-[190px] sm:w-[215px] ml-auto bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-[28px] p-4 flex flex-col items-center space-y-2">
-                    <Skeleton className="w-20 h-8 rounded-full" />
-                    <Skeleton className="w-16 h-16 rounded-full" />
+                  <div className="mt-8 flex justify-start lg:justify-end">
+                    <div className="w-full max-w-[260px] rounded-3xl bg-[var(--color-surface-strong)] p-4 sm:p-5 shadow-[0_8px_30px_rgba(13,13,13,0.06)] border border-[var(--color-border)]">
+                      <Skeleton className="w-24 h-8 rounded-full mb-2" />
+                      <Skeleton className="w-full h-12 rounded-xl" />
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Dua Baris Teks Editorial di Luar Panel (Canvas Background) Persis Blueprint Pengguna */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-12 pt-16 sm:pt-24 px-4 sm:px-6 text-xs text-[var(--color-text-secondary)] leading-relaxed">
-            {/* Kiri: Terjadi {relatif}, {tanggal WIB}. {wilayah}. */}
+          {/* ================= HERO CAPTION STRIP PERSIS INDEX-1.HTML ================= */}
+          <div className="mx-auto mt-6 grid max-w-[1440px] gap-4 px-6 md:grid-cols-2 md:gap-10">
+            {/* Kiri */}
             <div>
               {latestQuake ? (
-                <p className="max-w-[48ch]">
+                <p className="text-[11px] leading-relaxed text-[var(--color-text-muted)] md:text-xs">
                   Terjadi {formatRelativeTime(latestQuake.waktuUtc)}, {formatWibDateOnly(latestQuake.waktuUtc)}. Pusat gempa {latestQuake.wilayah.toLowerCase().startsWith("pusat") ? latestQuake.wilayah.replace(/^pusat gempa\s*/i, "") : latestQuake.wilayah}.
                 </p>
               ) : (
-                <p className="max-w-[48ch]">
+                <p className="text-[11px] leading-relaxed text-[var(--color-text-muted)] md:text-xs">
                   Data resmi BMKG terintegrasi otomatis untuk seluruh wilayah Indonesia dengan pembaruan berkala.
                 </p>
               )}
             </div>
 
-            {/* Kanan: Koordinat {lat}, {lon}. Status: {statusTsunami}. + Simulasikan dampak gempa ini ↗ */}
-            <div className="md:text-right md:ml-auto">
+            {/* Kanan */}
+            <div className="md:text-right">
               {latestQuake ? (
-                <div className="space-y-1">
-                  <p>
-                    Koordinat {formatCoordinates(latestQuake.lat, latestQuake.lon)}. Status: {tsunamiLabel.toLowerCase()}.
-                  </p>
-                  <div>
-                    <Link
-                      href={`/simulasi?m=${latestQuake.magnitudo}&d=${latestQuake.kedalamanKm}&lat=${latestQuake.lat}&lon=${latestQuake.lon}`}
-                      className="text-[var(--color-primary)] font-semibold inline-flex items-center gap-1 hover:underline active:scale-[0.98] transition-transform"
-                    >
-                      <span>Simulasikan dampak gempa ini</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
-                    </Link>
-                  </div>
-                </div>
+                <p className="text-[11px] leading-relaxed text-[var(--color-text-muted)] md:text-xs">
+                  Koordinat {formatCoordinates(latestQuake.lat, latestQuake.lon)}. Status: {tsunamiLabel.toLowerCase()}.
+                  <Link
+                    href={`/simulasi?m=${latestQuake.magnitudo}&d=${latestQuake.kedalamanKm}&lat=${latestQuake.lat}&lon=${latestQuake.lon}`}
+                    className="ml-2 text-[var(--color-primary)] font-medium hover:underline inline-flex items-center gap-0.5 active:scale-95 transition-transform"
+                  >
+                    <span>Simulasikan dampak gempa ini</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+                  </Link>
+                </p>
               ) : (
-                <p>
-                  Simulasi estimasi percepatan tanah dan edukasi kesiapsiagaan menghadapi potensi bencana seismik berikutnya.
+                <p className="text-[11px] leading-relaxed text-[var(--color-text-muted)] md:text-xs">
+                  Simulasi estimasi percepatan tanah dan edukasi kesiapsiagaan seismik berikutnya.
                 </p>
               )}
             </div>

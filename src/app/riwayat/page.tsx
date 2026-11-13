@@ -154,12 +154,12 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
-      {/* Header selaras dengan batas kanvas Beranda */}
-      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+      {/* Header selaras dengan batas kanvas Verdro max-w-[1440px] */}
+      <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 pt-4">
         <NotchNavbar />
       </div>
 
-      <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10 flex-1">
+      <main className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10 flex-1">
         {/* Header Terpusat Berbobot Editorial Verdro */}
         <section className="text-center max-w-[720px] mx-auto space-y-3 pt-2 sm:pt-4">
           <h1 className="text-[32px] sm:text-[42px] lg:text-[46px] font-light tracking-[-0.03em] leading-[1.08] text-[var(--color-text-primary)]">
