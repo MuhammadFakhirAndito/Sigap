@@ -182,8 +182,8 @@ export default async function HomePage() {
                   {/* Subtle soft primary blur behind the stone */}
                   <div className="pointer-events-none absolute -inset-6 rounded-full bg-[var(--color-primary)]/10 blur-3xl" />
                   <img
-                    src="/images/tectonic-island-v2.png"
-                    alt="Formasi geologis lempeng tektonik seismik Indonesia"
+                    src="/images/tectonic-island-v3.png"
+                    alt="Batuan tektonik skulptural organik dengan lumut dan patahan energi seismik"
                     className="relative w-full h-auto max-h-[460px] object-contain animate-floaty filter drop-shadow-[0_30px_60px_rgba(13,13,13,0.12)] select-none pointer-events-none"
                   />
                 </div>
