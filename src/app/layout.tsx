@@ -1,41 +1,37 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import ChatbotWidget from '@/components/ChatbotWidget';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import "./globals.css";
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: 'SIGAP — Sistem Informasi, Simulasi Dampak & Mitigasi Cerdas',
+  title: "SIGAP Gempa — Informasi Gempa Bumi Terkini & Mitigasi Indonesia",
   description:
-    'Aplikasi pemantauan gempa bumi real-time terintegrasi BMKG, simulasi estimasi dampak kerusakan (skala MMI, radius, tsunami risk), dan asisten chatbot mitigasi cerdas.',
+    "Portal informasi gempa bumi Indonesia: data resmi BMKG, riwayat gempa persisten, simulasi dampak fisik edukasi, dan asisten mitigasi bencana.",
+  authors: [{ name: "SIGAP Gempa" }],
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#F6F4F1",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="id" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans">
-        <TooltipProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <ChatbotWidget />
-        </TooltipProvider>
+    <html lang="id" className={plusJakartaSans.variable}>
+      <body className="min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)] antialiased font-sans flex flex-col selection:bg-[var(--color-primary)] selection:text-white">
+        {children}
       </body>
     </html>
   );

@@ -1,6 +1,22 @@
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sigap_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sigap
+      POSTGRES_PASSWORD: sigap_password
+      POSTGRES_DB: sigap
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sigap -d sigap"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
@@ -8,68 +24,16 @@ services:
     container_name: sigap_app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-sigap_user}:${POSTGRES_PASSWORD:-sigap_password_secure}@postgres:5432/${POSTGRES_DB:-sigap_gempa}?schema=public
-      - REDIS_URL=redis://:${REDIS_PASSWORD:-sigap_redis_password}@redis:6379
-      - SYNC_SECRET=${SYNC_SECRET:-sigap_sync_secret_key_change_me}
-      - LOG_HMAC_SECRET=${LOG_HMAC_SECRET:-sigap_secure_hmac_secret_key_change_me}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - GEMINI_BACKUP_API_KEY=${GEMINI_BACKUP_API_KEY:-}
+      - DATABASE_URL=postgresql://sigap:sigap_password@postgres:5432/sigap?schema=public
+      - SYNC_SECRET=${SYNC_SECRET}
+      - LOG_HMAC_SECRET=${LOG_HMAC_SECRET}
+      - NODE_ENV=production
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - sigap_network
-
-  postgres:
-    image: postgres:16-alpine
-    container_name: sigap_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-sigap_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sigap_password_secure}
-      POSTGRES_DB: ${POSTGRES_DB:-sigap_gempa}
-    ports:
-      # Hanya bind ke localhost (127.0.0.1) agar tidak terekspos ke internet publik sesuai PRD Bagian 8.2 & TC-DB-06
-      - "127.0.0.1:5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sigap_user} -d ${POSTGRES_DB:-sigap_gempa}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - sigap_network
-
-  redis:
-    image: redis:7-alpine
-    container_name: sigap_redis
-    restart: unless-stopped
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-sigap_redis_password}"]
-    ports:
-      # Hanya bind ke localhost (127.0.0.1) agar tidak terekspos ke internet publik sesuai PRD Bagian 8.2 & TC-DB-06
-      - "127.0.0.1:6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-sigap_redis_password}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - sigap_network
 
 volumes:
   postgres_data:
-    name: sigap_postgres_data
-  redis_data:
-    name: sigap_redis_data
-
-networks:
-  sigap_network:
-    name: sigap_network
-    driver: bridge
+    driver: local

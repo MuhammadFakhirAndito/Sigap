@@ -1,391 +1,470 @@
-'use client';
+import React from "react";
+import Link from "next/link";
+import { NotchNavbar } from "@/components/ui/NotchNavbar";
+import { Footer } from "@/components/ui/Footer";
+import { MagnitudeBadge } from "@/components/ui/MagnitudeBadge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Button } from "@/components/ui/Button";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import {
+  Search,
+  Filter,
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  Sliders,
+  Calendar,
+  Layers,
+  MapPin,
+  Clock,
+  Compass,
+  ArrowUpRight,
+} from "lucide-react";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { History, Filter, Search, ChevronLeft, ChevronRight, Flame, AlertCircle, RefreshCw, Waves } from 'lucide-react';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+export const dynamic = "force-dynamic";
 
-interface GempaItem {
-  id: string;
-  bmkgKey: string;
-  waktuUtc: string;
-  lat: number;
-  lon: number;
-  magnitudo: number;
-  kedalamanKm: number;
-  wilayah: string;
-  potensiTeks: string;
-  statusTsunami: string;
-  dirasakan: string | null;
-  shakemapUrl: string | null;
-  isAuto?: boolean;
-  isTerkini?: boolean;
-  isDirasakan?: boolean;
+interface RiwayatPageProps {
+  searchParams: Promise<{
+    mag?: string;
+    dari?: string;
+    sampai?: string;
+    wilayah?: string;
+    hal?: string;
+    tipe?: string;
+  }>;
 }
 
-interface PaginationMeta {
-  page: number;
-  limit: number;
-  totalCount: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
+function formatWib(date: Date): string {
+  if (isNaN(date.getTime())) return "Waktu tidak tersedia";
+  return (
+    new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Jakarta",
+    }).format(date) + " WIB"
+  );
 }
 
-interface SyncMeta {
-  lastSuccessAt: string | null;
-  lastAttemptAt: string | null;
-  lastStatus: string;
+function formatRelative(date: Date): string {
+  const diffMs = Date.now() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return "baru saja";
+  if (diffMins < 60) return `${diffMins} menit lalu`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} jam lalu`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} hari lalu`;
 }
 
-export default function RiwayatPage() {
-  const [data, setData] = useState<GempaItem[]>([]);
-  const [pagination, setPagination] = useState<PaginationMeta>({
-    page: 1,
-    limit: 15,
-    totalCount: 0,
-    totalPages: 1,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
-  const [sync, setSync] = useState<SyncMeta | null>(null);
-  const [loading, setLoading] = useState(true);
+export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
+  const params = await searchParams;
+  const mag = params.mag;
+  const dari = params.dari;
+  const sampai = params.sampai;
+  const wilayah = params.wilayah;
+  const hal = Math.max(1, parseInt(params.hal || "1", 10));
+  const limit = 15;
+  const tipe = params.tipe;
 
-  // Filter States
-  const [searchWilayah, setSearchWilayah] = useState('');
-  const [minMag, setMinMag] = useState('');
-  const [jenisFilter, setJenisFilter] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const where: Prisma.GempaWhereInput = {};
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('page', currentPage.toString());
-      params.set('limit', '15');
-      if (searchWilayah.trim()) params.set('wilayah', searchWilayah.trim());
-      if (minMag) params.set('minMag', minMag);
-      if (jenisFilter) params.set('jenis', jenisFilter);
-
-      const res = await fetch(`/api/gempa?${params.toString()}`);
-      if (!res.ok) throw new Error('Gagal memuat data dari database');
-
-      const json = await res.json();
-      setData(json.data || []);
-      setPagination(json.pagination);
-      setSync(json.sync);
-    } catch (err) {
-      console.warn('Gagal memuat riwayat gempa:', err);
-    } finally {
-      setLoading(false);
+  if (mag) {
+    const minMag = parseFloat(mag);
+    if (!isNaN(minMag)) {
+      where.magnitudo = { gte: minMag };
     }
-  };
+  }
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, jenisFilter]);
+  if (dari || sampai) {
+    where.waktuUtc = {};
+    if (dari) {
+      const startDate = new Date(dari);
+      if (!isNaN(startDate.getTime())) {
+        where.waktuUtc.gte = startDate;
+      }
+    }
+    if (sampai) {
+      const endDate = new Date(sampai);
+      if (!isNaN(endDate.getTime())) {
+        endDate.setUTCHours(23, 59, 59, 999);
+        where.waktuUtc.lte = endDate;
+      }
+    }
+  }
 
-  const handleFilterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    fetchData();
-  };
+  if (wilayah && wilayah.trim().length > 0) {
+    where.wilayah = {
+      contains: wilayah.trim(),
+      mode: "insensitive",
+    };
+  }
 
-  const resetFilters = () => {
-    setSearchWilayah('');
-    setMinMag('');
-    setJenisFilter('');
-    setCurrentPage(1);
-    setTimeout(() => {
-      fetchData();
-    }, 50);
-  };
+  if (tipe === "dirasakan") {
+    where.isDirasakan = true;
+  } else if (tipe === "terkini") {
+    where.isTerkini = true;
+  }
+
+  let data: any[] = [];
+  let total = 0;
+  let isDbError = false;
+  let lastSyncRecord: any = null;
+
+  try {
+    const [t, d, s] = await Promise.all([
+      prisma.gempa.count({ where }),
+      prisma.gempa.findMany({
+        where,
+        orderBy: { waktuUtc: "desc" },
+        skip: (hal - 1) * limit,
+        take: limit,
+      }),
+      prisma.syncLog.findFirst({
+        where: { status: "OK" },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+    total = t;
+    data = d;
+    lastSyncRecord = s;
+  } catch (err) {
+    console.error("Gagal kueri database riwayat:", err);
+    isDbError = true;
+  }
+
+  const totalHalaman = Math.max(1, Math.ceil(total / limit));
+
+  // Helper untuk membuat URL paginasi
+  function createPageUrl(targetPage: number) {
+    const p = new URLSearchParams();
+    if (mag) p.set("mag", mag);
+    if (dari) p.set("dari", dari);
+    if (sampai) p.set("sampai", sampai);
+    if (wilayah) p.set("wilayah", wilayah);
+    if (tipe) p.set("tipe", tipe);
+    p.set("hal", targetPage.toString());
+    return `/riwayat?${p.toString()}`;
+  }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Title & Sync Notice (FR-DB-03) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-400">
-              <History className="h-5 w-5" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Riwayat & Katalog Gempa Bumi
-            </h1>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Data tersimpan secara persisten di database PostgreSQL lokal dengan filter multi-parameter dan integrasi simulasi dampak.
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
+      <NotchNavbar />
+
+      <main className="w-full max-w-[1220px] mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-10 flex-1">
+        {/* Header Terpusat */}
+        <section className="text-center max-w-2xl mx-auto space-y-3">
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+            Riwayat Gempa Bumi
+          </h1>
+          <p className="text-sm sm:text-base text-[var(--color-text-secondary)] leading-relaxed">
+            Data dari BMKG yang disimpan agar tetap bisa dilihat saat BMKG tidak dapat diakses.
           </p>
-        </div>
 
-        {/* Sync Status Badge */}
-        <Card className="flex items-center gap-3 rounded-xl border-slate-200 bg-white p-3 text-xs dark:border-slate-800 dark:bg-slate-900 shadow-xs">
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                'h-2.5 w-2.5 rounded-full',
-                sync?.lastStatus === 'SUCCESS' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
-              )}
-            />
-            <div>
-              <div className="font-semibold text-slate-800 dark:text-slate-200">
-                Pembaruan Terakhir Sistem:
+          {/* Baris Status Sinkronisasi */}
+          <div className="pt-2 flex justify-center">
+            {lastSyncRecord ? (
+              <StatusBadge
+                variant="sync_ok"
+                customText={`Sumber: BMKG · disinkronkan ${formatRelative(lastSyncRecord.createdAt)}`}
+              />
+            ) : (
+              <StatusBadge
+                variant="sync_warning"
+                customText="BMKG tidak dapat diakses. Menampilkan data lokal."
+              />
+            )}
+          </div>
+        </section>
+
+        {/* Filter Bar (Panel surface, radius 28, padding 24) */}
+        <section
+          aria-label="Filter Riwayat Gempa"
+          className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[28px] p-6 sm:p-7 shadow-xs"
+        >
+          <form method="GET" action="/riwayat" className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+              {/* Filter Magnitudo */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <label htmlFor="filter-mag" className="text-xs font-semibold text-[var(--color-text-secondary)]">
+                  Magnitudo Minimum
+                </label>
+                <select
+                  id="filter-mag"
+                  name="mag"
+                  defaultValue={mag || ""}
+                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] rounded-full px-4 py-2.5 text-sm text-[var(--color-text-primary)] min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                >
+                  <option value="">Semua Magnitudo</option>
+                  <option value="3">≥ 3.0 SR</option>
+                  <option value="4">≥ 4.0 SR</option>
+                  <option value="5">≥ 5.0 SR (Gempa Terkini)</option>
+                  <option value="6">≥ 6.0 SR (Kuat)</option>
+                </select>
               </div>
-              <div className="text-slate-500 font-mono">
-                {sync?.lastSuccessAt
-                  ? new Date(sync.lastSuccessAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB'
-                  : 'Sinkronisasi awal belum dijalankan'}
+
+              {/* Filter Rentang Tanggal: Dari */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <label htmlFor="filter-dari" className="text-xs font-semibold text-[var(--color-text-secondary)]">
+                  Dari Tanggal
+                </label>
+                <input
+                  type="date"
+                  id="filter-dari"
+                  name="dari"
+                  defaultValue={dari || ""}
+                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] rounded-full px-4 py-2 text-sm text-[var(--color-text-primary)] min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                />
+              </div>
+
+              {/* Filter Rentang Tanggal: Sampai */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <label htmlFor="filter-sampai" className="text-xs font-semibold text-[var(--color-text-secondary)]">
+                  Sampai Tanggal
+                </label>
+                <input
+                  type="date"
+                  id="filter-sampai"
+                  name="sampai"
+                  defaultValue={sampai || ""}
+                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] rounded-full px-4 py-2 text-sm text-[var(--color-text-primary)] min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                />
+              </div>
+
+              {/* Tombol Terapkan & Reset */}
+              <div className="lg:col-span-3 flex items-center gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-[var(--color-cta)] text-[var(--color-on-cta)] rounded-full px-6 py-2.5 min-h-[44px] text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-opacity duration-150 flex items-center justify-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                >
+                  <Filter className="w-4 h-4" />
+                  <span>Filter</span>
+                </button>
+
+                <Link
+                  href="/riwayat"
+                  className="inline-flex items-center justify-center p-2.5 min-h-[44px] min-w-[44px] rounded-full border border-[var(--color-border-strong)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] active:scale-95 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  title="Reset Filter"
+                  aria-label="Reset semua filter pencarian"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </Link>
               </div>
             </div>
-          </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fetchData()}
-            disabled={loading}
-            className="h-8 w-8 text-slate-500 hover:text-slate-800"
-            title="Refresh Data"
-          >
-            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
-          </Button>
-        </Card>
-      </div>
-
-      {/* Filter Toolbar */}
-      <Card className="rounded-2xl border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <form onSubmit={handleFilterSubmit}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
-            {/* Pencarian Wilayah */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                Wilayah / Daerah
+            {/* Input Pencarian Wilayah */}
+            <div className="relative pt-1">
+              <label htmlFor="filter-wilayah" className="sr-only">
+                Cari Wilayah Gempa
               </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 z-10" />
-                <Input
+              <div className="relative flex items-center">
+                <Search className="w-4 h-4 text-[var(--color-text-secondary)] absolute left-4 pointer-events-none" />
+                <input
                   type="text"
-                  value={searchWilayah}
-                  onChange={(e) => setSearchWilayah(e.target.value)}
-                  placeholder="Misal: Jawa Barat, Maluku..."
-                  className="pl-9 text-xs h-9 bg-slate-50 dark:bg-slate-950"
+                  id="filter-wilayah"
+                  name="wilayah"
+                  defaultValue={wilayah || ""}
+                  placeholder="Ketik nama wilayah atau kota (misal: Sukabumi, Maluku, Jawa Barat)..."
+                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] rounded-full pl-11 pr-5 py-2.5 text-sm text-[var(--color-text-primary)] min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] placeholder:text-[var(--color-text-secondary)]"
                 />
               </div>
             </div>
+          </form>
+        </section>
 
-            {/* Minimal Magnitudo */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                Minimal Magnitudo (M)
-              </label>
-              <select
-                value={minMag}
-                onChange={(e) => setMinMag(e.target.value)}
-                className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:border-rose-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-950 dark:text-white h-9"
-              >
-                <option value="">Semua Magnitudo</option>
-                <option value="4.0">≥ M 4.0</option>
-                <option value="5.0">≥ M 5.0 (Gempa Signifikan)</option>
-                <option value="6.0">≥ M 6.0 (Kuat / Merusak)</option>
-                <option value="7.0">≥ M 7.0 (Sangat Kuat / Potensi Tsunami)</option>
-              </select>
+        {/* Grafik Ringkas Hasil Terfilter (SVG Murni Sesuai Spesifikasi) */}
+        {!isDbError && data.length > 0 && (
+          <section
+            aria-label="Grafik Distribusi Magnitudo"
+            className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[28px] p-6 sm:p-7 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+                Distribusi Magnitudo pada Halaman Ini
+              </h2>
+              <span className="text-xs text-[var(--color-text-secondary)] tnum">
+                Menampilkan {data.length} dari {total} data
+              </span>
             </div>
 
-            {/* Kategori Jenis Gempa */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                Kategori BMKG
-              </label>
-              <select
-                value={jenisFilter}
-                onChange={(e) => setJenisFilter(e.target.value)}
-                className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:border-rose-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-950 dark:text-white h-9"
-              >
-                <option value="">Semua Kategori</option>
-                <option value="TERKINI">Gempa M 5.0+ (Terkini)</option>
-                <option value="DIRASAKAN">Gempa Dirasakan</option>
-                <option value="AUTO">Gempa Real-Time (Auto)</option>
-              </select>
+            {/* Visualisasi Bar Chart Semantik Ringan */}
+            <div className="h-28 w-full flex items-end gap-2 pt-4 px-2 border-b border-[var(--color-border)] pb-2 overflow-x-auto">
+              {data.slice(0, 15).map((q, idx) => {
+                const heightPercent = Math.min(100, Math.max(15, (q.magnitudo / 8) * 100));
+                return (
+                  <div
+                    key={q.id || idx}
+                    className="flex-1 min-w-[20px] max-w-[48px] flex flex-col items-center gap-1 group relative"
+                  >
+                    <span className="text-xs text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5 tnum font-semibold">
+                      {q.magnitudo.toFixed(1).replace(".", ",")}
+                    </span>
+                    <div
+                      className="w-full bg-[var(--color-surface-raised)] group-hover:bg-[var(--color-primary)] border border-[var(--color-border)] rounded-t-md transition-colors duration-200"
+                      style={{ height: `${heightPercent}%` }}
+                    />
+                    <span className="text-xs text-[var(--color-text-secondary)] tnum">
+                      #{idx + 1}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
+            <p className="sr-only">
+              Tabel ringkas magnitudo: {data.map((q, i) => `#${i + 1} M${q.magnitudo} di ${q.wilayah}`).join("; ")}
+            </p>
+          </section>
+        )}
 
-            {/* Tombol Terapkan */}
-            <div className="flex items-center gap-2">
-              <Button
-                type="submit"
-                disabled={loading}
-                className="flex-1 h-9 rounded-xl bg-rose-600 text-xs font-semibold text-white shadow-xs hover:bg-rose-700 gap-1.5"
-              >
-                <Filter className="h-3.5 w-3.5" />
-                Terapkan Filter
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={resetFilters}
-                className="h-9 rounded-xl border-slate-300 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-              >
-                Reset
-              </Button>
-            </div>
-          </div>
-        </form>
-      </Card>
-
-      {/* Tabel & Daftar Gempa */}
-      <Card className="overflow-hidden rounded-2xl border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <Table className="text-xs">
-          <TableHeader className="bg-slate-50 dark:bg-slate-950/60">
-            <TableRow>
-              <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Waktu Kejadian (WIB)</TableHead>
-              <TableHead className="px-4 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Mag</TableHead>
-              <TableHead className="px-4 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Kedalaman</TableHead>
-              <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Wilayah & Koordinat</TableHead>
-              <TableHead className="px-4 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Potensi / Keterangan</TableHead>
-              <TableHead className="px-4 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Aksi Tindak Lanjut</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell className="px-4 py-3.5"><Skeleton className="h-4 w-28" /></TableCell>
-                  <TableCell className="px-4 py-3.5 text-center"><Skeleton className="h-6 w-12 mx-auto rounded-full" /></TableCell>
-                  <TableCell className="px-4 py-3.5 text-center"><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                  <TableCell className="px-4 py-3.5"><Skeleton className="h-4 w-48" /></TableCell>
-                  <TableCell className="px-4 py-3.5"><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell className="px-4 py-3.5 text-right"><Skeleton className="h-7 w-24 ml-auto rounded-lg" /></TableCell>
-                </TableRow>
-              ))
-            ) : data.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="px-4 py-12 text-center text-slate-500">
-                  <AlertCircle className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-                  Tidak ada data gempa yang cocok dengan kriteria filter saat ini.
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.map((item) => {
-                const dateObj = new Date(item.waktuUtc);
-                const isSevere = item.magnitudo >= 6.0;
-                const isTsunami = item.statusTsunami === 'BERPOTENSI';
+        {/* Daftar Gempa (Baris, bukan grid) */}
+        <section aria-label="Daftar Riwayat Gempa" className="space-y-4">
+          {isDbError ? (
+            <ErrorState
+              title="Gagal Terhubung ke Database"
+              message="Data riwayat gempa sementara tidak dapat dimuat. Silakan periksa koneksi atau coba beberapa saat lagi."
+            />
+          ) : data.length === 0 ? (
+            <EmptyState
+              message="Tidak ada data gempa bumi yang cocok dengan kriteria filter Anda."
+              actionText="Reset Pencarian"
+              onAction={() => {}}
+            />
+          ) : (
+            <div className="space-y-3" role="feed" aria-label="Daftar gempa terkini">
+              {data.map((quake) => {
+                const dateObj = new Date(quake.waktuUtc);
+                const hrefSimulasi = `/simulasi?m=${quake.magnitudo}&d=${quake.kedalamanKm}&lat=${quake.lat}&lon=${quake.lon}`;
 
                 return (
-                  <TableRow
-                    key={item.id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                  <article
+                    key={quake.id}
+                    className="bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-2xl sm:rounded-[28px] p-5 sm:p-6 transition-colors duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                   >
-                    {/* Waktu */}
-                    <TableCell className="px-4 py-3.5 whitespace-nowrap">
-                      <div className="font-semibold text-slate-800 dark:text-slate-200">
-                        {dateObj.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}
+                    {/* Kolom Kiri: Magnitudo & Info Utama */}
+                    <div className="flex items-start gap-4">
+                      <div className="shrink-0 pt-0.5">
+                        <MagnitudeBadge magnitude={quake.magnitudo} size="lg" />
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono">
-                        {dateObj.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB
+
+                      <div className="space-y-1.5">
+                        <h3 className="font-semibold text-base sm:text-lg text-[var(--color-text-primary)] leading-snug">
+                          {quake.wilayah}
+                        </h3>
+
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--color-text-secondary)]">
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" aria-hidden="true" />
+                            <time dateTime={dateObj.toISOString()} className="tnum">
+                              {formatWib(dateObj)}
+                            </time>
+                          </span>
+
+                          <span className="inline-flex items-center gap-1">
+                            <Layers className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" aria-hidden="true" />
+                            <span className="tnum">Kedalaman {quake.kedalamanKm} km</span>
+                          </span>
+
+                          <span className="inline-flex items-center gap-1">
+                            <Compass className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" aria-hidden="true" />
+                            <span className="tnum">
+                              {Math.abs(quake.lat).toFixed(2).replace(".", ",")} {quake.lat < 0 ? "LS" : "LU"},{" "}
+                              {Math.abs(quake.lon).toFixed(2).replace(".", ",")} {quake.lon < 0 ? "BB" : "BT"}
+                            </span>
+                          </span>
+                        </div>
                       </div>
-                    </TableCell>
+                    </div>
 
-                    {/* Magnitudo */}
-                    <TableCell className="px-4 py-3.5 text-center whitespace-nowrap">
-                      <Badge
-                        variant="secondary"
-                        className={cn(
-                          'font-black text-xs px-2 py-0.5 rounded-full',
-                          isSevere
-                            ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                        )}
-                      >
-                        M {item.magnitudo.toFixed(1)}
-                      </Badge>
-                    </TableCell>
+                    {/* Kolom Kanan: Status Tsunami & Aksi Simulasikan */}
+                    <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]/50">
+                      <StatusBadge
+                        variant={
+                          quake.statusTsunami === "AMAN"
+                            ? "tsunami_aman"
+                            : quake.statusTsunami === "BERPOTENSI"
+                            ? "tsunami_berpotensi"
+                            : "tsunami_tidak_dinyatakan"
+                        }
+                        customText={quake.potensiTeks}
+                        onSurface={false}
+                      />
 
-                    {/* Kedalaman */}
-                    <TableCell className="px-4 py-3.5 text-center whitespace-nowrap text-slate-700 dark:text-slate-300 font-medium">
-                      {item.kedalamanKm} km
-                    </TableCell>
-
-                    {/* Wilayah */}
-                    <TableCell className="px-4 py-3.5">
-                      <div className="font-medium text-slate-900 dark:text-white line-clamp-1">
-                        {item.wilayah}
-                      </div>
-                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                        {item.lat.toFixed(2)}, {item.lon.toFixed(2)}
-                      </div>
-                    </TableCell>
-
-                    {/* Potensi Tsunami / Dirasakan */}
-                    <TableCell className="px-4 py-3.5">
-                      {isTsunami ? (
-                        <Badge variant="destructive" className="gap-1 text-[11px] font-semibold bg-rose-50 text-rose-600 hover:bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-900">
-                          <Waves className="h-3 w-3" /> Berpotensi Tsunami
-                        </Badge>
-                      ) : (
-                        <span className="text-[11px] text-slate-500 line-clamp-1">
-                          {item.potensiTeks || (item.dirasakan ? `Dirasakan: ${item.dirasakan}` : 'Aman')}
-                        </span>
-                      )}
-                    </TableCell>
-
-                    {/* Aksi "Simulasikan" (FR-DB-19, TC-DB-11) */}
-                    <TableCell className="px-4 py-3.5 text-right whitespace-nowrap">
                       <Link
-                        href={`/simulasi?mag=${item.magnitudo}&depth=${item.kedalamanKm}&lat=${item.lat}&lon=${item.lon}&region=${encodeURIComponent(item.wilayah)}`}
+                        href={hrefSimulasi}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-full border border-[var(--color-border-strong)] text-xs font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
                       >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 gap-1 rounded-lg bg-rose-50 px-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-400 dark:hover:bg-rose-900/60 transition-colors"
-                          title="Muat data ini ke halaman Simulasi Dampak Gempa"
-                        >
-                          <Flame className="h-3.5 w-3.5" />
-                          Simulasikan
-                        </Button>
+                        <span>Simulasikan</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
                       </Link>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </article>
                 );
-              })
-            )}
-          </TableBody>
-        </Table>
+              })}
+            </div>
+          )}
 
-        {/* Pagination Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-          <div>
-            Menampilkan halaman <strong className="text-slate-800 dark:text-slate-200">{pagination.page}</strong> dari{' '}
-            <strong className="text-slate-800 dark:text-slate-200">{pagination.totalPages || 1}</strong> ({pagination.totalCount} total data)
-          </div>
+          {/* Paginasi 15 Baris / Halaman (Tombol >= 44px) */}
+          {!isDbError && totalHalaman > 1 && (
+            <nav
+              aria-label="Paginasi Riwayat Gempa"
+              className="pt-8 flex flex-wrap items-center justify-center gap-2"
+            >
+              {hal > 1 ? (
+                <Link
+                  href={createPageUrl(hal - 1)}
+                  className="px-4 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1 rounded-full border border-[var(--color-border-strong)] text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  aria-label="Halaman Sebelumnya"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Sebelumnya</span>
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="px-4 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] text-sm font-medium text-[var(--color-text-secondary)] opacity-40 cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Sebelumnya</span>
+                </button>
+              )}
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={!pagination.hasPrevPage || loading}
-              className="h-8 gap-1 rounded-lg border-slate-200 text-xs font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-            >
-              <ChevronLeft className="h-4 w-4" /> Sebelumnya
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => p + 1)}
-              disabled={!pagination.hasNextPage || loading}
-              className="h-8 gap-1 rounded-lg border-slate-200 text-xs font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-            >
-              Berikutnya <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </Card>
+              <span className="px-4 py-2.5 min-h-[44px] inline-flex items-center rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] text-sm font-semibold tnum">
+                {hal} / {totalHalaman}
+              </span>
+
+              {hal < totalHalaman ? (
+                <Link
+                  href={createPageUrl(hal + 1)}
+                  className="px-4 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1 rounded-full border border-[var(--color-border-strong)] text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  aria-label="Halaman Berikutnya"
+                >
+                  <span>Berikutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="px-4 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] text-sm font-medium text-[var(--color-text-secondary)] opacity-40 cursor-not-allowed"
+                >
+                  <span>Berikutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </nav>
+          )}
+        </section>
+      </main>
+
+      <Footer
+        lastUpdatedText={
+          lastSyncRecord ? `Disinkronkan ${formatWib(lastSyncRecord.createdAt)}` : undefined
+        }
+      />
     </div>
   );
 }

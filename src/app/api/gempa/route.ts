@@ -1,91 +1,106 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
-  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '15', 10)));
-  const skip = (page - 1) * limit;
+  const { searchParams } = new URL(req.url);
 
-  const minMagStr = searchParams.get('minMag');
-  const maxMagStr = searchParams.get('maxMag');
-  const wilayah = searchParams.get('wilayah');
-  const jenis = searchParams.get('jenis');
-  const startDateStr = searchParams.get('startDate');
-  const endDateStr = searchParams.get('endDate');
+  const mag = searchParams.get("mag");
+  const dari = searchParams.get("dari");
+  const sampai = searchParams.get("sampai");
+  const wilayah = searchParams.get("wilayah");
+  const hal = Math.max(1, parseInt(searchParams.get("hal") || "1", 10));
+  const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") || "15", 10)));
+  const tipe = searchParams.get("tipe");
 
-  const where: any = {};
+  const where: Prisma.GempaWhereInput = {};
 
-  if (minMagStr || maxMagStr) {
-    where.magnitudo = {};
-    if (minMagStr) where.magnitudo.gte = parseFloat(minMagStr);
-    if (maxMagStr) where.magnitudo.lte = parseFloat(maxMagStr);
+  if (mag) {
+    const minMag = parseFloat(mag);
+    if (!isNaN(minMag)) {
+      where.magnitudo = { gte: minMag };
+    }
   }
 
-  if (startDateStr || endDateStr) {
+  if (dari || sampai) {
     where.waktuUtc = {};
-    if (startDateStr) where.waktuUtc.gte = new Date(startDateStr);
-    if (endDateStr) where.waktuUtc.lte = new Date(endDateStr);
+    if (dari) {
+      const startDate = new Date(dari);
+      if (!isNaN(startDate.getTime())) {
+        where.waktuUtc.gte = startDate;
+      }
+    }
+    if (sampai) {
+      const endDate = new Date(sampai);
+      if (!isNaN(endDate.getTime())) {
+        // Akhir hari sampai pukul 23:59:59.999 UTC
+        endDate.setUTCHours(23, 59, 59, 999);
+        where.waktuUtc.lte = endDate;
+      }
+    }
   }
 
-  if (wilayah) {
+  if (wilayah && wilayah.trim().length > 0) {
     where.wilayah = {
-      contains: wilayah,
-      mode: 'insensitive',
+      contains: wilayah.trim(),
+      mode: "insensitive",
     };
   }
 
-  // Filter berdasarkan flag sumber (PRD v0.2 Bagian 6.1)
-  if (jenis) {
-    const jenisUpper = jenis.toUpperCase();
-    if (jenisUpper === 'TERKINI') where.isTerkini = true;
-    else if (jenisUpper === 'DIRASAKAN') where.isDirasakan = true;
-    else if (jenisUpper === 'AUTO') where.isAuto = true;
+  if (tipe === "dirasakan") {
+    where.isDirasakan = true;
+  } else if (tipe === "terkini") {
+    where.isTerkini = true;
+  } else if (tipe === "auto") {
+    where.isAuto = true;
   }
 
   try {
-    const [items, totalCount, lastSyncLog] = await Promise.all([
+    const [total, data, lastSync] = await Promise.all([
+      prisma.gempa.count({ where }),
       prisma.gempa.findMany({
         where,
-        orderBy: { waktuUtc: 'desc' },
-        skip,
+        orderBy: { waktuUtc: "desc" },
+        skip: (hal - 1) * limit,
         take: limit,
       }),
-      prisma.gempa.count({ where }),
       prisma.syncLog.findFirst({
-        where: { status: 'OK' },
-        orderBy: { createdAt: 'desc' },
+        where: { status: "OK" },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
       }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / limit);
+    const totalHalaman = Math.ceil(total / limit) || 1;
 
     return NextResponse.json({
-      data: items,
+      success: true,
+      data,
       pagination: {
-        page,
+        total,
+        hal,
+        totalHalaman,
         limit,
-        totalCount,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
       },
-      sync: {
-        lastSuccessAt: lastSyncLog?.createdAt || null,
-        lastAttemptAt: lastSyncLog?.createdAt || null,
-        lastStatus: lastSyncLog ? 'SUCCESS' : 'UNINITIALIZED',
-      },
+      lastSyncTime: lastSync?.createdAt ?? null,
     });
-  } catch (err: any) {
-    console.warn('⚠️ Gagal mengambil riwayat gempa dari database:', err);
+  } catch (err: unknown) {
+    console.error("Error reading gempa from DB:", err);
     return NextResponse.json(
       {
+        success: false,
+        error: "Database tidak terjangkau",
+        degraded: true,
         data: [],
-        pagination: { page: 1, limit, totalCount: 0, totalPages: 1, hasNextPage: false, hasPrevPage: false },
-        sync: null,
-        error: 'Database sedang offline atau belum diinisialisasi',
+        pagination: {
+          total: 0,
+          hal,
+          totalHalaman: 0,
+          limit,
+        },
+        lastSyncTime: null,
       },
-      { status: 200 }
+      { status: 500 }
     );
   }
 }

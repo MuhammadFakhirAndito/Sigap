@@ -1,5 +1,0 @@
-# Preserve LF line endings for Shell scripts on Windows
-*.sh text eol=lf
-
-# GitHub Linguist rules
-src/components/ui/* linguist-vendored

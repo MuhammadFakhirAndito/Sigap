@@ -21,25 +21,19 @@ enum KategoriArtikel {
   LAINNYA
 }
 
-enum ChatSource {
-  LLM
-  FALLBACK
-  CACHE
-}
-
 enum TipeLokasi {
   DARAT
   LAUT
 }
 
-enum SyncResultStatus {
-  SUCCESS
-  FAILED
+enum ChatSource {
+  LLM
+  FALLBACK
 }
 
 model Gempa {
   id            String        @id @default(cuid())
-  bmkgKey       String        @unique // Waktu UTC/DateTime BMKG saja (FR-DB-01, TC-DB-11)
+  bmkgKey       String        @unique
   waktuUtc      DateTime
   lat           Float
   lon           Float
@@ -58,12 +52,13 @@ model Gempa {
 
   @@index([waktuUtc(sort: Desc)])
   @@index([magnitudo])
+  @@map("gempa")
 }
 
 model SyncLog {
   id               String   @id @default(cuid())
-  sumber           String   // "autogempa" | "terkini" | "dirasakan" | "all"
-  status           String   // "OK" | "GAGAL"
+  sumber           String
+  status           String
   jumlahBaru       Int      @default(0)
   jumlahDiperbarui Int      @default(0)
   pesanError       String?
@@ -71,17 +66,7 @@ model SyncLog {
   createdAt        DateTime @default(now())
 
   @@index([createdAt(sort: Desc)])
-}
-
-model KuotaHarian {
-  id        String   @id @default(cuid())
-  model     String
-  tanggal   String   // Format: YYYY-MM-DD
-  jumlah    Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([model, tanggal])
+  @@map("sync_log")
 }
 
 model Berita {
@@ -92,6 +77,8 @@ model Berita {
   tanggalTerbit DateTime
   ringkasan     String?
   createdAt     DateTime @default(now())
+
+  @@map("berita")
 }
 
 model Artikel {
@@ -101,19 +88,22 @@ model Artikel {
   kategori  KategoriArtikel
   isi       String          @db.Text
   urutan    Int             @default(0)
-  createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
-  sumber    Sumber[]
+  sumber    Sumber[]        @relation("ArtikelSumber")
+
+  @@map("artikel")
 }
 
 model Sumber {
-  id           String             @id @default(cuid())
-  judul        String
-  penerbit     String
-  url          String             @unique
-  tanggalAkses DateTime           @default(now())
-  artikel      Artikel[]
-  skenario     SkenarioSimulasi[]
+  id               String             @id @default(cuid())
+  judul            String
+  penerbit         String
+  url              String             @unique
+  tanggalAkses     DateTime
+  artikel          Artikel[]          @relation("ArtikelSumber")
+  skenarioSimulasi SkenarioSimulasi[]
+
+  @@map("sumber")
 }
 
 model FaqGempa {
@@ -122,14 +112,15 @@ model FaqGempa {
   pertanyaan String
   jawaban    String   @db.Text
   aktif      Boolean  @default(true)
-  createdAt  DateTime @default(now())
+
+  @@map("faq_gempa")
 }
 
 model ChatLog {
   id             String     @id @default(cuid())
   pertanyaan     String     @db.Text
   jawaban        String     @db.Text
-  source         ChatSource @default(LLM)
+  source         ChatSource
   model          String?
   responseTimeMs Int?
   isHelpful      Boolean?
@@ -137,6 +128,17 @@ model ChatLog {
   createdAt      DateTime   @default(now())
 
   @@index([createdAt(sort: Desc)])
+  @@map("chat_log")
+}
+
+model KuotaHarian {
+  id      String   @id @default(cuid())
+  model   String
+  tanggal DateTime @db.Date
+  jumlah  Int      @default(0)
+
+  @@unique([model, tanggal])
+  @@map("kuota_harian")
 }
 
 model SkenarioSimulasi {
@@ -146,19 +148,11 @@ model SkenarioSimulasi {
   kedalamanKm      Float
   lat              Float
   lon              Float
-  tipeLokasi       TipeLokasi @default(LAUT)
+  tipeLokasi       TipeLokasi
   deskripsiSingkat String?
   urutan           Int        @default(0)
   sumberId         String?
   sumber           Sumber?    @relation(fields: [sumberId], references: [id])
-  createdAt        DateTime   @default(now())
-}
 
-model SyncStatus {
-  id            String           @id // misal "bmkg_sync"
-  lastSuccessAt DateTime?
-  lastAttemptAt DateTime         @default(now())
-  lastStatus    SyncResultStatus @default(SUCCESS)
-  errorMessage  String?
-  updatedAt     DateTime         @updatedAt
+  @@map("skenario_simulasi")
 }
