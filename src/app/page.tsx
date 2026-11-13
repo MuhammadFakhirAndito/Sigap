@@ -193,7 +193,7 @@ export default async function HomePage() {
                 </div>
 
                 {/* Tengah-Kiri: Formasi Batuan Tektonik Melayang yang Menembus Batas Bawah Panel */}
-                <div className="relative lg:absolute lg:-bottom-24 xl:-bottom-32 lg:left-6 xl:left-10 w-full max-w-[500px] sm:max-w-[580px] lg:max-w-[680px] xl:max-w-[760px] mx-auto z-10 pointer-events-none select-none">
+                <div className="relative lg:absolute lg:-bottom-24 xl:-bottom-32 lg:left-6 xl:left-10 w-full max-w-[500px] sm:max-w-[580px] lg:max-w-[680px] xl:max-w-[760px] mx-auto z-10 pointer-events-none select-none animate-floaty">
                   <img
                     src="/images/tectonic-island.png"
                     alt="Formasi geologis lempeng tektonik seismik Indonesia"
@@ -240,8 +240,8 @@ export default async function HomePage() {
               <div className="w-full lg:col-span-5 flex flex-col justify-between space-y-8 z-10 min-h-[440px] sm:min-h-[500px] lg:min-h-[560px]">
                 {/* Atas: H1, Subcopy, dan CTA */}
                 <div className="space-y-4">
-                  <h1 className="text-[clamp(2.5rem,4.2vw,4rem)] font-bold tracking-[-0.03em] leading-[1.08] text-[var(--color-text-primary)]">
-                    <span className="text-[var(--color-primary)]">Pantau gempa terkini,</span>{" "}
+                  <h1 className="text-[clamp(2.5rem,4.2vw,4rem)] font-light tracking-[-0.03em] leading-[1.05] text-[var(--color-text-primary)]">
+                    <span className="text-[var(--color-primary)] font-normal">Pantau gempa terkini,</span>{" "}
                     siap menghadapi yang berikutnya.
                   </h1>
 

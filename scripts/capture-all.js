@@ -100,7 +100,7 @@ async function capture() {
   await pageSend('Page.enable');
   await pageSend('DOM.enable');
 
-  async function takeScreenshot(name, { width, height, mobile, fullPage }) {
+  async function takeScreenshot(name, { width, height, mobile, fullPage, urlPath = '/' }) {
     console.log(`Setting viewport: ${width}x${height} (mobile=${mobile})...`);
     await pageSend('Emulation.setDeviceMetricsOverride', {
       width,
@@ -109,8 +109,9 @@ async function capture() {
       mobile: !!mobile,
     });
 
-    console.log('Navigating to http://localhost:3000...');
-    await pageSend('Page.navigate', { url: 'http://localhost:3000' });
+    const targetUrl = `http://localhost:3000${urlPath}`;
+    console.log(`Navigating to ${targetUrl}...`);
+    await pageSend('Page.navigate', { url: targetUrl });
     await sleep(2500); // Wait for Fast Refresh and render
 
     console.log(`Capturing screenshot ${name}...`);
@@ -167,6 +168,24 @@ async function capture() {
       height: 844,
       mobile: true,
       fullPage: true,
+    });
+
+    // 5. Riwayat Desktop 1440 full
+    await takeScreenshot('02-riwayat-desktop-1440.png', {
+      width: 1440,
+      height: 900,
+      mobile: false,
+      fullPage: true,
+      urlPath: '/riwayat',
+    });
+
+    // 6. Riwayat Mobile 390 full
+    await takeScreenshot('02-riwayat-mobile-390.png', {
+      width: 390,
+      height: 844,
+      mobile: true,
+      fullPage: true,
+      urlPath: '/riwayat',
     });
   } finally {
     pageWs.close();

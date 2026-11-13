@@ -154,16 +154,19 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
-      <NotchNavbar />
+      {/* Header selaras dengan batas kanvas Beranda */}
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+        <NotchNavbar />
+      </div>
 
-      <main className="w-full max-w-[1220px] mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-10 flex-1">
-        {/* Header Terpusat */}
-        <section className="text-center max-w-2xl mx-auto space-y-3">
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--color-text-primary)]">
-            Riwayat Gempa Bumi
+      <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10 flex-1">
+        {/* Header Terpusat Berbobot Editorial Verdro */}
+        <section className="text-center max-w-[720px] mx-auto space-y-3 pt-2 sm:pt-4">
+          <h1 className="text-[32px] sm:text-[42px] lg:text-[46px] font-light tracking-[-0.03em] leading-[1.08] text-[var(--color-text-primary)]">
+            <span className="text-[var(--color-primary)] font-normal">Arsip riwayat</span> gempa bumi Indonesia
           </h1>
-          <p className="text-sm sm:text-base text-[var(--color-text-secondary)] leading-relaxed">
-            Data dari BMKG yang disimpan agar tetap bisa dilihat saat BMKG tidak dapat diakses.
+          <p className="text-sm sm:text-base text-[var(--color-text-secondary)] leading-relaxed max-w-[620px] mx-auto text-pretty">
+            Data resmi dari BMKG yang disimpan persisten di database lokal agar tetap dapat diakses saat portal BMKG padam atau mengalami gangguan.
           </p>
 
           {/* Baris Status Sinkronisasi */}
@@ -182,10 +185,10 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
           </div>
         </section>
 
-        {/* Filter Bar (Panel surface, radius 28, padding 24) */}
+        {/* Filter Bar (Panel surface, radius 32, padding 28 sesuai Verdro) */}
         <section
           aria-label="Filter Riwayat Gempa"
-          className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[28px] p-6 sm:p-7 shadow-xs"
+          className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-6 sm:p-8 shadow-2xs transition-colors duration-200"
         >
           <form method="GET" action="/riwayat" className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
@@ -198,7 +201,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                   id="filter-mag"
                   name="mag"
                   defaultValue={mag || ""}
-                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] rounded-full px-4 py-2.5 text-sm text-[var(--color-text-primary)] min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full px-4 py-2.5 text-sm text-[var(--color-text-primary)] min-h-[44px] shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
                 >
                   <option value="">Semua Magnitudo</option>
                   <option value="3">≥ 3.0 SR</option>
@@ -218,7 +221,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                   id="filter-dari"
                   name="dari"
                   defaultValue={dari || ""}
-                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] rounded-full px-4 py-2 text-sm text-[var(--color-text-primary)] min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full px-4 py-2 text-sm text-[var(--color-text-primary)] min-h-[44px] shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
                 />
               </div>
 
@@ -232,7 +235,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                   id="filter-sampai"
                   name="sampai"
                   defaultValue={sampai || ""}
-                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] rounded-full px-4 py-2 text-sm text-[var(--color-text-primary)] min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full px-4 py-2 text-sm text-[var(--color-text-primary)] min-h-[44px] shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
                 />
               </div>
 
@@ -240,15 +243,15 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
               <div className="lg:col-span-3 flex items-center gap-2">
                 <button
                   type="submit"
-                  className="flex-1 bg-[var(--color-cta)] text-[var(--color-on-cta)] rounded-full px-6 py-2.5 min-h-[44px] text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-opacity duration-150 flex items-center justify-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  className="flex-1 bg-[var(--color-cta)] text-[var(--color-on-cta)] rounded-full px-6 py-2.5 min-h-[44px] text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-opacity duration-150 flex items-center justify-center gap-2 shadow-xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
                 >
                   <Filter className="w-4 h-4" />
-                  <span>Filter</span>
+                  <span>Terapkan</span>
                 </button>
 
                 <Link
                   href="/riwayat"
-                  className="inline-flex items-center justify-center p-2.5 min-h-[44px] min-w-[44px] rounded-full border border-[var(--color-border-strong)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] active:scale-95 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  className="inline-flex items-center justify-center p-2.5 min-h-[44px] min-w-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] active:scale-95 transition-all duration-150 shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
                   title="Reset Filter"
                   aria-label="Reset semua filter pencarian"
                 >
@@ -269,8 +272,8 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                   id="filter-wilayah"
                   name="wilayah"
                   defaultValue={wilayah || ""}
-                  placeholder="Ketik nama wilayah atau kota (misal: Sukabumi, Maluku, Jawa Barat)..."
-                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] rounded-full pl-11 pr-5 py-2.5 text-sm text-[var(--color-text-primary)] min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] placeholder:text-[var(--color-text-secondary)]"
+                  placeholder="Cari wilayah gempa (contoh: Sukabumi, Bengkulu, Maluku, Jawa Barat)..."
+                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full pl-11 pr-5 py-2.5 text-sm text-[var(--color-text-primary)] min-h-[44px] shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] placeholder:text-[var(--color-text-secondary)]/70"
                 />
               </div>
             </div>
@@ -343,7 +346,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                 return (
                   <article
                     key={quake.id}
-                    className="bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-2xl sm:rounded-[28px] p-5 sm:p-6 transition-colors duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+                    className="bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group shadow-2xs hover:shadow-xs"
                   >
                     {/* Kolom Kiri: Magnitudo & Info Utama */}
                     <div className="flex items-start gap-4">
@@ -396,10 +399,12 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
 
                       <Link
                         href={hrefSimulasi}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-full border border-[var(--color-border-strong)] text-xs font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                        className="inline-flex items-center gap-2 pl-4 pr-1.5 py-1.5 min-h-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] hover:bg-[var(--color-cta)] text-[var(--color-text-primary)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] transition-all duration-200 group/btn shadow-2xs text-xs font-semibold focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] active:scale-[0.98]"
                       >
                         <span>Simulasikan</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span className="w-8 h-8 rounded-full bg-[var(--color-surface)] group-hover/btn:bg-white/10 flex items-center justify-center shrink-0 transition-colors">
+                          <ArrowUpRight className="w-3.5 h-3.5 text-[var(--color-text-primary)] group-hover/btn:text-white" aria-hidden="true" />
+                        </span>
                       </Link>
                     </div>
                   </article>
@@ -408,16 +413,16 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
             </div>
           )}
 
-          {/* Paginasi 15 Baris / Halaman (Tombol >= 44px) */}
+          {/* Paginasi 15 Baris / Halaman (Tombol >= 44px dengan pill style Verdro) */}
           {!isDbError && totalHalaman > 1 && (
             <nav
               aria-label="Paginasi Riwayat Gempa"
-              className="pt-8 flex flex-wrap items-center justify-center gap-2"
+              className="pt-8 flex flex-wrap items-center justify-center gap-2.5"
             >
               {hal > 1 ? (
                 <Link
                   href={createPageUrl(hal - 1)}
-                  className="px-4 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1 rounded-full border border-[var(--color-border-strong)] text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-all duration-150 shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] active:scale-95"
                   aria-label="Halaman Sebelumnya"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -426,21 +431,21 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
               ) : (
                 <button
                   disabled
-                  className="px-4 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] text-sm font-medium text-[var(--color-text-secondary)] opacity-40 cursor-not-allowed"
+                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-secondary)] opacity-40 cursor-not-allowed"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Sebelumnya</span>
                 </button>
               )}
 
-              <span className="px-4 py-2.5 min-h-[44px] inline-flex items-center rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] text-sm font-semibold tnum">
+              <span className="px-5 py-2.5 min-h-[44px] inline-flex items-center rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] text-sm font-semibold shadow-2xs tnum">
                 {hal} / {totalHalaman}
               </span>
 
               {hal < totalHalaman ? (
                 <Link
                   href={createPageUrl(hal + 1)}
-                  className="px-4 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1 rounded-full border border-[var(--color-border-strong)] text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-all duration-150 shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] active:scale-95"
                   aria-label="Halaman Berikutnya"
                 >
                   <span>Berikutnya</span>
@@ -449,7 +454,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
               ) : (
                 <button
                   disabled
-                  className="px-4 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] text-sm font-medium text-[var(--color-text-secondary)] opacity-40 cursor-not-allowed"
+                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-secondary)] opacity-40 cursor-not-allowed"
                 >
                   <span>Berikutnya</span>
                   <ChevronRight className="w-4 h-4" />
