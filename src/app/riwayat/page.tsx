@@ -154,7 +154,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
     <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
       {/* Header selaras dengan batas kanvas Verdro max-w-[1440px] */}
       <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 pt-4">
-        <NotchNavbar />
+        <NotchNavbar variant="pill" />
       </div>
 
       <main className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-8 flex-1">

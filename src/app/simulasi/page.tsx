@@ -25,7 +25,7 @@ export default async function SimulasiPlaceholderPage({ searchParams }: Simulasi
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
       <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 pt-4">
-        <NotchNavbar />
+        <NotchNavbar variant="pill" />
       </div>
 
       <main className="w-full max-w-[960px] mx-auto px-4 sm:px-6 py-12 flex-1 flex flex-col items-center justify-center text-center">
