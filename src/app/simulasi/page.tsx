@@ -89,3 +89,4 @@ export default async function SimulasiPlaceholderPage({ searchParams }: Simulasi
     </div>
   );
 }
+

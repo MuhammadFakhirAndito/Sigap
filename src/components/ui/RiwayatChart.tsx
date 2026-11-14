@@ -98,3 +98,4 @@ export function RiwayatChart({ data, totalData }: RiwayatChartProps) {
     </section>
   );
 }
+

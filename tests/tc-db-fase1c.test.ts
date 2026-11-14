@@ -78,3 +78,4 @@ describe("Uji Kepatuhan TC-DB Fase 1c (Halaman Riwayat)", () => {
     expect(duration).toBeLessThan(300);
   });
 });
+
