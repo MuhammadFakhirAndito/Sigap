@@ -2,27 +2,15 @@ import React from "react";
 import Link from "next/link";
 import { NotchNavbar } from "@/components/ui/NotchNavbar";
 import { Footer } from "@/components/ui/Footer";
-import { MagnitudeBadge } from "@/components/ui/MagnitudeBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { HistoryRow, GempaItem } from "@/components/ui/HistoryRow";
+import { RiwayatFilter } from "@/components/ui/RiwayatFilter";
+import { RiwayatChart } from "@/components/ui/RiwayatChart";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import {
-  Search,
-  Filter,
-  RotateCcw,
-  ChevronLeft,
-  ChevronRight,
-  Sliders,
-  Calendar,
-  Layers,
-  MapPin,
-  Clock,
-  Compass,
-  ArrowUpRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +25,8 @@ interface RiwayatPageProps {
   }>;
 }
 
-function formatWib(date: Date): string {
-  if (isNaN(date.getTime())) return "Waktu tidak tersedia";
+function formatWibDate(date: Date): string {
+  if (isNaN(date.getTime())) return "waktu tidak tersedia";
   return (
     new Intl.DateTimeFormat("id-ID", {
       day: "numeric",
@@ -111,13 +99,14 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
     where.isTerkini = true;
   }
 
-  let data: any[] = [];
+  let data: GempaItem[] = [];
   let total = 0;
   let isDbError = false;
-  let lastSyncRecord: any = null;
+  let latestSync: { status: string; createdAt: Date } | null = null;
+  let lastSuccessfulSync: { createdAt: Date } | null = null;
 
   try {
-    const [t, d, s] = await Promise.all([
+    const [t, d, latest, lastOk] = await Promise.all([
       prisma.gempa.count({ where }),
       prisma.gempa.findMany({
         where,
@@ -126,13 +115,19 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
         take: limit,
       }),
       prisma.syncLog.findFirst({
+        orderBy: { createdAt: "desc" },
+        select: { status: true, createdAt: true },
+      }),
+      prisma.syncLog.findFirst({
         where: { status: "OK" },
         orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
       }),
     ]);
     total = t;
-    data = d;
-    lastSyncRecord = s;
+    data = d as unknown as GempaItem[];
+    latestSync = latest;
+    lastSuccessfulSync = lastOk;
   } catch (err) {
     console.error("Gagal kueri database riwayat:", err);
     isDbError = true;
@@ -152,6 +147,9 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
     return `/riwayat?${p.toString()}`;
   }
 
+  // Tentukan status sinkronisasi BMKG
+  const isBmkgFailed = latestSync?.status === "ERROR";
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
       {/* Header selaras dengan batas kanvas Verdro max-w-[1440px] */}
@@ -159,7 +157,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
         <NotchNavbar />
       </div>
 
-      <main className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10 flex-1">
+      <main className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-8 flex-1">
         {/* Header Terpusat Berbobot Editorial Verdro */}
         <section className="text-center max-w-[720px] mx-auto space-y-3 pt-2 sm:pt-4">
           <h1 className="text-[32px] sm:text-[42px] lg:text-[46px] font-light tracking-[-0.03em] leading-[1.08] text-[var(--color-text-primary)]">
@@ -169,261 +167,95 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
             Data resmi dari BMKG yang disimpan persisten di database lokal agar tetap dapat diakses saat portal BMKG padam atau mengalami gangguan.
           </p>
 
-          {/* Baris Status Sinkronisasi */}
+          {/* Baris Status Sinkronisasi BMKG */}
           <div className="pt-2 flex justify-center">
-            {lastSyncRecord ? (
+            {isDbError ? (
+              <StatusBadge
+                variant="sync_warning"
+                customText="Koneksi database lokal terputus"
+              />
+            ) : isBmkgFailed ? (
+              <StatusBadge
+                variant="sync_warning"
+                customText={
+                  lastSuccessfulSync
+                    ? `BMKG tidak dapat diakses. Data terakhir disinkronkan ${formatWibDate(lastSuccessfulSync.createdAt)}`
+                    : "BMKG tidak dapat diakses. Menampilkan data lokal."
+                }
+              />
+            ) : lastSuccessfulSync ? (
               <StatusBadge
                 variant="sync_ok"
-                customText={`Sumber: BMKG · disinkronkan ${formatRelative(lastSyncRecord.createdAt)}`}
+                customText={`Sumber: BMKG · disinkronkan ${formatRelative(lastSuccessfulSync.createdAt)}`}
               />
             ) : (
               <StatusBadge
-                variant="sync_warning"
-                customText="BMKG tidak dapat diakses. Menampilkan data lokal."
+                variant="sync_ok"
+                customText="Sumber: BMKG · data lokal siap"
               />
             )}
           </div>
         </section>
 
-        {/* Filter Bar (Panel surface, radius 32, padding 28 sesuai Verdro) */}
-        <section
-          aria-label="Filter Riwayat Gempa"
-          className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-6 sm:p-8 shadow-2xs transition-colors duration-200"
-        >
-          <form method="GET" action="/riwayat" className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-              {/* Filter Magnitudo */}
-              <div className="lg:col-span-3 space-y-1.5">
-                <label htmlFor="filter-mag" className="text-xs font-semibold text-[var(--color-text-secondary)]">
-                  Magnitudo Minimum
-                </label>
-                <select
-                  id="filter-mag"
-                  name="mag"
-                  defaultValue={mag || ""}
-                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full px-4 py-2.5 text-sm text-[var(--color-text-primary)] min-h-[44px] shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  <option value="">Semua Magnitudo</option>
-                  <option value="3">≥ 3.0 SR</option>
-                  <option value="4">≥ 4.0 SR</option>
-                  <option value="5">≥ 5.0 SR (Gempa Terkini)</option>
-                  <option value="6">≥ 6.0 SR (Kuat)</option>
-                </select>
-              </div>
+        {/* Panel Filter Collapsible di Mobile */}
+        <RiwayatFilter
+          initialMag={mag}
+          initialDari={dari}
+          initialSampai={sampai}
+          initialWilayah={wilayah}
+        />
 
-              {/* Filter Rentang Tanggal: Dari */}
-              <div className="lg:col-span-3 space-y-1.5">
-                <label htmlFor="filter-dari" className="text-xs font-semibold text-[var(--color-text-secondary)]">
-                  Dari Tanggal
-                </label>
-                <input
-                  type="date"
-                  id="filter-dari"
-                  name="dari"
-                  defaultValue={dari || ""}
-                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full px-4 py-2 text-sm text-[var(--color-text-primary)] min-h-[44px] shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
-                />
-              </div>
-
-              {/* Filter Rentang Tanggal: Sampai */}
-              <div className="lg:col-span-3 space-y-1.5">
-                <label htmlFor="filter-sampai" className="text-xs font-semibold text-[var(--color-text-secondary)]">
-                  Sampai Tanggal
-                </label>
-                <input
-                  type="date"
-                  id="filter-sampai"
-                  name="sampai"
-                  defaultValue={sampai || ""}
-                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full px-4 py-2 text-sm text-[var(--color-text-primary)] min-h-[44px] shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
-                />
-              </div>
-
-              {/* Tombol Terapkan & Reset */}
-              <div className="lg:col-span-3 flex items-center gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 bg-[var(--color-cta)] text-[var(--color-on-cta)] rounded-full px-6 py-2.5 min-h-[44px] text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-opacity duration-150 flex items-center justify-center gap-2 shadow-xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  <Filter className="w-4 h-4" />
-                  <span>Terapkan</span>
-                </button>
-
-                <Link
-                  href="/riwayat"
-                  className="inline-flex items-center justify-center p-2.5 min-h-[44px] min-w-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] active:scale-95 transition-all duration-150 shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
-                  title="Reset Filter"
-                  aria-label="Reset semua filter pencarian"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Input Pencarian Wilayah */}
-            <div className="relative pt-1">
-              <label htmlFor="filter-wilayah" className="sr-only">
-                Cari Wilayah Gempa
-              </label>
-              <div className="relative flex items-center">
-                <Search className="w-4 h-4 text-[var(--color-text-secondary)] absolute left-4 pointer-events-none" />
-                <input
-                  type="text"
-                  id="filter-wilayah"
-                  name="wilayah"
-                  defaultValue={wilayah || ""}
-                  placeholder="Cari wilayah gempa (contoh: Sukabumi, Bengkulu, Maluku, Jawa Barat)..."
-                  className="w-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-full pl-11 pr-5 py-2.5 text-sm text-[var(--color-text-primary)] min-h-[44px] shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] placeholder:text-[var(--color-text-secondary)]/70"
-                />
-              </div>
-            </div>
-          </form>
-        </section>
-
-        {/* Grafik Ringkas Hasil Terfilter (SVG Murni Sesuai Spesifikasi) */}
+        {/* Grafik Distribusi Magnitudo (SVG/CSS Tanpa Library) */}
         {!isDbError && data.length > 0 && (
-          <section
-            aria-label="Grafik Distribusi Magnitudo"
-            className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[28px] p-6 sm:p-7 space-y-4"
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
-                Distribusi Magnitudo pada Halaman Ini
-              </h2>
-              <span className="text-xs text-[var(--color-text-secondary)] tnum">
-                Menampilkan {data.length} dari {total} data
-              </span>
-            </div>
-
-            {/* Visualisasi Bar Chart Semantik Ringan */}
-            <div className="h-28 w-full flex items-end gap-2 pt-4 px-2 border-b border-[var(--color-border)] pb-2 overflow-x-auto">
-              {data.slice(0, 15).map((q, idx) => {
-                const heightPercent = Math.min(100, Math.max(15, (q.magnitudo / 8) * 100));
-                return (
-                  <div
-                    key={q.id || idx}
-                    className="flex-1 min-w-[20px] max-w-[48px] flex flex-col items-center gap-1 group relative"
-                  >
-                    <span className="text-xs text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5 tnum font-semibold">
-                      {q.magnitudo.toFixed(1).replace(".", ",")}
-                    </span>
-                    <div
-                      className="w-full bg-[var(--color-surface-raised)] group-hover:bg-[var(--color-primary)] border border-[var(--color-border)] rounded-t-md transition-colors duration-200"
-                      style={{ height: `${heightPercent}%` }}
-                    />
-                    <span className="text-xs text-[var(--color-text-secondary)] tnum">
-                      #{idx + 1}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="sr-only">
-              Tabel ringkas magnitudo: {data.map((q, i) => `#${i + 1} M${q.magnitudo} di ${q.wilayah}`).join("; ")}
-            </p>
-          </section>
+          <RiwayatChart data={data} totalData={total} />
         )}
 
-        {/* Daftar Gempa (Baris, bukan grid) */}
-        <section aria-label="Daftar Riwayat Gempa" className="space-y-4">
+        {/* Daftar Gempa atau State Error/Empty */}
+        <section aria-label="Daftar riwayat gempa" className="space-y-4">
           {isDbError ? (
-            <ErrorState
-              title="Gagal Terhubung ke Database"
-              message="Data riwayat gempa sementara tidak dapat dimuat. Silakan periksa koneksi atau coba beberapa saat lagi."
-            />
+            <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 flex flex-col items-center justify-center text-center">
+              <ErrorState
+                title="Gagal terhubung ke database"
+                message="Data riwayat gempa sementara tidak dapat dimuat karena layanan database lokal sedang tidak terjangkau. Silakan muat ulang halaman."
+              />
+              <Link
+                href="/riwayat"
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] transition-all min-h-[44px]"
+              >
+                Muat ulang halaman
+              </Link>
+            </div>
           ) : data.length === 0 ? (
-            <EmptyState
-              message="Tidak ada data gempa bumi yang cocok dengan kriteria filter Anda."
-              actionText="Reset Pencarian"
-              onAction={() => {}}
-            />
+            <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 flex flex-col items-center justify-center text-center">
+              <EmptyState
+                message="Tidak ada data gempa bumi yang cocok dengan kriteria filter Anda."
+              />
+              <Link
+                href="/riwayat"
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] transition-all min-h-[44px]"
+              >
+                Reset filter pencarian
+              </Link>
+            </div>
           ) : (
             <div className="space-y-3" role="feed" aria-label="Daftar gempa terkini">
-              {data.map((quake) => {
-                const dateObj = new Date(quake.waktuUtc);
-                const hrefSimulasi = `/simulasi?m=${quake.magnitudo}&d=${quake.kedalamanKm}&lat=${quake.lat}&lon=${quake.lon}`;
-
-                return (
-                  <article
-                    key={quake.id}
-                    className="bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group shadow-2xs hover:shadow-xs"
-                  >
-                    {/* Kolom Kiri: Magnitudo & Info Utama */}
-                    <div className="flex items-start gap-4">
-                      <div className="shrink-0 pt-0.5">
-                        <MagnitudeBadge magnitude={quake.magnitudo} size="lg" />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <h3 className="font-semibold text-base sm:text-lg text-[var(--color-text-primary)] leading-snug">
-                          {quake.wilayah}
-                        </h3>
-
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--color-text-secondary)]">
-                          <span className="inline-flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" aria-hidden="true" />
-                            <time dateTime={dateObj.toISOString()} className="tnum">
-                              {formatWib(dateObj)}
-                            </time>
-                          </span>
-
-                          <span className="inline-flex items-center gap-1">
-                            <Layers className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" aria-hidden="true" />
-                            <span className="tnum">Kedalaman {quake.kedalamanKm} km</span>
-                          </span>
-
-                          <span className="inline-flex items-center gap-1">
-                            <Compass className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" aria-hidden="true" />
-                            <span className="tnum">
-                              {Math.abs(quake.lat).toFixed(2).replace(".", ",")} {quake.lat < 0 ? "LS" : "LU"},{" "}
-                              {Math.abs(quake.lon).toFixed(2).replace(".", ",")} {quake.lon < 0 ? "BB" : "BT"}
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Kolom Kanan: Status Tsunami & Aksi Simulasikan */}
-                    <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]/50">
-                      <StatusBadge
-                        variant={
-                          quake.statusTsunami === "AMAN"
-                            ? "tsunami_aman"
-                            : quake.statusTsunami === "BERPOTENSI"
-                            ? "tsunami_berpotensi"
-                            : "tsunami_tidak_dinyatakan"
-                        }
-                        customText={quake.potensiTeks}
-                        onSurface={false}
-                      />
-
-                      <Link
-                        href={hrefSimulasi}
-                        className="inline-flex items-center gap-2 pl-4 pr-1.5 py-1.5 min-h-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] hover:bg-[var(--color-cta)] text-[var(--color-text-primary)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] transition-all duration-200 group/btn shadow-2xs text-xs font-semibold focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] active:scale-[0.98]"
-                      >
-                        <span>Simulasikan</span>
-                        <span className="w-8 h-8 rounded-full bg-[var(--color-surface)] group-hover/btn:bg-white/10 flex items-center justify-center shrink-0 transition-colors">
-                          <ArrowUpRight className="w-3.5 h-3.5 text-[var(--color-text-primary)] group-hover/btn:text-white" aria-hidden="true" />
-                        </span>
-                      </Link>
-                    </div>
-                  </article>
-                );
-              })}
+              {data.map((gempa) => (
+                <HistoryRow key={gempa.id} gempa={gempa} />
+              ))}
             </div>
           )}
 
           {/* Paginasi 15 Baris / Halaman (Tombol >= 44px dengan pill style Verdro) */}
           {!isDbError && totalHalaman > 1 && (
             <nav
-              aria-label="Paginasi Riwayat Gempa"
-              className="pt-8 flex flex-wrap items-center justify-center gap-2.5"
+              aria-label="Paginasi riwayat gempa"
+              className="pt-6 flex flex-wrap items-center justify-center gap-2.5"
             >
               {hal > 1 ? (
                 <Link
                   href={createPageUrl(hal - 1)}
-                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-all duration-150 shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] active:scale-95"
-                  aria-label="Halaman Sebelumnya"
+                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-all duration-150 shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] active:scale-95"
+                  aria-label="Halaman sebelumnya"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Sebelumnya</span>
@@ -431,7 +263,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
               ) : (
                 <button
                   disabled
-                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-secondary)] opacity-40 cursor-not-allowed"
+                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Sebelumnya</span>
@@ -445,8 +277,8 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
               {hal < totalHalaman ? (
                 <Link
                   href={createPageUrl(hal + 1)}
-                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-all duration-150 shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] active:scale-95"
-                  aria-label="Halaman Berikutnya"
+                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-all duration-150 shadow-2xs focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] active:scale-95"
+                  aria-label="Halaman berikutnya"
                 >
                   <span>Berikutnya</span>
                   <ChevronRight className="w-4 h-4" />
@@ -454,7 +286,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
               ) : (
                 <button
                   disabled
-                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-secondary)] opacity-40 cursor-not-allowed"
+                  className="px-5 py-2.5 min-h-[44px] min-w-[44px] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
                 >
                   <span>Berikutnya</span>
                   <ChevronRight className="w-4 h-4" />
@@ -467,7 +299,9 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
 
       <Footer
         lastUpdatedText={
-          lastSyncRecord ? `Disinkronkan ${formatWib(lastSyncRecord.createdAt)}` : undefined
+          lastSuccessfulSync
+            ? `Disinkronkan ${formatWibDate(lastSuccessfulSync.createdAt)}`
+            : undefined
         }
       />
     </div>

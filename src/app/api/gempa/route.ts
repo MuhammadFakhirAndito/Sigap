@@ -33,7 +33,6 @@ export async function GET(req: NextRequest) {
     if (sampai) {
       const endDate = new Date(sampai);
       if (!isNaN(endDate.getTime())) {
-        // Akhir hari sampai pukul 23:59:59.999 UTC
         endDate.setUTCHours(23, 59, 59, 999);
         where.waktuUtc.lte = endDate;
       }
@@ -56,7 +55,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const [total, data, lastSync] = await Promise.all([
+    const [total, data, lastOkSync, latestSync] = await Promise.all([
       prisma.gempa.count({ where }),
       prisma.gempa.findMany({
         where,
@@ -68,6 +67,10 @@ export async function GET(req: NextRequest) {
         where: { status: "OK" },
         orderBy: { createdAt: "desc" },
         select: { createdAt: true },
+      }),
+      prisma.syncLog.findFirst({
+        orderBy: { createdAt: "desc" },
+        select: { status: true, createdAt: true },
       }),
     ]);
 
@@ -82,7 +85,8 @@ export async function GET(req: NextRequest) {
         totalHalaman,
         limit,
       },
-      lastSyncTime: lastSync?.createdAt ?? null,
+      lastSyncTime: lastOkSync?.createdAt ?? null,
+      isBmkgDegraded: latestSync?.status === "ERROR",
     });
   } catch (err: unknown) {
     console.error("Error reading gempa from DB:", err);
@@ -99,6 +103,7 @@ export async function GET(req: NextRequest) {
           limit,
         },
         lastSyncTime: null,
+        isBmkgDegraded: true,
       },
       { status: 500 }
     );
