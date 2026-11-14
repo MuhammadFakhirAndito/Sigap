@@ -157,11 +157,11 @@ export default async function HomePage() {
             {/* GRID UTAMA HERO */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
               
-              {/* KOLOM KIRI: TOOLBAR KECIL + ASET BATU TEKTONIK MELAYANG BESAR */}
-              <div className="lg:col-span-6 relative order-2 lg:order-1">
+              {/* KOLOM KIRI: TOOLBAR KECIL + ASET BATU TEKTONIK MELAYANG SANGAT BESAR PERSIS REFERENSI */}
+              <div className="lg:col-span-7 relative order-2 lg:order-1">
                 
                 {/* TOOLBAR KIRI: SOCIAL / LANGUAGE (PERSIS REFERENSI) */}
-                <div className="hidden sm:flex flex-col gap-4 absolute -top-2 left-0 z-20">
+                <div className="hidden sm:flex flex-col gap-4 absolute -top-4 -left-2 z-20">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -193,18 +193,18 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                {/* GAMBAR LEMPENG TEKTONIK PILIHAN USER (SKALA BESAR MENEMBUS BATAS) */}
-                <div className="relative mx-auto w-full max-w-[620px] lg:max-w-[700px] pt-4 sm:pt-2">
-                  <div className="pointer-events-none absolute -inset-8 rounded-full bg-[var(--color-primary)]/10 blur-3xl" />
+                {/* GAMBAR LEMPENG TEKTONIK SANGAT BESAR MENEMBUS KIRI & BAWAH */}
+                <div className="relative w-[110%] sm:w-[120%] lg:w-[135%] -left-4 sm:-left-8 lg:-left-14 -mb-20 sm:-mb-28 lg:-mb-36 xl:-mb-44 pt-2">
+                  <div className="pointer-events-none absolute -inset-10 rounded-full bg-[var(--color-primary)]/10 blur-3xl" />
                   <img
                     src="/images/tectonic-island.png"
                     alt="Fragmen lempeng tektonik bumi dengan batuan berlumut dan retakan seismik"
-                    className="relative w-full h-auto max-h-[500px] object-contain animate-floaty filter drop-shadow-[0_40px_70px_rgba(13,13,13,0.14)] select-none pointer-events-none"
+                    className="relative w-full h-auto max-h-[640px] xl:max-h-[720px] object-contain animate-floaty filter drop-shadow-[0_45px_80px_rgba(13,13,13,0.18)] select-none pointer-events-none"
                   />
                 </div>
 
                 {/* 3 BENEFIT CHIPS PUTIH DI SUDUT BAWAH BATU (PERSIS REFERENSI) */}
-                <div className="relative lg:absolute -bottom-6 left-0 sm:left-4 z-20 flex flex-wrap gap-2.5 pt-4 lg:pt-0">
+                <div className="relative lg:absolute -bottom-6 lg:-bottom-12 left-0 sm:left-4 z-20 flex flex-wrap gap-2.5 pt-4 lg:pt-0">
                   <div className="rounded-2xl border border-[var(--color-border)] bg-white/95 px-3.5 py-2.5 shadow-[0_8px_30px_rgba(13,13,13,0.08)] backdrop-blur-sm">
                     <p className="text-[10px] leading-none text-[var(--color-text-muted)]">Sumber resmi</p>
                     <p className="mt-1.5 text-[12px] font-semibold leading-none text-[var(--color-text-primary)]">
@@ -229,7 +229,7 @@ export default async function HomePage() {
               </div>
 
               {/* KOLOM KANAN: TIPOGRAFI HEADLINE + TOMBOL VIEW ALL + FLOATING STAT CARD */}
-              <div className="lg:col-span-6 order-1 lg:order-2 lg:pl-4 space-y-6 sm:space-y-8">
+              <div className="lg:col-span-5 order-1 lg:order-2 lg:pl-6 space-y-6 sm:space-y-8 z-20">
                 
                 {/* H1 HEADLINE TIPOGRAFI VERDRO (2 BARIS: HIJAU & HITAM) */}
                 <div className="space-y-3">
@@ -308,7 +308,7 @@ export default async function HomePage() {
         </section>
 
         {/* ================= DUA KOLOM CAPTION STRIP DI BAWAH CARD (PERSIS REFERENSI) ================= */}
-        <section aria-label="Ringkasan platform" className="px-2 sm:px-6">
+        <section aria-label="Ringkasan platform" className="px-2 sm:px-6 pt-16 sm:pt-24 lg:pt-32">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 text-sm text-[var(--color-text-secondary)] leading-relaxed">
             <p>
               Sistem informasi geologis dan mitigasi gempa bumi Indonesia yang menyajikan data resmi BMKG secara persisten, cepat, dan dapat diakses setiap saat.
