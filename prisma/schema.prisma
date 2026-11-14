@@ -85,6 +85,7 @@ model Artikel {
   id        String          @id @default(cuid())
   slug      String          @unique
   judul     String
+  ringkasan String?
   kategori  KategoriArtikel
   isi       String          @db.Text
   urutan    Int             @default(0)
@@ -109,7 +110,7 @@ model Sumber {
 model FaqGempa {
   id         String   @id @default(cuid())
   kataKunci  String[]
-  pertanyaan String
+  pertanyaan String   @unique
   jawaban    String   @db.Text
   aktif      Boolean  @default(true)
 

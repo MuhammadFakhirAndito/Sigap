@@ -1,9 +1,8 @@
 import React from "react";
 import Link from "next/link";
-import { MagnitudeBadge } from "./MagnitudeBadge";
-import { StatusBadge } from "./StatusBadge";
-import { Clock, Layers, Compass, ArrowUpRight } from "lucide-react";
+import { CheckCircle2, AlertTriangle, HelpCircle, ArrowUpRight } from "lucide-react";
 import { StatusTsunami } from "@prisma/client";
+import { tsunamiShortLabel } from "@/lib/riwayat";
 
 export interface GempaItem {
   id: string;
@@ -17,12 +16,7 @@ export interface GempaItem {
   statusTsunami: StatusTsunami;
 }
 
-interface HistoryRowProps {
-  gempa: GempaItem;
-}
-
-function formatWib(dateInput: Date | string): string {
-  const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+function formatWib(d: Date): string {
   if (isNaN(d.getTime())) return "Waktu tidak tersedia";
   return (
     new Intl.DateTimeFormat("id-ID", {
@@ -42,76 +36,70 @@ function formatCoordinate(lat: number, lon: number): string {
   return `${latStr}, ${lonStr}`;
 }
 
-export function HistoryRow({ gempa }: HistoryRowProps) {
-  const dateObj = typeof gempa.waktuUtc === "string" ? new Date(gempa.waktuUtc) : gempa.waktuUtc;
-  const hrefSimulasi = `/simulasi?m=${gempa.magnitudo}&d=${gempa.kedalamanKm}&lat=${gempa.lat}&lon=${gempa.lon}`;
+const tsunamiStyle: Record<StatusTsunami, { icon: React.ReactNode; cls: string }> = {
+  AMAN: {
+    icon: <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+    cls: "text-[var(--color-success-strong)]",
+  },
+  BERPOTENSI: {
+    icon: <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+    cls: "text-[var(--color-error-strong)] font-semibold",
+  },
+  TIDAK_DINYATAKAN: {
+    icon: <HelpCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+    cls: "text-[var(--color-text-secondary)]",
+  },
+};
 
-  const tsunamiVariant =
-    gempa.statusTsunami === "AMAN"
-      ? "tsunami_aman"
-      : gempa.statusTsunami === "BERPOTENSI"
-      ? "tsunami_berpotensi"
-      : "tsunami_tidak_dinyatakan";
+export function HistoryRow({ gempa }: { gempa: GempaItem }) {
+  const d = typeof gempa.waktuUtc === "string" ? new Date(gempa.waktuUtc) : gempa.waktuUtc;
+  const hrefSimulasi = `/simulasi?m=${gempa.magnitudo}&d=${gempa.kedalamanKm}&lat=${gempa.lat}&lon=${gempa.lon}`;
+  const mag = gempa.magnitudo.toFixed(1).replace(".", ",");
+  const ts = tsunamiStyle[gempa.statusTsunami] ?? tsunamiStyle.TIDAK_DINYATAKAN;
 
   return (
-    <article
-      className="group rounded-[24px] sm:rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 transition-all duration-200 hover:bg-[var(--color-surface-raised)] hover:border-[var(--color-border-strong)] shadow-2xs"
-    >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* Kolom Info: Magnitudo & Rincian Geografis */}
-        <div className="flex items-start gap-3.5 sm:gap-4">
-          <div className="shrink-0 pt-0.5">
-            <MagnitudeBadge magnitude={gempa.magnitudo} size="md" />
-          </div>
+    <article className="grid grid-cols-[56px_1fr] md:grid-cols-[64px_minmax(0,1fr)_96px_168px_auto] items-center gap-x-4 gap-y-3 rounded-[20px] md:rounded-none bg-[var(--color-surface)] md:bg-transparent px-4 py-4 md:px-6 md:py-4 transition-colors duration-200 hover:bg-[var(--color-surface-raised)]">
+      <p className="row-span-2 md:row-span-1 self-start md:self-center text-2xl md:text-3xl leading-none tracking-tight text-[var(--color-primary)] tnum">
+        <span className="sr-only">Magnitudo </span>
+        {mag}
+      </p>
 
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <h3 className="text-base sm:text-lg font-semibold tracking-tight text-[var(--color-text-primary)] leading-snug break-words">
-              {gempa.wilayah}
-            </h3>
-
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--color-text-secondary)]">
-              <span className="inline-flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" aria-hidden="true" />
-                <time dateTime={dateObj.toISOString()} className="tnum">
-                  {formatWib(dateObj)}
-                </time>
-              </span>
-
-              <span className="inline-flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" aria-hidden="true" />
-                <span className="tnum">Kedalaman {gempa.kedalamanKm} km</span>
-              </span>
-
-              <span className="inline-flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" aria-hidden="true" />
-                <span className="tnum">{formatCoordinate(gempa.lat, gempa.lon)}</span>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Kolom Aksi & Status Tsunami: di mobile tumpuk vertikal dengan tombol lebar penuh */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]/60">
-          <div className="self-start sm:self-center">
-            <StatusBadge
-              variant={tsunamiVariant}
-              customText={gempa.potensiTeks || undefined}
-              onSurface={false}
-            />
-          </div>
-
-          <Link
-            href={hrefSimulasi}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-4 py-2.5 sm:py-1.5 sm:pl-4 sm:pr-1.5 min-h-[44px] text-xs font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] transition-all duration-150 active:scale-95 shadow-2xs group/btn"
-            title={`Simulasikan dampak gempa ${gempa.wilayah}`}
-          >
-            <span>Simulasikan</span>
-            <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-[var(--color-surface)] group-hover/btn:bg-white/15 transition-colors">
-              <ArrowUpRight className="w-3.5 h-3.5 text-[var(--color-text-primary)] group-hover/btn:text-white" aria-hidden="true" />
-            </span>
-          </Link>
-        </div>
+      <div className="min-w-0">
+        <h3 className="text-base font-medium leading-snug text-[var(--color-text-primary)] break-words">
+          {gempa.wilayah}
+        </h3>
+        <p className="mt-1 text-xs text-[var(--color-text-secondary)] tnum">
+          <time dateTime={d.toISOString()}>{formatWib(d)}</time>
+          <span aria-hidden="true"> · </span>
+          {formatCoordinate(gempa.lat, gempa.lon)}
+          <span className="md:hidden">
+            <span aria-hidden="true"> · </span>
+            {gempa.kedalamanKm} km
+          </span>
+        </p>
       </div>
+
+      <p className="hidden md:block text-sm text-[var(--color-text-primary)] tnum">
+        {gempa.kedalamanKm} km
+        <span className="block text-xs text-[var(--color-text-muted)]">kedalaman</span>
+      </p>
+
+      <p
+        className={`col-start-2 md:col-start-auto inline-flex items-center gap-1.5 text-xs ${ts.cls}`}
+        title={gempa.potensiTeks || undefined}
+      >
+        {ts.icon}
+        <span>{tsunamiShortLabel(gempa.statusTsunami)}</span>
+      </p>
+
+      <Link
+        href={hrefSimulasi}
+        aria-label={`Simulasikan gempa M ${mag} ${gempa.wilayah}`}
+        className="col-span-2 md:col-span-1 inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-full border border-[var(--color-border-strong)]/50 px-4 text-xs font-medium text-[var(--color-text-primary)] transition-colors duration-150 hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)]"
+      >
+        Simulasikan
+        <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+      </Link>
     </article>
   );
 }

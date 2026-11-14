@@ -143,178 +143,159 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)] overflow-x-hidden">
-      {/* Container utama Verdro: max-w-[1440px] */}
-      <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 pt-4 flex-1 flex flex-col space-y-12 sm:space-y-16">
+      {/* Container utama Verdro: max-w-[1320px] pas & seimbang */}
+      <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-7 lg:px-8 pt-4 sm:pt-6 flex-1 flex flex-col space-y-10 sm:space-y-14">
         
-        {/* ================= HERO SHELL DENGAN NOTCH HEADER PERSIS REFERENSI ================= */}
-        <section aria-label="Informasi gempa terkini" className="w-full">
-          {/* NOTCH NAVBAR DI BAGIAN ATAS */}
+        {/* ================= HERO: KOMPOSISI MENGIKUTI REFERENSI (BATU MELUBER KE KIRI & BAWAH CARD) ================= */}
+        <section aria-label="Informasi gempa terkini" className="w-full relative !mb-5 lg:!mb-6">
           <NotchNavbar variant="notch" />
 
-          {/* BADAN HERO CARD YANG TERSAMBUNG DENGAN NOTCH */}
-          <div className="relative w-full rounded-b-[40px] md:rounded-b-[48px] bg-[var(--color-surface)] px-6 sm:px-10 lg:px-14 pb-16 sm:pb-20 pt-6 sm:pt-8 transition-colors duration-200">
-            
-            {/* GRID UTAMA HERO */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
-              
-              {/* KOLOM KIRI: TOOLBAR KECIL + ASET BATU TEKTONIK MELAYANG SANGAT BESAR PERSIS REFERENSI */}
-              <div className="lg:col-span-7 relative order-2 lg:order-1">
-                
-                {/* TOOLBAR KIRI: SOCIAL / LANGUAGE (PERSIS REFERENSI) */}
-                <div className="hidden sm:flex flex-col gap-4 absolute -top-4 -left-2 z-20">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      aria-label="Instagram SIGAP"
-                      className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-white flex items-center justify-center hover:opacity-85 transition-opacity"
-                    >
-                      <Radio className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Kanal Telegram SIGAP"
-                      className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-white flex items-center justify-center hover:opacity-85 transition-opacity"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Bagikan informasi"
-                      className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-white flex items-center justify-center hover:opacity-85 transition-opacity"
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] font-medium">
-                    <Globe className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
-                    <span className="text-[var(--color-text-primary)] font-semibold">ID</span>
-                    <span>·</span>
-                    <span className="hover:text-[var(--color-text-primary)] cursor-pointer">EN</span>
-                  </div>
-                </div>
+          {/* lg: rasio tetap agar posisi batu (persen) konsisten di semua lebar desktop */}
+          <div className="relative w-full lg:aspect-[15/8] rounded-b-[40px] md:rounded-b-[48px] bg-[var(--color-surface)] border-b border-x border-[var(--color-border)]/60 px-6 sm:px-9 lg:px-11 pt-4 sm:pt-6 lg:pt-10 pb-6 lg:pb-0 flex flex-col lg:block">
 
-                {/* GAMBAR LEMPENG TEKTONIK SANGAT BESAR MENEMBUS KIRI & BAWAH */}
-                <div className="relative w-[110%] sm:w-[120%] lg:w-[135%] -left-4 sm:-left-8 lg:-left-14 -mb-20 sm:-mb-28 lg:-mb-36 xl:-mb-44 pt-2">
-                  <div className="pointer-events-none absolute -inset-10 rounded-full bg-[var(--color-primary)]/10 blur-3xl" />
-                  <img
-                    src="/images/tectonic-island.png"
-                    alt="Fragmen lempeng tektonik bumi dengan batuan berlumut dan retakan seismik"
-                    className="relative w-full h-auto max-h-[640px] xl:max-h-[720px] object-contain animate-floaty filter drop-shadow-[0_45px_80px_rgba(13,13,13,0.18)] select-none pointer-events-none"
-                  />
-                </div>
-
-                {/* 3 BENEFIT CHIPS PUTIH DI SUDUT BAWAH BATU (PERSIS REFERENSI) */}
-                <div className="relative lg:absolute -bottom-6 lg:-bottom-12 left-0 sm:left-4 z-20 flex flex-wrap gap-2.5 pt-4 lg:pt-0">
-                  <div className="rounded-2xl border border-[var(--color-border)] bg-white/95 px-3.5 py-2.5 shadow-[0_8px_30px_rgba(13,13,13,0.08)] backdrop-blur-sm">
-                    <p className="text-[10px] leading-none text-[var(--color-text-muted)]">Sumber resmi</p>
-                    <p className="mt-1.5 text-[12px] font-semibold leading-none text-[var(--color-text-primary)]">
-                      BMKG Indonesia
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-[var(--color-border)] bg-white/95 px-3.5 py-2.5 shadow-[0_8px_30px_rgba(13,13,13,0.08)] backdrop-blur-sm">
-                    <p className="text-[10px] leading-none text-[var(--color-text-muted)]">Perhitungan fisik</p>
-                    <p className="mt-1.5 text-[12px] font-semibold leading-none text-[var(--color-text-primary)]">
-                      Estimasi MMI & P-S
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-[var(--color-border)] bg-white/95 px-3.5 py-2.5 shadow-[0_8px_30px_rgba(13,13,13,0.08)] backdrop-blur-sm">
-                    <p className="text-[10px] leading-none text-[var(--color-text-muted)]">Asisten mitigasi</p>
-                    <p className="mt-1.5 text-[12px] font-semibold leading-none text-[var(--color-text-primary)]">
-                      Chatbot SIGAP
-                    </p>
-                  </div>
-                </div>
+            {/* TOOLBAR KIRI: SOSIAL + BAHASA (VERTIKAL) */}
+            <div className="hidden lg:flex flex-col gap-10 absolute top-[6%] left-11 z-30">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Instagram SIGAP"
+                  className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] flex items-center justify-center hover:opacity-85 transition-opacity"
+                >
+                  <Radio className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Kanal Telegram SIGAP"
+                  className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] flex items-center justify-center hover:opacity-85 transition-opacity"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Bagikan informasi"
+                  className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] flex items-center justify-center hover:opacity-85 transition-opacity"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                </button>
               </div>
-
-              {/* KOLOM KANAN: TIPOGRAFI HEADLINE + TOMBOL VIEW ALL + FLOATING STAT CARD */}
-              <div className="lg:col-span-5 order-1 lg:order-2 lg:pl-6 space-y-6 sm:space-y-8 z-20">
-                
-                {/* H1 HEADLINE TIPOGRAFI VERDRO (2 BARIS: HIJAU & HITAM) */}
-                <div className="space-y-3">
-                  <h1 className="text-[38px] sm:text-[50px] lg:text-[58px] xl:text-[66px] font-medium leading-[1.04] tracking-[-0.03em]">
-                    <span className="text-[var(--color-primary)]">Pantau gempa bumi untuk</span><br />
-                    <span className="text-[var(--color-text-primary)]">kesiapsiagaan kita</span>
-                  </h1>
-
-                  <p className="text-sm sm:text-base text-[var(--color-text-secondary)] leading-relaxed max-w-[500px] text-pretty">
-                    Data resmi BMKG dan edukasi mitigasi untuk memahami serta menghadapi potensi bencana secara terukur.
-                  </p>
-                </div>
-
-                {/* TOMBOL CTA PILL DENGAN OVAL THUMBNAIL (PERSIS SEPERTI "VIEW ALL" VERDRO) */}
-                <div>
-                  <Link
-                    href="/riwayat"
-                    className="inline-flex items-center justify-between gap-5 rounded-full bg-[var(--color-cta)] text-white pl-6 pr-2 py-2 text-sm font-medium hover:bg-[var(--color-primary)] transition-all shadow-md group"
-                  >
-                    <span>Lihat riwayat</span>
-                    <span className="w-12 h-9 rounded-full overflow-hidden border border-white/20 bg-white/10 flex items-center justify-center shrink-0">
-                      <img
-                        src="/images/tectonic-island.png"
-                        alt=""
-                        className="w-full h-full object-cover scale-150 transition-transform group-hover:scale-175"
-                      />
-                    </span>
-                  </Link>
-                </div>
-
-                {/* FLOATING METRIC CARD (PERSIS POSISI & GAYA 98% SATISFACTION VERDRO) */}
-                <div className="pt-2 sm:pt-4 flex justify-start lg:justify-end">
-                  <div className="w-full max-w-[280px] rounded-[28px] bg-white p-5 sm:p-6 shadow-[0_15px_40px_rgba(13,13,13,0.08)] border border-[var(--color-border)] space-y-3">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl sm:text-5xl font-bold tracking-tight text-[var(--color-text-primary)] tnum">
-                        {latestQuake ? formatMagnitude(latestQuake.magnitudo) : "4,1"}
-                        <span className="text-2xl font-medium text-[var(--color-primary)] ml-0.5">M</span>
-                      </span>
-                      <div className="text-[11px] font-medium text-[var(--color-text-muted)] leading-tight">
-                        <p>magnitudo</p>
-                        <p>gempa terkini</p>
-                      </div>
-                    </div>
-
-                    {/* RADAR VISUAL DENGAN MINI ROCK MELAYANG */}
-                    <div className="relative h-28 w-full flex items-center justify-center bg-[var(--color-surface)]/60 rounded-2xl overflow-hidden border border-[var(--color-border)]/60">
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-24 h-24 rounded-full border border-[var(--color-primary)]/20 animate-ping opacity-30" />
-                        <div className="w-20 h-20 rounded-full border border-[var(--color-primary)]/30" />
-                        <div className="w-12 h-12 rounded-full border border-[var(--color-primary)]/40" />
-                        <div className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
-                      </div>
-                      <img
-                        src="/images/tectonic-island.png"
-                        alt=""
-                        className="relative z-10 w-20 h-auto object-contain animate-floaty filter drop-shadow-[0_8px_16px_rgba(13,13,13,0.15)]"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] text-[var(--color-text-secondary)] pt-1 border-t border-[var(--color-border)]/60">
-                      <span className="truncate max-w-[140px] font-medium text-[var(--color-text-primary)]">
-                        {latestQuake ? latestQuake.wilayah.split(",")[0] : "Sukabumi, Jabar"}
-                      </span>
-                      <span className="tnum text-[var(--color-text-muted)]">
-                        {latestQuake ? `${latestQuake.kedalamanKm} km` : "24 km"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
+              <div className="flex flex-col items-start gap-2 pl-1 text-[12px] leading-none">
+                <span className="w-6 h-6 rounded-full bg-[var(--color-surface-raised)] flex items-center justify-center">
+                  <Globe className="w-3.5 h-3.5 text-[var(--color-text-primary)]" />
+                </span>
+                <span className="pt-1 font-medium text-[var(--color-text-primary)]">ID</span>
+                <span className="text-[var(--color-text-muted)]">EN</span>
               </div>
-
             </div>
 
+            {/* KOLOM KANAN: HEADLINE + CTA */}
+            <div className="relative z-30 lg:ml-auto lg:w-[57%]">
+              <div className="relative text-[clamp(30px,3.6vw,52px)]">
+                <h1 className="font-normal leading-[1.1] tracking-[-0.03em] lg:text-right">
+                  <span className="text-[var(--color-primary)]">Pantau gempa bumi</span>{" "}
+                  <span className="text-[var(--color-text-primary)]">untuk</span>
+                  <span className="block text-[var(--color-text-primary)]">kesiapsiagaan kita</span>
+                </h1>
+                {/* Subjudul kecil di kiri baris kedua (desktop), di bawah headline (mobile) */}
+                <p className="mt-3 lg:mt-0 lg:absolute lg:left-0 lg:top-[calc(clamp(30px,3.6vw,52px)*1.18)] lg:w-[clamp(120px,11vw,160px)] text-[12px] lg:text-[11.5px] leading-snug text-[var(--color-text-secondary)] max-w-[320px]">
+                  Data resmi BMKG dan edukasi mitigasi yang terukur.
+                </p>
+              </div>
+
+              <div className="flex justify-start lg:justify-end mt-6 lg:mt-[clamp(28px,3.4vw,48px)]">
+                <Link
+                  href="/riwayat"
+                  className="group inline-flex items-center justify-between w-[clamp(200px,15vw,216px)] h-12 lg:h-[clamp(46px,3.6vw,52px)] rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] pl-7 pr-1 text-sm font-medium hover:bg-[var(--color-primary)] transition-colors"
+                >
+                  <span>Lihat riwayat</span>
+                  <span className="h-[calc(100%-8px)] w-[64px] rounded-full overflow-hidden bg-[var(--color-surface)] shrink-0">
+                    <img
+                      src="/images/tectonic-island.png"
+                      alt=""
+                      className="w-full h-full object-cover scale-[1.6] transition-transform group-hover:scale-[1.8]"
+                    />
+                  </span>
+                </Link>
+              </div>
+            </div>
+
+            {/* BATU TEKTONIK: lg meluber ke kiri (dibatasi tepi viewport) dan ke bawah card */}
+            <div className="order-3 relative z-10 pointer-events-none mt-6 -mx-[8%] w-[116%] lg:mx-0 lg:mt-0 lg:absolute lg:top-[16%] lg:w-[78%] lg:left-[max(-7%,calc((100%_-_100vw)/2_+_16px))]">
+              <img
+                src="/images/tectonic-island.png"
+                alt="Fragmen lempeng tektonik bumi dengan batuan berlumut dan retakan seismik"
+                className="w-full h-auto object-contain animate-floaty select-none"
+              />
+            </div>
+
+            {/* 3 CHIP KECIL DI SUDUT KIRI BAWAH (DI DEPAN BATU) */}
+            <div className="order-4 relative z-20 flex gap-2.5 mt-4 lg:mt-0 lg:absolute lg:left-11 lg:bottom-[5%]">
+              {[
+                { label: "Sumber resmi", value: "BMKG Indonesia" },
+                { label: "Perhitungan fisik", value: "Estimasi MMI & P-S" },
+                { label: "Asisten mitigasi", value: "Chatbot SIGAP" },
+              ].map((chip) => (
+                <div
+                  key={chip.label}
+                  className="w-[clamp(96px,8.2vw,112px)] rounded-[14px] bg-[var(--color-surface-raised)] px-3 pt-2.5 pb-3"
+                >
+                  <p className="text-[9.5px] leading-none text-[var(--color-text-muted)]">{chip.label}</p>
+                  <p className="mt-2 text-[12.5px] font-medium leading-[1.15] text-[var(--color-text-primary)]">
+                    {chip.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* KARTU MAGNITUDO (KANAN BAWAH, DI DEPAN BATU) */}
+            <div className="order-5 relative z-20 mt-4 lg:mt-0 w-full max-w-[260px] lg:max-w-none lg:absolute lg:right-11 lg:bottom-[5%] lg:w-[19.5%] lg:aspect-[7/8] rounded-[24px] bg-[var(--color-surface-raised)] p-5 flex flex-col">
+              <div className="flex items-start gap-3">
+                <span className="text-[clamp(34px,3vw,44px)] font-normal leading-none tracking-tight text-[var(--color-text-primary)] tnum">
+                  {latestQuake ? formatMagnitude(latestQuake.magnitudo) : "–"}
+                  <span className="text-[0.55em] ml-0.5 text-[var(--color-primary)]">M</span>
+                </span>
+                <span className="pt-1 text-[11.5px] leading-tight text-[var(--color-text-muted)]">
+                  magnitudo
+                  <br />
+                  gempa terkini
+                </span>
+              </div>
+
+              <div className="relative flex-1 min-h-[110px] mt-2">
+                {/* Garis lingkaran episentrum di kanan bawah */}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 64 64"
+                  className="absolute right-0 bottom-0 w-[46%] h-auto text-[var(--color-border-strong)]/50"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                >
+                  <circle cx="32" cy="32" r="30" />
+                  <circle cx="32" cy="32" r="18" />
+                  <path d="M32 2v60M2 32h60" />
+                </svg>
+                <img
+                  src="/images/tectonic-island.png"
+                  alt=""
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[92%] h-auto object-contain"
+                />
+              </div>
+
+              <p className="pt-2 text-[10.5px] leading-tight text-[var(--color-text-muted)] truncate">
+                {latestQuake ? `BMKG · ${formatWibDate(latestQuake.waktuUtc)}` : "Data BMKG belum tersedia"}
+              </p>
+            </div>
           </div>
         </section>
 
-        {/* ================= DUA KOLOM CAPTION STRIP DI BAWAH CARD (PERSIS REFERENSI) ================= */}
-        <section aria-label="Ringkasan platform" className="px-2 sm:px-6 pt-16 sm:pt-24 lg:pt-32">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 text-sm text-[var(--color-text-secondary)] leading-relaxed">
-            <p>
-              Sistem informasi geologis dan mitigasi gempa bumi Indonesia yang menyajikan data resmi BMKG secara persisten, cepat, dan dapat diakses setiap saat.
+        {/* ================= DUA CAPTION DI BAWAH CARD (BATU LEWAT DI TENGAH) ================= */}
+        <section aria-label="Ringkasan platform" className="px-1 relative z-0">
+          <div className="flex flex-col md:flex-row md:justify-between gap-4 text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
+            <p className="md:max-w-[30%]">
+              Sistem informasi gempa bumi Indonesia yang menyajikan data resmi BMKG secara cepat dan dapat diakses setiap saat.
             </p>
-            <p>
-              Dilengkapi kalkulasi simulasi dampak fisik, estimasi intensitas guncangan MMI, waktu golden time gelombang P-S, serta asisten edukasi mitigasi kebencanaan.
+            <p className="md:max-w-[36%]">
+              Dilengkapi simulasi estimasi intensitas guncangan MMI, waktu tiba gelombang P-S, serta asisten edukasi mitigasi bencana.
             </p>
           </div>
         </section>

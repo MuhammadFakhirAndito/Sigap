@@ -25,6 +25,11 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
     { href: "/edukasi", label: "Edukasi" },
   ];
 
+  const isLinkActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname?.startsWith(`${href}/`);
+  };
+
   // Jika variant="pill" (untuk halaman sekunder seperti /riwayat)
   if (variant === "pill") {
     return (
@@ -41,7 +46,7 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
 
           <nav aria-label="Navigasi utama" className="hidden items-center gap-1 text-sm lg:flex">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = isLinkActive(link.href);
               return (
                 <Link
                   key={link.href}
@@ -149,7 +154,7 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
         >
           <ul className="flex items-center gap-7 lg:gap-9">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = isLinkActive(link.href);
               return (
                 <li key={link.href}>
                   <Link
@@ -247,7 +252,7 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
         <div className="lg:hidden p-4 bg-[var(--color-surface-strong)] border-b border-[var(--color-border)] shadow-sm">
           <ul className="flex flex-col gap-1">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = isLinkActive(link.href);
               return (
                 <li key={link.href}>
                   <Link
