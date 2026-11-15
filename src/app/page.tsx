@@ -195,7 +195,7 @@ export default async function HomePage() {
       <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-7 lg:px-8 pt-4 sm:pt-6 pb-16 sm:pb-20 flex-1 flex flex-col space-y-14 sm:space-y-20">
 
         {/* ================= HERO: KOMPOSISI MENGIKUTI REFERENSI (BATU MELUBER KE KIRI & BAWAH CARD) ================= */}
-        <section aria-label="Informasi gempa terkini" className="w-full relative !mb-5 lg:!mb-6">
+        <section aria-label="Informasi gempa terkini" className="w-full relative">
           <NotchNavbar variant="notch" />
 
           {/* lg: rasio tetap agar posisi batu (persen) konsisten di semua lebar desktop */}
@@ -345,7 +345,7 @@ export default async function HomePage() {
         </section>
 
         {/* ================= SECTION 2: RINGKASAN + GEMPA TERBARU ================= */}
-        <section aria-labelledby="ringkasan-sigap-heading" className="pt-4 sm:pt-6">
+        <section aria-labelledby="ringkasan-sigap-heading" className="pt-2 sm:pt-4 lg:pt-12">
           {/* Dua kolom: heading kiri + data gempa terbaru kanan */}
           <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10">
             <div className="flex flex-col justify-center gap-7">
