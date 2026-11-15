@@ -19,7 +19,6 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   variant,
   customText,
   className = "",
-  onSurface = true,
 }) => {
   let text = customText || "";
   let icon: React.ReactNode = null;
@@ -28,33 +27,33 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   switch (variant) {
     case "sync_ok":
       text = text || "BMKG terhubung";
-      icon = <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-[var(--color-success)]" aria-hidden="true" />;
-      colorClasses = "bg-[#15803D]/10 text-[var(--color-success-strong)] border border-[#15803D]/20";
+      icon = <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-[var(--color-success-strong)]" aria-hidden="true" />;
+      colorClasses = "bg-[var(--color-surface-raised)] text-[var(--color-success-strong)] border border-[var(--color-success-strong)]";
       break;
 
     case "sync_warning":
       text = text || "BMKG tidak terjangkau";
-      icon = <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-[var(--color-warning)]" aria-hidden="true" />;
-      colorClasses = "bg-[#B45309]/10 text-[var(--color-warning-strong)] border border-[#B45309]/25";
+      icon = <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-[var(--color-warning-strong)]" aria-hidden="true" />;
+      colorClasses = "bg-[var(--color-surface-raised)] text-[var(--color-warning-strong)] border border-[var(--color-warning-strong)]";
       break;
 
     case "tsunami_aman":
       text = text || "Tidak berpotensi tsunami";
-      icon = <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-[var(--color-success)]" aria-hidden="true" />;
-      colorClasses = "bg-[#15803D]/10 text-[var(--color-success-strong)] border border-[#15803D]/20";
+      icon = <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-[var(--color-success-strong)]" aria-hidden="true" />;
+      colorClasses = "bg-[var(--color-surface-raised)] text-[var(--color-success-strong)] border border-[var(--color-success-strong)]";
       break;
 
     case "tsunami_berpotensi":
       text = text || "Berpotensi tsunami";
-      icon = <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-[var(--color-error)]" aria-hidden="true" />;
-      colorClasses = "bg-[#B91C1C]/10 text-[var(--color-error-strong)] border border-[#B91C1C]/25";
+      icon = <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-[var(--color-error-strong)]" aria-hidden="true" />;
+      colorClasses = "bg-[var(--color-surface-raised)] text-[var(--color-error-strong)] border border-[var(--color-error-strong)]";
       break;
 
     case "tsunami_tidak_dinyatakan":
     default:
       text = text || "Tidak dinyatakan";
       icon = <HelpCircle className="w-3.5 h-3.5 shrink-0 text-[var(--color-text-secondary)]" aria-hidden="true" />;
-      colorClasses = "bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)]";
+      colorClasses = "bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border-strong)]";
       break;
   }
 

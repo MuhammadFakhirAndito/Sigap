@@ -45,7 +45,7 @@ export const MagnitudeBadge: React.FC<MagnitudeBadgeProps> = ({
 
   return (
     <span
-      className={`tnum inline-flex items-center justify-center bg-[var(--color-surface-raised)] text-[var(--color-primary)] border border-[var(--color-border)] shadow-xs ${sizeClasses} ${className}`}
+      className={`tnum inline-flex items-center justify-center bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] border border-[var(--color-border)] ${sizeClasses} ${className}`}
       style={{ fontVariantNumeric: "tabular-nums" }}
     >
       <span className="sr-only">Magnitudo: </span>

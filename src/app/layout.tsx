@@ -1,19 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-jakarta",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -36,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${outfit.variable} ${plusJakartaSans.variable}`}>
-      <body className="min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)] antialiased font-sans flex flex-col selection:bg-[var(--color-primary)] selection:text-white">
+    <html lang="id" className={plusJakartaSans.variable}>
+      <body className="min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)] antialiased font-sans flex flex-col selection:bg-[var(--color-primary)] selection:text-[var(--color-on-primary)]">
         {children}
       </body>
     </html>

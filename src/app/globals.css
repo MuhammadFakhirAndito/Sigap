@@ -1,34 +1,28 @@
+/* impeccable-disable overused-font -- Plus Jakarta Sans dikunci oleh DESIGN.md v1.1 */
 @import "tailwindcss";
 
 @theme {
   --color-primary: #6AA400;
-  --color-primary-hover: #5A8C00;
-  --color-primary-subtle: #E8F2D8;
-  --color-background: #FAFAFA;
-  --color-surface: #EBEBE6;
-  --color-surface-strong: #FFFFFF;
-  --color-surface-raised: #FFFFFF;
-  --color-surface-sunken: #EBEBE6;
-  --color-cta: #0D0D0D;
-  --color-on-cta: #FAFAFA;
-  --color-text-primary: #0D0D0D;
-  --color-text-secondary: #6F6F68;
-  --color-text-muted: #8B8B85;
-  --color-border: #E5E5DE;
-  --color-border-strong: #8B8B85;
-  --color-success: #6AA400;
-  --color-success-strong: #5A8C00;
-  --color-warning: #D99A2B;
-  --color-warning-strong: #B47B1A;
-  --color-error: #C44A3A;
-  --color-error-strong: #A3382A;
+  --color-primary-strong: #477100;
+  --color-on-primary: #1A1613;
+  --color-background: #F6F4F1;
+  --color-surface: #E8E4DF;
+  --color-surface-sunken: #D8D3CC;
+  --color-surface-raised: #FFFDFB;
+  --color-cta: #1A1613;
+  --color-on-cta: #FFFDFB;
+  --color-text-primary: #1A1613;
+  --color-text-secondary: #5E5750;
+  --color-border: #C4BDB4;
+  --color-border-strong: #7A726A;
+  --color-success: #15803D;
+  --color-success-strong: #166534;
+  --color-warning: #B45309;
+  --color-warning-strong: #92400E;
+  --color-error: #B91C1C;
+  --color-error-strong: #991B1B;
 
-  --color-ink: #0D0D0D;
-  --color-muted: #6F6F68;
-  --color-stone: #8B8B85;
-  --color-line: #E5E5DE;
-
-  --font-sans: var(--font-outfit), "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
 
   --radius-xs: 8px;
   --radius-sm: 12px;
@@ -43,11 +37,14 @@
   --transition-slow: 300ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* Animasi melayang organik (Verdro floaty 7s ease-in-out infinite) */
+/* Animasi melayang organik */
 @keyframes floaty {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -58,19 +55,43 @@
 }
 
 /* Angka tabular (wajib untuk data numerik seismik) */
-.tnum, [data-tnum="true"] {
+.tnum,
+[data-tnum="true"] {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
-/* Focus ring sesuai DESIGN.md (2px primary, offset 2px) */
+/* Focus ring sesuai DESIGN.md (2px primary-strong, offset 2px) */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-primary-strong);
   outline-offset: 2px;
 }
 
+/* Affordance kursor interaktif dasar (R-39) */
+a[href],
+button:not(:disabled),
+summary,
+select:not(:disabled),
+label[for],
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+[role="switch"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+textarea:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* Kanvas dasar */
-html, body {
+html,
+body {
   background-color: var(--color-background);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
@@ -78,9 +99,60 @@ html, body {
   overflow-x: clip;
 }
 
+/* Slider kontrol simulasi sesuai token DESIGN.md */
+.simulasi-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.simulasi-range::-webkit-slider-runnable-track {
+  height: 8px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.simulasi-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--color-surface-raised);
+  border: 2px solid var(--color-border-strong);
+  margin-top: -7px;
+  transition: transform 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.simulasi-range:hover::-webkit-slider-thumb {
+  transform: scale(1.08);
+}
+
+.simulasi-range::-moz-range-track {
+  height: 8px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.simulasi-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--color-surface-raised);
+  border: 2px solid var(--color-border-strong);
+  transition: transform 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
 /* Penghormatan prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

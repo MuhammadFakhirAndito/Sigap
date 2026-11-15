@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Menu, X, Search, Bell } from "lucide-react";
+import { Menu, X, Search, Bell } from "lucide-react";
 
 interface NotchNavbarProps {
   className?: string;
@@ -34,14 +34,15 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
   if (variant === "pill") {
     return (
       <header className={`relative z-30 w-full ${className}`}>
-        <div className="flex items-center justify-between gap-4 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-3 py-2.5 shadow-[0_8px_30px_rgba(13,13,13,0.05)] sm:px-5">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5 group" aria-label="SIGAP Gempa beranda">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--color-primary-subtle)] text-[var(--color-primary)] transition-transform group-hover:scale-105">
-              <Activity className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
-            </span>
-            <span className="text-lg font-medium tracking-tight text-[var(--color-text-primary)]">
-              SIGAP <span className="font-normal text-[var(--color-text-secondary)]">Gempa</span>
-            </span>
+        <div className="flex items-center justify-between gap-4 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-3 py-2.5 sm:px-5">
+          <Link href="/" className="flex shrink-0 items-center group focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] rounded-full" aria-label="SIGAP Gempa beranda">
+            <img
+              src="/logo/logo-primary.svg"
+              alt="SIGAP Gempa"
+              width={117}
+              height={48}
+              className="h-10 sm:h-11 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+            />
           </Link>
 
           <nav aria-label="Navigasi utama" className="hidden items-center gap-1 text-sm lg:flex">
@@ -53,7 +54,7 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
                   href={link.href}
                   className={`rounded-full px-4 py-2 text-sm transition-all duration-150 ${
                     isActive
-                      ? "font-semibold text-[var(--color-text-primary)] bg-[var(--color-surface)] shadow-2xs"
+                      ? "font-semibold text-[var(--color-text-primary)] bg-[var(--color-surface)]"
                       : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
                   }`}
                   aria-current={isActive ? "page" : undefined}
@@ -85,7 +86,7 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
         </div>
 
         {mobileMenuOpen && (
-          <div className="mt-2 p-4 bg-[var(--color-surface-strong)] border border-[var(--color-border)] rounded-[28px] shadow-[0_8px_30px_rgba(13,13,13,0.08)]">
+          <div className="mt-2 p-4 bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-[28px]">
             <ul className="flex flex-col gap-1">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
@@ -113,24 +114,25 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
     );
   }
 
-  // DESKTOP NOTCH HEADER PERSIS VERDRO SCREENSHOT
+  // DESKTOP NOTCH HEADER SESUAI DESIGN SYSTEM
   return (
     <header className={`w-full ${className}`}>
       {/* DESKTOP NOTCH ROW (>= 1024px) */}
       <div className="hidden lg:flex items-end w-full relative z-30 -mb-[1px]">
-        {/* Bahu Kiri: Tab Logo Verdro / SIGAP */}
-        <div className="bg-[var(--color-surface)] rounded-tl-[44px] pl-8 pr-5 h-[72px] flex items-center shrink-0">
+        {/* Bahu Kiri: Tab Logo SIGAP Gempa */}
+        <div className="bg-[var(--color-surface)] rounded-tl-[44px] pl-6 pr-5 h-[72px] flex items-center shrink-0">
           <Link
             href="/"
-            className="flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] rounded-full group"
+            className="flex items-center focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] rounded-full group"
             aria-label="SIGAP Gempa beranda"
           >
-            <span className="w-9 h-9 rounded-full bg-[var(--color-primary-subtle)] text-[var(--color-primary)] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
-              <Activity className="w-4 h-4 text-[var(--color-primary)]" strokeWidth={2.5} aria-hidden="true" />
-            </span>
-            <span className="font-semibold text-xl text-[var(--color-text-primary)] tracking-tight">
-              SIGAP <span className="font-normal text-[var(--color-text-secondary)]">Gempa</span>
-            </span>
+            <img
+              src="/logo/logo-primary.svg"
+              alt="SIGAP Gempa"
+              width={131}
+              height={54}
+              className="h-[52px] w-auto object-contain transition-transform group-hover:scale-[1.02]"
+            />
           </Link>
         </div>
 
@@ -159,7 +161,7 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`text-sm transition-all duration-150 py-1.5 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] ${
+                    className={`text-sm transition-all duration-150 py-1.5 focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] ${
                       isActive
                         ? "font-semibold text-[var(--color-text-primary)]"
                         : "font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
@@ -191,21 +193,21 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
         <div className="bg-[var(--color-surface)] rounded-tr-[44px] pl-5 pr-8 h-[72px] flex items-center gap-2 shrink-0">
           <Link
             href="/riwayat"
-            className="w-10 h-10 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] flex items-center justify-center text-[var(--color-text-primary)] shadow-2xs hover:bg-[var(--color-surface-raised)] transition-all active:scale-95"
+            className="w-10 h-10 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] flex items-center justify-center text-[var(--color-text-primary)] hover:bg-[var(--color-background)] transition-all active:scale-95"
             aria-label="Cari gempa di riwayat"
           >
             <Search className="w-4 h-4" strokeWidth={2.2} />
           </Link>
           <button
             type="button"
-            className="w-10 h-10 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] flex items-center justify-center text-[var(--color-text-primary)] shadow-2xs hover:bg-[var(--color-surface-raised)] transition-all active:scale-95"
+            className="w-10 h-10 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] flex items-center justify-center text-[var(--color-text-primary)] hover:bg-[var(--color-background)] transition-all active:scale-95"
             aria-label="Notifikasi gempa"
           >
             <Bell className="w-4 h-4" strokeWidth={2.2} />
           </button>
           <button
             type="button"
-            className="w-10 h-10 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] flex items-center justify-center text-[var(--color-text-primary)] shadow-2xs hover:bg-[var(--color-surface-raised)] transition-all active:scale-95"
+            className="w-10 h-10 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] flex items-center justify-center text-[var(--color-text-primary)] hover:bg-[var(--color-background)] transition-all active:scale-95"
             aria-label="Menu navigasi"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -218,28 +220,29 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
       <div className="lg:hidden w-full bg-[var(--color-surface)] rounded-t-[32px] p-4 flex items-center justify-between border-b border-[var(--color-border)]/40">
         <Link
           href="/"
-          className="flex items-center gap-2.5 rounded-full"
+          className="flex items-center rounded-full focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)]"
           aria-label="SIGAP Gempa beranda"
         >
-          <span className="w-8 h-8 rounded-full bg-[var(--color-primary-subtle)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
-            <Activity className="w-4 h-4" strokeWidth={2.5} />
-          </span>
-          <span className="font-semibold text-base text-[var(--color-text-primary)] tracking-tight">
-            SIGAP <span className="font-normal text-[var(--color-text-secondary)]">Gempa</span>
-          </span>
+          <img
+            src="/logo/logo-primary.svg"
+            alt="SIGAP Gempa"
+            width={107}
+            height={44}
+            className="h-11 w-auto object-contain"
+          />
         </Link>
 
         <div className="flex items-center gap-2">
           <Link
             href="/riwayat"
-            className="w-10 h-10 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] flex items-center justify-center text-[var(--color-text-primary)]"
+            className="w-10 h-10 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] flex items-center justify-center text-[var(--color-text-primary)]"
             aria-label="Cari gempa"
           >
             <Search className="w-4 h-4" />
           </Link>
           <button
             type="button"
-            className="w-10 h-10 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] flex items-center justify-center text-[var(--color-text-primary)]"
+            className="w-10 h-10 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] flex items-center justify-center text-[var(--color-text-primary)]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -249,7 +252,7 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
       </div>
 
       {mobileMenuOpen && (
-        <div className="lg:hidden p-4 bg-[var(--color-surface-strong)] border-b border-[var(--color-border)] shadow-sm">
+        <div className="lg:hidden p-4 bg-[var(--color-surface-raised)] border-b border-[var(--color-border)]">
           <ul className="flex flex-col gap-1">
             {navLinks.map((link) => {
               const isActive = isLinkActive(link.href);

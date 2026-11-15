@@ -12,7 +12,6 @@ interface EpicenterGraphicProps {
  */
 export const EpicenterGraphic: React.FC<EpicenterGraphicProps> = ({
   className = "",
-  depthKm = 10,
 }) => {
   return (
     <div

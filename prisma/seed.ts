@@ -1,4 +1,4 @@
-import { PrismaClient, KategoriArtikel } from "@prisma/client";
+import { PrismaClient, KategoriArtikel, TipeLokasi } from "@prisma/client";
 import fs from "fs";
 import path from "path";
 import yaml from "yaml";
@@ -197,11 +197,195 @@ export async function seedContent(contentDir: string = path.resolve(process.cwd(
     }
   }
 
+  // 4. SEED SUMBER & SKENARIO SIMULASI (Preset Gempa Bersejarah dari USGS)
+  const simScenarios: Array<{
+    nama: string;
+    magnitudo: number;
+    kedalamanKm: number;
+    lat: number;
+    lon: number;
+    tipeLokasi: TipeLokasi;
+    deskripsiSingkat: string;
+    urutan: number;
+    sumber: {
+      judul: string;
+      penerbit: string;
+      url: string;
+      tanggalAkses: string;
+    };
+  }> = [
+    {
+      nama: "Aceh 2004 (M 9,1)",
+      magnitudo: 9.1,
+      kedalamanKm: 30,
+      lat: 3.295,
+      lon: 95.982,
+      tipeLokasi: "LAUT",
+      deskripsiSingkat:
+        "Gempa megathrust Samudra Hindia (26 Des 2004, lepas pantai Aceh) pemicu tsunami besar. Parameter di luar rentang kalibrasi (M > 7,9, zona subduksi).",
+      urutan: 1,
+      sumber: {
+        judul: "M 9.1 - 2004 Sumatra - Andaman Islands Earthquake (official20041226005853450_30)",
+        penerbit: "USGS",
+        url: "https://earthquake.usgs.gov/earthquakes/eventpage/official20041226005853450_30/executive",
+        tanggalAkses: "2026-11-15",
+      },
+    },
+    {
+      nama: "Nias 2005 (M 8,6)",
+      magnitudo: 8.6,
+      kedalamanKm: 30,
+      lat: 2.085,
+      lon: 97.108,
+      tipeLokasi: "LAUT",
+      deskripsiSingkat:
+        "Gempa besar Sumatra Utara–Nias (28 Mar 2005, 78 km barat daya Singkil, laut). Parameter di luar rentang kalibrasi (M > 7,9, zona subduksi).",
+      urutan: 2,
+      sumber: {
+        judul: "M 8.6 - 78 km WSW of Singkil, Indonesia (official20050328160936530_30)",
+        penerbit: "USGS",
+        url: "https://earthquake.usgs.gov/earthquakes/eventpage/official20050328160936530_30/executive",
+        tanggalAkses: "2026-11-15",
+      },
+    },
+    {
+      nama: "Yogyakarta 2006 (M 6,3)",
+      magnitudo: 6.3,
+      kedalamanKm: 12.5,
+      lat: -7.961,
+      lon: 110.446,
+      tipeLokasi: "DARAT",
+      deskripsiSingkat:
+        "Gempa kerak dangkal di darat (27 Mei 2006 WIB / 26 Mei UTC, sekitar 10 km timur Pundong, Bantul).",
+      urutan: 3,
+      sumber: {
+        judul: "M 6.3 - 10 km E of Pundong, Indonesia (usp000ej1c)",
+        penerbit: "USGS",
+        url: "https://earthquake.usgs.gov/earthquakes/eventpage/usp000ej1c/executive",
+        tanggalAkses: "2026-11-15",
+      },
+    },
+    {
+      nama: "Padang 2009 (M 7,6)",
+      magnitudo: 7.6,
+      kedalamanKm: 81,
+      lat: -0.72,
+      lon: 99.867,
+      tipeLokasi: "LAUT",
+      deskripsiSingkat:
+        "Gempa menengah lepas pantai Pariaman, Sumatra Barat (30 Sep 2009). Kedalaman 81 km melebihi batas simulasi tsunami BNPB (≤ 70 km).",
+      urutan: 4,
+      sumber: {
+        judul: "M 7.6 - 30 km WSW of Pariaman, Indonesia (usp000h237)",
+        penerbit: "USGS",
+        url: "https://earthquake.usgs.gov/earthquakes/eventpage/usp000h237/executive",
+        tanggalAkses: "2026-11-15",
+      },
+    },
+    {
+      nama: "Lombok 2018 (M 6,9)",
+      magnitudo: 6.9,
+      kedalamanKm: 34,
+      lat: -8.2581,
+      lon: 116.4375,
+      tipeLokasi: "DARAT",
+      deskripsiSingkat:
+        "Gempa 5 Agu 2018 di darat utara Lombok, dekat garis pantai (~3,4 km dari pesisir). Simulasi tidak memodelkan longsor bawah laut atau jenis sesar sehingga hasil \"tidak memenuhi kriteria tsunami\" tidak boleh dianggap nihil risiko pesisir.",
+      urutan: 5,
+      sumber: {
+        judul: "M 6.9 - 36 km NW of Labuan Lombok, Indonesia (us1000g3ub)",
+        penerbit: "USGS",
+        url: "https://earthquake.usgs.gov/earthquakes/eventpage/us1000g3ub/executive",
+        tanggalAkses: "2026-11-15",
+      },
+    },
+    {
+      nama: "Palu 2018 (M 7,5)",
+      magnitudo: 7.5,
+      kedalamanKm: 20,
+      lat: -0.2559,
+      lon: 119.8462,
+      tipeLokasi: "DARAT",
+      deskripsiSingkat:
+        "Gempa 28 Sep 2018 dengan pusat di darat Donggala, dekat garis pantai (~5,6 km). Pada kejadian nyata terjadi tsunami besar akibat longsor bawah laut; simulasi tidak memodelkan longsor bawah laut atau jenis sesar sehingga hasil \"tidak memenuhi kriteria tsunami\" tidak menyesatkan.",
+      urutan: 6,
+      sumber: {
+        judul: "M 7.5 - 72 km N of Palu, Indonesia (us1000h3p4)",
+        penerbit: "USGS",
+        url: "https://earthquake.usgs.gov/earthquakes/eventpage/us1000h3p4/executive",
+        tanggalAkses: "2026-11-15",
+      },
+    },
+    {
+      nama: "Cianjur 2022 (M 5,6)",
+      magnitudo: 5.6,
+      kedalamanKm: 10,
+      lat: -6.836,
+      lon: 106.9968,
+      tipeLokasi: "DARAT",
+      deskripsiSingkat:
+        "Gempa kerak dangkal di darat Jawa Barat (21 Nov 2022, 11 km timur laut Sukabumi / kawasan Cianjur).",
+      urutan: 7,
+      sumber: {
+        judul: "M 5.6 - 11 km NE of Sukabumi, Indonesia (us7000ir9t)",
+        penerbit: "USGS",
+        url: "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ir9t/executive",
+        tanggalAkses: "2026-11-15",
+      },
+    },
+  ];
+
+  let skenarioCount = 0;
+  for (const item of simScenarios) {
+    const sumberRecord = await prisma.sumber.upsert({
+      where: { url: item.sumber.url },
+      update: {
+        judul: item.sumber.judul,
+        penerbit: item.sumber.penerbit,
+        tanggalAkses: new Date(item.sumber.tanggalAkses),
+      },
+      create: {
+        judul: item.sumber.judul,
+        penerbit: item.sumber.penerbit,
+        url: item.sumber.url,
+        tanggalAkses: new Date(item.sumber.tanggalAkses),
+      },
+    });
+    uniqueSumberIds.add(sumberRecord.id);
+
+    await prisma.skenarioSimulasi.upsert({
+      where: { nama: item.nama },
+      update: {
+        magnitudo: item.magnitudo,
+        kedalamanKm: item.kedalamanKm,
+        lat: item.lat,
+        lon: item.lon,
+        tipeLokasi: item.tipeLokasi,
+        deskripsiSingkat: item.deskripsiSingkat,
+        urutan: item.urutan,
+        sumberId: sumberRecord.id,
+      },
+      create: {
+        nama: item.nama,
+        magnitudo: item.magnitudo,
+        kedalamanKm: item.kedalamanKm,
+        lat: item.lat,
+        lon: item.lon,
+        tipeLokasi: item.tipeLokasi,
+        deskripsiSingkat: item.deskripsiSingkat,
+        urutan: item.urutan,
+        sumberId: sumberRecord.id,
+      },
+    });
+    skenarioCount++;
+  }
+
   console.log(`[SEED SELESAI] Hasil sinkronisasi:`);
   console.log(`- Artikel diproses : ${artikelCount}`);
   console.log(`- Sumber unik      : ${uniqueSumberIds.size} (${sumberCount} relasi artikel)`);
   console.log(`- Berita diproses  : ${beritaCount}`);
   console.log(`- FAQ diproses     : ${faqCount}`);
+  console.log(`- Skenario Simulasi: ${skenarioCount}`);
 }
 
 async function main() {

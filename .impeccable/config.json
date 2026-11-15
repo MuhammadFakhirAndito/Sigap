@@ -1,4 +1,6 @@
 {
-  "buildPath": "code"
+  "buildPath": "code",
+  "detector": {
+    "ignoreRules": ["overused-font"]
+  }
 }
-

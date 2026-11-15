@@ -1,77 +1,214 @@
-import React from "react";
-import type { Metadata } from "next";
-import Link from "next/link";
-import { NotchNavbar } from "@/components/ui/NotchNavbar";
-import { Footer } from "@/components/ui/Footer";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import React from 'react';
+import type { Metadata } from 'next';
+import { NotchNavbar } from '@/components/ui/NotchNavbar';
+import { Footer } from '@/components/ui/Footer';
+import {
+  ChatbotWorkspace,
+  type ChatUiErrorState,
+  type ChatUiMessage,
+} from '@/components/chat/ChatbotWorkspace';
+import { buildEarthquakeContext } from '@/lib/chat/context';
+import { STATIC_FAQS } from '@/data/fallback/faq';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "Chatbot Mitigasi Gempa | SIGAP Gempa",
+  title: 'Chatbot Mitigasi Gempa | SIGAP Gempa',
   description:
-    "Asisten tanya jawab kontekstual kebencanaan dan mitigasi gempa SIGAP Gempa (sedang disiapkan pada Fase 3).",
+    'Tanya jawab seputar data gempa bumi BMKG, arti skala MMI, potensi tsunami, dan langkah kesiapsiagaan bencana.',
 };
 
-interface ChatbotPlaceholderPageProps {
+interface ChatbotPageProps {
   searchParams: Promise<{
     q?: string;
+    topik?: string;
+    m?: string;
+    d?: string;
+    lat?: string;
+    lon?: string;
+    wilayah?: string;
+    mmi?: string;
+    view?: string;
   }>;
 }
 
-export default async function ChatbotPlaceholderPage({
-  searchParams,
-}: ChatbotPlaceholderPageProps) {
+const DEFAULT_SUGGESTED_PROMPTS = [
+  'Gempa terakhir terjadi di mana?',
+  'Apa yang harus dilakukan saat gempa di dalam bangunan?',
+  'Apa isi tas siaga bencana?',
+  'Apa itu skala MMI?',
+];
+
+function buildPrefillFromSearchParams(params: {
+  q?: string;
+  topik?: string;
+  m?: string;
+  d?: string;
+  lat?: string;
+  lon?: string;
+  wilayah?: string;
+  mmi?: string;
+}): { initialPrefill: string; contextBannerText?: string } {
+  const rawQuestion = (params.q ?? params.topik ?? '').trim();
+  if (rawQuestion) {
+    const isQuestionSentence =
+      rawQuestion.endsWith('?') ||
+      /^(apa|bagaimana|mengapa|kenapa|kapan|di mana|berapa)/i.test(rawQuestion);
+    return {
+      initialPrefill: isQuestionSentence
+        ? rawQuestion
+        : `Saya ingin bertanya mengenai materi "${rawQuestion}": apa poin kesiapsiagaan utama yang perlu saya perhatikan?`,
+      contextBannerText: `Topik dari halaman Edukasi (${rawQuestion})`,
+    };
+  }
+
+  const m = params.m?.trim();
+  const d = params.d?.trim();
+  const wilayah = params.wilayah?.trim();
+  const mmi = params.mmi?.trim();
+
+  if (m && d) {
+    const lokasiPart = wilayah ? ` di wilayah ${wilayah}` : '';
+    const mmiPart = mmi ? ` (estimasi intensitas MMI ${mmi})` : '';
+    return {
+      initialPrefill: `Bagaimana langkah kesiapsiagaan untuk skenario gempa magnitudo M ${m} dengan kedalaman ${d} km${lokasiPart}${mmiPart}?`,
+      contextBannerText: `Parameter dari Simulasi/Riwayat (M ${m}, kedalaman ${d} km${lokasiPart})`,
+    };
+  }
+
+  return { initialPrefill: '' };
+}
+
+export default async function ChatbotPage({ searchParams }: ChatbotPageProps) {
   const params = await searchParams;
-  const queryTopic = params.q?.trim();
+  const { initialPrefill, contextBannerText } = buildPrefillFromSearchParams(params);
+
+  const quakeContext = await buildEarthquakeContext();
+  const latestQuakeSummary = quakeContext.autogempa;
+
+  let initialMessages: ChatUiMessage[] = [];
+  let initialError: ChatUiErrorState | null = null;
+  let initialQuotaNotice = false;
+
+  // Mode pratinjau deterministik khusus lingkungan non-produksi untuk tangkapan layar verifikasi
+  // memakai data nyata BMKG dan FAQ resmi tanpa mengonsumsi kuota API Gemini.
+  if (process.env.NODE_ENV !== 'production' && params.view) {
+    const viewMode = params.view.trim().toLowerCase();
+    const faqBangunan =
+      STATIC_FAQS.find((f) => f.pertanyaan.includes('di dalam bangunan')) ??
+      STATIC_FAQS[2]!;
+    const faqTasSiaga =
+      STATIC_FAQS.find((f) => f.pertanyaan.includes('tas siaga')) ??
+      STATIC_FAQS[8]!;
+
+    if (viewMode === 'normal') {
+      const quakeReply = latestQuakeSummary
+        ? `Berdasarkan data resmi BMKG yang diperbarui pada ${latestQuakeSummary.waktuWib}, gempa terbaru tercatat dengan magnitudo M ${latestQuakeSummary.magnitudo.toFixed(
+            1
+          )} pada kedalaman ${latestQuakeSummary.kedalamanKm} km di ${
+            latestQuakeSummary.wilayah
+          } (koordinat ${latestQuakeSummary.koordinat}). Status BMKG: ${
+            latestQuakeSummary.potensiTeks
+          }.\n\nJika Anda berada di sekitar wilayah tersebut dan merasakan guncangan, tetap tenang, lindungi kepala dari potensi benda jatuh, dan pantau pembaruan resmi melalui kanal BMKG atau Contact Center 196.`
+        : `Berdasarkan panduan resmi BMKG, saat terjadi guncangan gempa di dalam gedung, segera lindungi kepala dan tubuh di bawah meja yang kokoh, jauhi kaca, dan jangan menggunakan lift.`;
+
+      initialMessages = [
+        {
+          id: 'preview-user-1',
+          role: 'user',
+          content: 'Gempa terakhir terjadi di mana?',
+          timestampWib: '09:15 WIB',
+        },
+        {
+          id: 'preview-assistant-1',
+          role: 'assistant',
+          content: quakeReply,
+          timestampWib: '09:15 WIB',
+          source: 'LLM',
+          model: 'gemini-3.5-flash-lite',
+          chatLogId: 'cmmpreviewnormalchatlog01',
+          feedbackGiven: 'up',
+        },
+      ];
+    } else if (viewMode === 'faq') {
+      initialMessages = [
+        {
+          id: 'preview-user-faq',
+          role: 'user',
+          content: faqBangunan.pertanyaan,
+          timestampWib: '09:18 WIB',
+        },
+        {
+          id: 'preview-assistant-faq',
+          role: 'assistant',
+          content: faqBangunan.jawaban,
+          timestampWib: '09:18 WIB',
+          source: 'FALLBACK',
+          model: 'faq_db',
+          chatLogId: 'cmmpreviewfaqchatlog0002',
+          feedbackGiven: null,
+        },
+      ];
+    } else if (viewMode === 'quota') {
+      initialQuotaNotice = true;
+      initialMessages = [
+        {
+          id: 'preview-user-quota',
+          role: 'user',
+          content: faqTasSiaga.pertanyaan,
+          timestampWib: '09:20 WIB',
+        },
+        {
+          id: 'preview-assistant-quota',
+          role: 'assistant',
+          content: `Kuota asisten AI sedang penuh atau layanan model sedang mengalami gangguan. Berikut jawaban dari FAQ SIGAP:\n\n${faqTasSiaga.jawaban}`,
+          timestampWib: '09:20 WIB',
+          source: 'FALLBACK',
+          model: 'faq_db',
+          chatLogId: 'cmmpreviewquotachatlog03',
+          quotaExhausted: true,
+          feedbackGiven: null,
+        },
+      ];
+    } else if (viewMode === 'error') {
+      initialMessages = [
+        {
+          id: 'preview-user-err',
+          role: 'user',
+          content: 'Apa yang harus dilakukan setelah guncangan gempa berhenti?',
+          timestampWib: '09:22 WIB',
+        },
+      ];
+      initialError = {
+        message: 'Terlalu banyak pesan. Coba lagi dalam 42 detik.',
+        retryText: 'Apa yang harus dilakukan setelah guncangan gempa berhenti?',
+        isRateLimit: true,
+        retryAfterSec: 42,
+      };
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)] overflow-x-clip">
-      <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-7 lg:px-8 pt-4 sm:pt-6">
-        <NotchNavbar variant="pill" />
+      <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-7 lg:px-8 pt-4 sm:pt-6 pb-8 flex-1 flex flex-col">
+        <NotchNavbar variant="notch" />
+
+        <main className="w-full rounded-b-[32px] md:rounded-b-[40px] bg-[var(--color-surface)] border-b border-x border-[var(--color-border)]/60 px-4 sm:px-8 lg:px-10 pt-5 sm:pt-7 pb-6 sm:pb-8 flex-1 flex flex-col">
+          <ChatbotWorkspace
+            initialPrefill={initialPrefill}
+            contextBannerText={contextBannerText}
+            suggestedPrompts={DEFAULT_SUGGESTED_PROMPTS}
+            latestQuakeSummary={latestQuakeSummary}
+            initialMessages={initialMessages}
+            initialError={initialError}
+            initialQuotaNotice={initialQuotaNotice}
+          />
+        </main>
       </div>
 
-      <main className="w-full max-w-[72ch] mx-auto px-4 sm:px-6 py-12 flex-1 flex flex-col items-center justify-center text-center">
-        <div className="rounded-3xl bg-[var(--color-surface-strong)] border border-[var(--color-border)] p-8 sm:p-10 w-full space-y-6">
-          <div className="w-14 h-14 rounded-full bg-[var(--color-primary-subtle)] text-[var(--color-text-primary)] mx-auto flex items-center justify-center">
-            <MessageSquare className="w-6 h-6" aria-hidden="true" />
-          </div>
-
-          <div className="space-y-2.5">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">
-              Fase 3 · Sedang Disiapkan
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--color-text-primary)] [text-wrap:balance]">
-              Asisten tanya jawab mitigasi gempa
-            </h1>
-            <p className="text-sm sm:text-base text-[var(--color-text-secondary)] leading-relaxed [text-wrap:pretty]">
-              Halaman chatbot kontekstual dengan dukungan FAQ resmi kebencanaan sedang dikembangkan pada tahap berikutnya.
-            </p>
-          </div>
-
-          {queryTopic && (
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 text-left space-y-1">
-              <p className="text-xs font-medium text-[var(--color-text-secondary)]">
-                Topik pertanyaan yang diteruskan dari artikel:
-              </p>
-              <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                {queryTopic}
-              </p>
-            </div>
-          )}
-
-          <div className="pt-1 flex justify-center">
-            <Link
-              href="/edukasi"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] px-6 py-3 text-sm font-medium hover:bg-[var(--color-primary)] hover:text-[var(--color-text-primary)] transition-colors min-h-[44px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-hover)]"
-            >
-              <ArrowLeft className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span>Kembali ke Pusat Edukasi</span>
-            </Link>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
+      <div className="hidden sm:block">
+        <Footer />
+      </div>
     </div>
   );
 }
-

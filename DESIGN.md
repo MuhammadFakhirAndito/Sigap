@@ -3,8 +3,8 @@ name: SIGAP Gempa
 description: Platform info gempa BMKG, riwayat, simulasi dampak, chatbot, dan edukasi mitigasi untuk masyarakat Indonesia.
 version: 1.1
 colors:
-  primary: "#B7410E"
-  primary-strong: "#9A3412"
+  primary: "#6AA400"
+  primary-strong: "#477100"
   on-primary: "#FFFDFB"
   background: "#F6F4F1"
   surface: "#E8E4DF"

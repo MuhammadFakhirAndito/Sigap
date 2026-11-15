@@ -11,6 +11,8 @@ Koordinat: LS/BT. Tanpa login, tanpa halaman admin.
    produk yang DIBUAT ULANG (PRD utama asli tidak ada); butir bertanda [ASUMSI] di
    dalamnya harus ditanyakan ke saya. Jika bentrok, PRD-DATABASE.md menang.
 2. DESIGN.md — token dan aturan visual. Jangan hardcode warna/radius/spacing.
+   DESIGN.md adalah satu-satunya sumber token visual. Jangan pernah menimpanya.
+   Berkas di docs/referensi/ hanya untuk dibaca.
 3. docs/screens/*.md — layout per screen.
 Jika sesuatu tidak ada di ketiganya: TANYA, jangan mengarang fitur, angka, atau rumus.
 

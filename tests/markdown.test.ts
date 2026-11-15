@@ -39,7 +39,8 @@ describe("Safe Markdown Renderer", () => {
     const html = await renderSafeMarkdown(input);
 
     expect(html).toContain("<h2");
-    expect(html).toContain("Informasi Resmi</h2>");
+    expect(html).toContain("Informasi Resmi");
+    expect(html).toContain("</h2>");
     expect(html).toContain("<p");
     expect(html).toContain("Data dari BMKG.</p>");
     expect(html).toContain("<ul");

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronDown, RotateCcw, Calendar } from "lucide-react";
 
 interface RiwayatFilterProps {
   initialMag?: string;
@@ -20,8 +20,16 @@ const MAG_OPTIONS = [
   { value: "6", label: "≥6" },
 ];
 
-const fieldCls =
-  "min-h-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-4 text-sm text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]";
+const MONTHS_ID = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+function formatFilterDate(iso: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return iso;
+  const mon = MONTHS_ID[Number(match[2]) - 1];
+  return mon ? `${Number(match[3])} ${mon} ${match[1]}` : iso;
+}
+
+const labelCls = "block mb-2 text-xs font-medium leading-none text-[var(--color-text-secondary)]";
 
 export function RiwayatFilter({
   initialMag = "",
@@ -31,9 +39,25 @@ export function RiwayatFilter({
   embedded = false,
 }: RiwayatFilterProps) {
   const [open, setOpen] = useState(false);
+  const [dari, setDari] = useState(initialDari);
+  const [sampai, setSampai] = useState(initialSampai);
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    setDari(initialDari);
+    setSampai(initialSampai);
+  }, [initialDari, initialSampai]);
+
   const hasActive = Boolean(initialMag || initialDari || initialSampai || initialWilayah);
   const submit = () => formRef.current?.requestSubmit();
+
+  const openPicker = (e: React.MouseEvent<HTMLInputElement>) => {
+    try {
+      (e.currentTarget as HTMLInputElement & { showPicker?: () => void }).showPicker?.();
+    } catch {
+      // Abaikan jika browser tidak mendukung showPicker()
+    }
+  };
 
   const wrapperCls = embedded
     ? ""
@@ -47,18 +71,19 @@ export function RiwayatFilter({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="riwayat-filter"
-          className="inline-flex items-center gap-2 min-h-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-4 text-sm font-medium text-[var(--color-text-primary)]"
+          className="inline-flex items-center gap-2 min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-4 text-sm font-medium text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
         >
           <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
           Filter
-          {hasActive && <span className="text-xs text-[var(--color-text-secondary)]">(aktif)</span>}
+          {hasActive && <span className="text-xs text-[var(--color-primary-strong)]">(aktif)</span>}
           <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
         </button>
         {hasActive && (
           <Link
             href="/riwayat"
-            className="min-h-[44px] inline-flex items-center px-3 text-sm text-[var(--color-text-secondary)] underline underline-offset-4"
+            className="min-h-[44px] inline-flex items-center gap-1.5 px-3 text-sm font-medium text-[var(--color-text-primary)] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
           >
+            <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
             Reset
           </Link>
         )}
@@ -69,13 +94,15 @@ export function RiwayatFilter({
         id="riwayat-filter"
         method="GET"
         action="/riwayat"
-        className={`${open ? "flex" : "hidden"} md:flex mt-4 md:mt-0 flex-col lg:flex-row lg:items-end gap-4 lg:gap-5`}
+        className={`${open ? "flex" : "hidden"} md:flex mt-4 md:mt-0 flex-col lg:flex-row lg:items-end gap-4`}
       >
-        <fieldset className="min-w-0">
-          <legend className="mb-2 text-xs text-[var(--color-text-secondary)]">Magnitudo minimum</legend>
-          <div className="flex gap-1 overflow-x-auto rounded-full bg-[var(--color-surface-raised)] p-1 border border-[var(--color-border)] w-max max-w-full">
+        <div role="radiogroup" aria-labelledby="filter-mag-label" className="min-w-0 shrink-0">
+          <span id="filter-mag-label" className={labelCls}>
+            Magnitudo minimum
+          </span>
+          <div className="flex md:inline-flex w-full md:w-auto h-12 items-center gap-0.5 overflow-x-auto rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-sunken)] p-[1px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {MAG_OPTIONS.map((o) => (
-              <label key={o.value || "all"} className="shrink-0">
+              <label key={o.value || "all"} className="flex-1 md:flex-initial shrink-0">
                 <input
                   type="radio"
                   name="mag"
@@ -84,79 +111,108 @@ export function RiwayatFilter({
                   onChange={submit}
                   className="peer sr-only"
                 />
-                <span className="flex min-h-[44px] min-w-[52px] cursor-pointer items-center justify-center rounded-full px-3.5 text-sm text-[var(--color-text-secondary)] transition-colors duration-150 hover:text-[var(--color-text-primary)] peer-checked:bg-[var(--color-cta)] peer-checked:text-[var(--color-on-cta)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-primary)] tnum">
+                <span className="flex h-[44px] min-w-[48px] cursor-pointer items-center justify-center rounded-full px-3.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:text-[var(--color-text-primary)] peer-checked:bg-[var(--color-surface-raised)] peer-checked:text-[var(--color-text-primary)] peer-checked:font-semibold peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-primary-strong)] tnum">
                   {o.label}
                 </span>
               </label>
             ))}
           </div>
-        </fieldset>
+        </div>
 
-        <fieldset className="min-w-0">
-          <legend className="mb-2 text-xs text-[var(--color-text-secondary)]">Rentang tanggal</legend>
-          <div className="flex items-center gap-2">
-            <label htmlFor="filter-dari" className="sr-only">
-              Dari tanggal
-            </label>
-            <input
-              id="filter-dari"
-              type="date"
-              name="dari"
-              defaultValue={initialDari}
-              onChange={submit}
-              className={`${fieldCls} w-full lg:w-[156px]`}
-            />
-            <span className="text-[var(--color-text-muted)]" aria-hidden="true">
-              –
-            </span>
-            <label htmlFor="filter-sampai" className="sr-only">
-              Sampai tanggal
-            </label>
-            <input
-              id="filter-sampai"
-              type="date"
-              name="sampai"
-              defaultValue={initialSampai}
-              onChange={submit}
-              className={`${fieldCls} w-full lg:w-[156px]`}
-            />
+        <div role="group" aria-labelledby="filter-date-label" className="min-w-0 shrink-0">
+          <span id="filter-date-label" className={labelCls}>
+            Rentang tanggal
+          </span>
+          <div className="flex h-12 items-center rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-3.5">
+            <Calendar className="w-4 h-4 text-[var(--color-text-secondary)] shrink-0 mr-2" aria-hidden="true" />
+            <div className="relative flex-1 lg:flex-none lg:w-[116px] h-[44px] flex items-center rounded-full px-1.5 hover:bg-[var(--color-surface)]/60 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--color-primary-strong)] transition-colors">
+              <label htmlFor="filter-dari" className="sr-only">
+                Dari tanggal
+              </label>
+              <span
+                aria-hidden="true"
+                className={`block w-full truncate text-sm tnum ${
+                  dari ? "font-medium text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"
+                }`}
+              >
+                {dari ? formatFilterDate(dari) : "Dari tanggal"}
+              </span>
+              <input
+                id="filter-dari"
+                type="date"
+                name="dari"
+                value={dari}
+                onClick={openPicker}
+                onChange={(e) => {
+                  setDari(e.target.value);
+                  submit();
+                }}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              />
+            </div>
+
+            <span className="mx-1.5 h-5 w-px bg-[var(--color-border)] shrink-0" aria-hidden="true" />
+
+            <div className="relative flex-1 lg:flex-none lg:w-[124px] h-[44px] flex items-center rounded-full px-1.5 hover:bg-[var(--color-surface)]/60 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--color-primary-strong)] transition-colors">
+              <label htmlFor="filter-sampai" className="sr-only">
+                Sampai tanggal
+              </label>
+              <span
+                aria-hidden="true"
+                className={`block w-full truncate text-sm tnum ${
+                  sampai ? "font-medium text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"
+                }`}
+              >
+                {sampai ? formatFilterDate(sampai) : "Sampai tanggal"}
+              </span>
+              <input
+                id="filter-sampai"
+                type="date"
+                name="sampai"
+                value={sampai}
+                onClick={openPicker}
+                onChange={(e) => {
+                  setSampai(e.target.value);
+                  submit();
+                }}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              />
+            </div>
           </div>
-        </fieldset>
+        </div>
 
         <div className="flex-1 min-w-0">
-          <label htmlFor="filter-wilayah" className="mb-2 block text-xs text-[var(--color-text-secondary)]">
+          <label htmlFor="filter-wilayah" className={labelCls}>
             Wilayah
           </label>
-          <div className="relative">
+          <div className="relative flex h-12 items-center rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] pl-4 pr-0.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--color-primary-strong)]">
+            <Search className="w-4 h-4 text-[var(--color-text-secondary)] shrink-0 mr-2.5 pointer-events-none" aria-hidden="true" />
             <input
               id="filter-wilayah"
               type="search"
               name="wilayah"
               defaultValue={initialWilayah}
-              placeholder="Misal: Bengkulu, Maluku"
-              className={`${fieldCls} w-full pl-5 pr-12 placeholder:text-[var(--color-text-muted)]`}
+              placeholder="Cari wilayah, misal: Bengkulu"
+              className="h-[44px] w-full min-w-0 bg-transparent pr-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] focus:outline-none"
             />
             <button
               type="submit"
-              aria-label="Cari wilayah"
-              className="absolute right-0 top-1/2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] hover:opacity-85 transition-opacity"
+              className="inline-flex h-[42px] min-h-[44px] shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] px-4 text-xs font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)] transition-colors duration-150"
             >
-              <Search className="w-4 h-4" aria-hidden="true" />
+              Cari
             </button>
           </div>
         </div>
 
-        <Link
-          href="/riwayat"
-          aria-disabled={!hasActive}
-          className={`hidden md:inline-flex min-h-[44px] items-center justify-center rounded-full border px-5 text-sm transition-colors duration-150 ${
-            hasActive
-              ? "border-[var(--color-border-strong)]/60 text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]"
-              : "border-[var(--color-border)] text-[var(--color-text-muted)] pointer-events-none"
-          }`}
-        >
-          Reset
-        </Link>
+        {hasActive && (
+          <Link
+            href="/riwayat"
+            className="hidden md:inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-full border border-[var(--color-border-strong)] bg-transparent px-4 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)] transition-colors duration-150"
+          >
+            <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+            Reset
+          </Link>
+        )}
       </form>
     </section>
   );

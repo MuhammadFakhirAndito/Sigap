@@ -1,8 +1,21 @@
 import React from "react";
-import Link from "next/link";
+import type { Metadata } from "next";
 import { NotchNavbar } from "@/components/ui/NotchNavbar";
 import { Footer } from "@/components/ui/Footer";
-import { ArrowLeft, Construction, Activity } from "lucide-react";
+import { SimulasiWorkspace } from "@/components/simulasi/SimulasiWorkspace";
+import { prisma } from "@/lib/prisma";
+import {
+  parseSimulasiSearchParams,
+  type PresetScenarioItem,
+} from "@/lib/simulasi";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Simulasi Dampak Gempa | SIGAP Gempa",
+  description:
+    "Simulasi edukasi dampak gempa bumi (skala MMI, energi seismik, radius guncangan, waktu rambat gelombang P/S, dan indikator kriteria tsunami).",
+};
 
 interface SimulasiPageProps {
   searchParams: Promise<{
@@ -10,83 +23,67 @@ interface SimulasiPageProps {
     d?: string;
     lat?: string;
     lon?: string;
+    jarak?: string;
+    lokasi?: string;
+    wilayah?: string;
   }>;
 }
 
-export default async function SimulasiPlaceholderPage({ searchParams }: SimulasiPageProps) {
+export default async function SimulasiPage({ searchParams }: SimulasiPageProps) {
   const params = await searchParams;
-  const m = params.m;
-  const d = params.d;
-  const lat = params.lat;
-  const lon = params.lon;
+  const initialUrlState = parseSimulasiSearchParams(params);
 
-  const hasParams = m !== undefined || d !== undefined || lat !== undefined || lon !== undefined;
+  let presets: PresetScenarioItem[] = [];
+  let presetsLoadError = false;
+
+  try {
+    const rows = await prisma.skenarioSimulasi.findMany({
+      orderBy: [{ urutan: "asc" }, { nama: "asc" }],
+      include: { sumber: true },
+    });
+
+    presets = rows.map((row) => ({
+      id: row.id,
+      nama: row.nama,
+      magnitudo: row.magnitudo,
+      kedalamanKm: row.kedalamanKm,
+      lat: row.lat,
+      lon: row.lon,
+      tipeLokasi: row.tipeLokasi,
+      deskripsiSingkat: row.deskripsiSingkat,
+      urutan: row.urutan,
+      sumberUrl: row.sumber?.url ?? null,
+      sumberJudul: row.sumber?.judul ?? null,
+      sumberPenerbit: row.sumber?.penerbit ?? null,
+    }));
+  } catch (err) {
+    // Jika database sedang padam, halaman simulasi tetap tampil dalam mode Kustom (degradasi anggun).
+    console.warn("[SIMULASI] Gagal memuat preset SkenarioSimulasi:", err);
+    presetsLoadError = true;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
-      <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 pt-4">
-        <NotchNavbar variant="pill" />
-      </div>
+      <NotchNavbar />
 
-      <main className="w-full max-w-[960px] mx-auto px-4 sm:px-6 py-12 flex-1 flex flex-col items-center justify-center text-center">
-        <div className="rounded-[36px] bg-[var(--color-surface)] border border-[var(--color-border)] p-8 sm:p-12 max-w-[640px] w-full space-y-6 shadow-2xs">
-          <div className="w-14 h-14 rounded-full bg-[var(--color-primary-subtle)] text-[var(--color-primary)] mx-auto flex items-center justify-center">
-            <Construction className="w-7 h-7" aria-hidden="true" />
-          </div>
+      <main className="flex-1 max-w-[1220px] mx-auto w-full px-4 sm:px-6 pt-8 pb-16 space-y-8">
+        <header className="space-y-2 max-w-2xl">
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+            Simulasi dampak gempa
+          </h1>
+          <p className="text-base text-[var(--color-text-secondary)] leading-relaxed">
+            Atur parameter dan lihat perkiraan guncangan, waktu rambat gelombang, dan potensi tsunami secara langsung di peramban.
+          </p>
+        </header>
 
-          <div className="space-y-2">
-            <p className="text-xs font-semibold tracking-wider uppercase text-[var(--color-primary)]">
-              Fase 4 · Segera Hadir
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-light tracking-tight text-[var(--color-text-primary)]">
-              Modul simulasi dampak gempa
-            </h1>
-            <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed text-pretty">
-              Fitur estimasi dampak fisik, perhitungan intensitas MMI, waktu rambat gelombang P-S, dan potensi tsunami berbasis parameter gempa sedang disiapkan.
-            </p>
-          </div>
-
-          {hasParams && (
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4 text-left space-y-2">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-primary)]">
-                <Activity className="w-4 h-4 text-[var(--color-primary)]" />
-                <span>Parameter yang diterima dari riwayat:</span>
-              </div>
-              <dl className="grid grid-cols-2 gap-2 text-xs text-[var(--color-text-secondary)]">
-                <div>
-                  <dt className="text-[11px] text-[var(--color-text-muted)]">Magnitudo</dt>
-                  <dd className="font-semibold text-[var(--color-text-primary)] tnum">{m ? `${m} M` : "—"}</dd>
-                </div>
-                <div>
-                  <dt className="text-[11px] text-[var(--color-text-muted)]">Kedalaman</dt>
-                  <dd className="font-semibold text-[var(--color-text-primary)] tnum">{d ? `${d} km` : "—"}</dd>
-                </div>
-                <div>
-                  <dt className="text-[11px] text-[var(--color-text-muted)]">Lintang</dt>
-                  <dd className="font-semibold text-[var(--color-text-primary)] tnum">{lat ?? "—"}</dd>
-                </div>
-                <div>
-                  <dt className="text-[11px] text-[var(--color-text-muted)]">Bujur</dt>
-                  <dd className="font-semibold text-[var(--color-text-primary)] tnum">{lon ?? "—"}</dd>
-                </div>
-              </dl>
-            </div>
-          )}
-
-          <div className="pt-2">
-            <Link
-              href="/riwayat"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] px-6 py-3 text-sm font-medium hover:opacity-90 active:scale-95 transition-all min-h-[44px]"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Kembali ke riwayat gempa</span>
-            </Link>
-          </div>
-        </div>
+        <SimulasiWorkspace
+          presets={presets}
+          presetsLoadError={presetsLoadError}
+          initialUrlState={initialUrlState}
+        />
       </main>
 
       <Footer />
     </div>
   );
 }
-

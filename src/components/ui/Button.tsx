@@ -1,3 +1,8 @@
+
+
+
+
+
 import React from "react";
 
 export type ButtonVariant = "cta" | "outline" | "icon" | "ghost";
@@ -11,7 +16,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "cta", children, icon, className = "", ...props }, ref) => {
-    let baseStyles =
+    const baseStyles =
       "inline-flex items-center justify-center font-medium transition-all duration-200 focus-visible:outline-2 focus-visible:outline-[var(--color-primary-strong)] focus-visible:outline-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none";
 
     let variantStyles = "";
@@ -27,7 +32,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         break;
       case "icon":
         variantStyles =
-          "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-full w-11 h-11 min-w-[44px] min-h-[44px] p-0 hover:bg-[var(--color-surface)] active:scale-95";
+          "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] border border-[var(--color-border-strong)] rounded-full w-11 h-11 min-w-[44px] min-h-[44px] p-0 hover:bg-[var(--color-surface)] active:scale-95";
         break;
       case "ghost":
         variantStyles =

@@ -144,7 +144,7 @@ model KuotaHarian {
 
 model SkenarioSimulasi {
   id               String     @id @default(cuid())
-  nama             String
+  nama             String     @unique
   magnitudo        Float
   kedalamanKm      Float
   lat              Float

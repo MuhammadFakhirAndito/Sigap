@@ -17,11 +17,10 @@ export const EdukasiErrorCard: React.FC<EdukasiErrorCardProps> = ({
 
   return (
     <ErrorState
-      className="bg-[var(--color-surface-strong)] border border-[var(--color-border)]"
+      className="bg-[var(--color-surface-raised)] border border-[var(--color-border)]"
       title={title}
       message={message}
       onRetry={() => router.refresh()}
     />
   );
 };
-

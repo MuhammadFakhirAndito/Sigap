@@ -325,7 +325,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                 />
                 <Link
                   href="/riwayat"
-                  className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] transition-colors min-h-[44px]"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] transition-colors min-h-[44px]"
                 >
                   Coba lagi
                 </Link>
@@ -344,7 +344,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
               <div
                 role="feed"
                 aria-label="Daftar gempa"
-                className="space-y-3 md:space-y-0 md:rounded-[28px] md:border md:border-[var(--color-border)] md:bg-[var(--color-surface)] md:overflow-hidden md:divide-y md:divide-[var(--color-border)]"
+                className="space-y-2.5 sm:space-y-3"
               >
                 {data.map((gempa) => (
                   <HistoryRow key={gempa.id} gempa={gempa} />
@@ -361,7 +361,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                 {hal > 1 ? (
                   <Link
                     href={createPageUrl(hal - 1)}
-                    className="px-3 sm:px-4 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-colors"
+                    className="px-3 sm:px-4 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-colors"
                     aria-label="Halaman sebelumnya"
                   >
                     <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -370,7 +370,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                 ) : (
                   <span
                     aria-disabled="true"
-                    className="px-3 sm:px-4 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
+                    className="px-3 sm:px-4 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed"
                   >
                     <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                     <span className="hidden sm:inline">Sebelumnya</span>
@@ -382,7 +382,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                     <span
                       key={`gap-${idx}`}
                       aria-hidden="true"
-                      className="min-h-[44px] min-w-[20px] inline-flex items-center justify-center text-sm text-[var(--color-text-muted)]"
+                      className="min-h-[44px] min-w-[20px] inline-flex items-center justify-center text-sm text-[var(--color-text-secondary)]"
                     >
                       …
                     </span>
@@ -399,7 +399,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                       key={item}
                       href={createPageUrl(item)}
                       aria-label={`Halaman ${item}`}
-                      className="min-h-[44px] min-w-[44px] px-2.5 sm:px-3.5 inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-colors tnum"
+                      className="min-h-[44px] min-w-[44px] px-2.5 sm:px-3.5 inline-flex items-center justify-center rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-colors tnum"
                     >
                       {item}
                     </Link>
@@ -409,7 +409,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                 {hal < totalHalaman ? (
                   <Link
                     href={createPageUrl(hal + 1)}
-                    className="px-3 sm:px-4 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-colors"
+                    className="px-3 sm:px-4 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-sm font-medium text-[var(--color-text-primary)] transition-colors"
                     aria-label="Halaman berikutnya"
                   >
                     <span className="hidden sm:inline">Berikutnya</span>
@@ -418,7 +418,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                 ) : (
                   <span
                     aria-disabled="true"
-                    className="px-3 sm:px-4 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
+                    className="px-3 sm:px-4 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed"
                   >
                     <span className="hidden sm:inline">Berikutnya</span>
                     <ChevronRight className="w-4 h-4" aria-hidden="true" />

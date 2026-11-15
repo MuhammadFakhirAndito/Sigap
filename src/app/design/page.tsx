@@ -10,12 +10,12 @@ import { QuakeCard } from "@/components/ui/QuakeCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { ArrowRight, RefreshCw, Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 
 export default function DesignSystemPage() {
   const colorTokens = [
-    { name: "primary", hex: "#B7410E", desc: "Aksen rust-orange (magnitudo, MMI, status penting)" },
-    { name: "primary-strong", hex: "#9A3412", desc: "Aksen teks kecil (<18px) agar lolos AA" },
+    { name: "primary", hex: "#6AA400", desc: "Aksen hijau merek (magnitudo, MMI, indikator utama)" },
+    { name: "primary-strong", hex: "#477100", desc: "Aksen teks kecil (<18px) agar lolos AA" },
     { name: "cta", hex: "#1A1613", desc: "Warna aksi utama (tombol pill hitam)" },
     { name: "background", hex: "#F6F4F1", desc: "Kanvas utama (abu-abu hangat)" },
     { name: "surface", hex: "#E8E4DF", desc: "Permukaan panel & kartu tingkat 1" },

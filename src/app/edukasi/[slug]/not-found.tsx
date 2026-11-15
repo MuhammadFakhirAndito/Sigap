@@ -12,14 +12,14 @@ export default function EdukasiNotFound() {
         <NotchNavbar variant="pill" />
 
         <main className="flex-1 flex flex-col justify-center max-w-xl mx-auto w-full py-12">
-          <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-8 flex flex-col items-center gap-6 text-center">
+          <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-8 flex flex-col items-center gap-6 text-center">
             <EmptyState
               className="border-0 bg-transparent p-0"
               message="Artikel edukasi yang Anda cari tidak ditemukan atau belum diterbitkan."
             />
             <Link
               href="/edukasi"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] px-5 py-3 text-sm font-medium hover:bg-[var(--color-primary)] hover:text-[var(--color-text-primary)] transition-colors min-h-[44px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-hover)]"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] px-5 py-3 text-sm font-medium hover:bg-[var(--color-primary)] hover:text-[var(--color-text-primary)] transition-colors min-h-[44px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
             >
               <ArrowLeft className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>Kembali ke Pusat Edukasi</span>
