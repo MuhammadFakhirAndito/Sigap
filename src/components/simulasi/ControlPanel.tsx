@@ -10,8 +10,8 @@ import {
   type SimulasiInput,
   type SimulasiNumericField,
   type SimulasiValidationErrors,
-  type TipeLokasiSimulasi,
 } from "@/lib/simulasi";
+import { KEDALAMAN_PRESETS, type DistanceSyncState } from "@/lib/simulasi-visual";
 
 export type SimulasiDraftStrings = Record<SimulasiNumericField, string>;
 
@@ -29,6 +29,7 @@ interface SliderNumericRowProps {
   error?: string;
   onSliderChange: (val: number) => void;
   onDraftChange: (raw: string) => void;
+  extraNotice?: React.ReactNode;
 }
 
 function SliderNumericRow({
@@ -45,6 +46,7 @@ function SliderNumericRow({
   error,
   onSliderChange,
   onDraftChange,
+  extraNotice,
 }: SliderNumericRowProps) {
   const clamped = Math.min(max, Math.max(min, sliderValue));
   const pct = max > min ? ((clamped - min) / (max - min)) * 100 : 0;
@@ -105,13 +107,15 @@ function SliderNumericRow({
         />
       </div>
 
-      <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)] tnum">
+      <div className="flex items-center justify-between gap-2 text-xs text-[var(--color-text-secondary)] tnum">
         <span id={helpId}>{helperText}</span>
-        <span>
-          {formatIdNumber(min, step < 1 ? 1 : 0)}–{formatIdNumber(max, step < 1 ? 1 : 0)}
+        <span className="shrink-0">
+          {formatIdNumber(min, step < 1 ? 1 : 0)} s.d. {formatIdNumber(max, step < 1 ? 1 : 0)}
           {unit ? ` ${unit}` : ""}
         </span>
       </div>
+
+      {extraNotice}
 
       {error && (
         <p
@@ -135,17 +139,12 @@ interface ControlPanelProps {
   validInput: SimulasiInput;
   drafts: SimulasiDraftStrings;
   errors: SimulasiValidationErrors;
+  distanceSync: DistanceSyncState;
   onSelectPreset: (presetId: string) => void;
-  onSliderChange: (field: SimulasiNumericField, val: number) => void;
-  onDraftChange: (field: SimulasiNumericField, raw: string) => void;
-  onTipeLokasiChange: (tipe: TipeLokasiSimulasi) => void;
+  onSliderChange: (field: "magnitudo" | "jarakPengamatKm", val: number) => void;
+  onDraftChange: (field: "magnitudo" | "jarakPengamatKm", raw: string) => void;
+  onKedalamanPresetSelect: (depthKm: number) => void;
   onReset: () => void;
-}
-
-function formatCoordPreview(lat: number, lon: number): string {
-  const latDir = lat < 0 ? "LS" : "LU";
-  const lonDir = lon < 0 ? "BB" : "BT";
-  return `${formatIdNumber(Math.abs(lat), 2)}° ${latDir}, ${formatIdNumber(Math.abs(lon), 2)}° ${lonDir}`;
 }
 
 export function ControlPanel({
@@ -156,12 +155,17 @@ export function ControlPanel({
   validInput,
   drafts,
   errors,
+  distanceSync,
   onSelectPreset,
   onSliderChange,
   onDraftChange,
-  onTipeLokasiChange,
+  onKedalamanPresetSelect,
   onReset,
 }: ControlPanelProps) {
+  const matchedPresetDepth = KEDALAMAN_PRESETS.some(
+    (opt) => Math.abs(validInput.kedalamanKm - opt.valueKm) < 0.01
+  );
+
   return (
     <section
       aria-label="Panel parameter simulasi gempa"
@@ -202,7 +206,7 @@ export function ControlPanel({
         </select>
 
         {presetsLoadError && (
-          <p className="text-xs text-[var(--color-warning-strong)]">
+          <p className="text-xs text-[var(--color-warning-strong)] leading-relaxed">
             Daftar preset dari database sedang tidak tersedia. Mode Kustom tetap dapat digunakan sepenuhnya di peramban Anda.
           </p>
         )}
@@ -233,7 +237,7 @@ export function ControlPanel({
 
       <hr className="border-[var(--color-border)]" />
 
-      {/* Magnitudo */}
+      {/* 1. Magnitudo */}
       <SliderNumericRow
         id="sim-mag"
         label="Magnitudo"
@@ -249,134 +253,112 @@ export function ControlPanel({
         onDraftChange={(s) => onDraftChange("magnitudo", s)}
       />
 
-      {/* Kedalaman */}
-      <SliderNumericRow
-        id="sim-depth"
-        label="Kedalaman hiposenter"
-        unit="km"
-        min={SIMULASI_LIMITS.DEPTH_MIN}
-        max={SIMULASI_LIMITS.DEPTH_MAX}
-        step={1}
-        sliderValue={validInput.kedalamanKm}
-        draftValue={drafts.kedalamanKm}
-        ariaValueText={`Kedalaman ${formatIdNumber(validInput.kedalamanKm, 0)} kilometer`}
-        helperText="Batas kriteria tsunami BNPB: ≤ 70 km"
-        error={errors.kedalamanKm}
-        onSliderChange={(v) => onSliderChange("kedalamanKm", v)}
-        onDraftChange={(s) => onDraftChange("kedalamanKm", s)}
-      />
+      {/* 2. Kedalaman (3 preset cepat: Dangkal 10 / Menengah 70 / Dalam 200 km) */}
+      <div className="space-y-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span
+            id="sim-depth-label"
+            className="text-sm font-semibold text-[var(--color-text-primary)]"
+          >
+            Kedalaman hiposenter
+          </span>
+          <span className="tnum text-xs font-semibold text-[var(--color-text-primary)]">
+            {formatIdNumber(validInput.kedalamanKm, Number.isInteger(validInput.kedalamanKm) ? 0 : 1)} km
+          </span>
+        </div>
 
-      {/* Jarak pengamat */}
+        <div
+          role="group"
+          aria-labelledby="sim-depth-label"
+          className="grid grid-cols-3 gap-2"
+        >
+          {KEDALAMAN_PRESETS.map((opt) => {
+            const active = Math.abs(validInput.kedalamanKm - opt.valueKm) < 0.01;
+            return (
+              <button
+                key={opt.valueKm}
+                type="button"
+                aria-pressed={active}
+                onClick={() => onKedalamanPresetSelect(opt.valueKm)}
+                className={`min-h-[44px] rounded-[16px] px-2 py-2 text-center border transition-colors duration-150 ${
+                  active
+                    ? "bg-[var(--color-cta)] text-[var(--color-on-cta)] border-[var(--color-cta)]"
+                    : "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] border-[var(--color-border-strong)] hover:bg-[var(--color-background)]"
+                }`}
+              >
+                <span className="block text-xs font-semibold">{opt.label}</span>
+                <span
+                  className={`block tnum text-xs ${
+                    active
+                      ? "text-[var(--color-on-cta)] opacity-85"
+                      : "text-[var(--color-text-secondary)]"
+                  }`}
+                >
+                  {opt.shortNote}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {!matchedPresetDepth && (
+          <p className="text-xs text-[var(--color-text-secondary)]">
+            Kedalaman saat ini{" "}
+            <strong className="tnum font-semibold text-[var(--color-text-primary)]">
+              {formatIdNumber(validInput.kedalamanKm, Number.isInteger(validInput.kedalamanKm) ? 0 : 1)} km
+            </strong>{" "}
+            berasal dari skenario atau Detail lanjutan. Pilih salah satu tombol di atas untuk menyetel 10, 70, atau 200 km.
+          </p>
+        )}
+
+        {errors.kedalamanKm && (
+          <p
+            role="alert"
+            className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-error-strong)]"
+          >
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>{errors.kedalamanKm}</span>
+          </p>
+        )}
+      </div>
+
+      {/* 3. Jarak dari pusat gempa */}
       <SliderNumericRow
         id="sim-dist"
-        label="Jarak pengamat dari episentrum"
+        label="Jarak dari pusat gempa"
         unit="km"
         min={SIMULASI_LIMITS.DIST_MIN}
         max={SIMULASI_LIMITS.DIST_MAX}
         step={1}
         sliderValue={validInput.jarakPengamatKm}
         draftValue={drafts.jarakPengamatKm}
-        ariaValueText={`Jarak pengamat ${formatIdNumber(validInput.jarakPengamatKm, 0)} kilometer dari episentrum`}
-        helperText="Dipakai untuk MMI & waktu rambat"
+        ariaValueText={
+          distanceSync.isBeyondCalibratedRange
+            ? `Jarak marker Anda ${distanceSync.formattedActualDistance} dari pusat gempa, di luar batas slider 300 km`
+            : `Jarak pengamat ${formatIdNumber(validInput.jarakPengamatKm, 0)} kilometer dari pusat gempa`
+        }
+        helperText="Tersinkron dengan posisi marker Anda di peta"
         error={errors.jarakPengamatKm}
         onSliderChange={(v) => onSliderChange("jarakPengamatKm", v)}
         onDraftChange={(s) => onDraftChange("jarakPengamatKm", s)}
+        extraNotice={
+          distanceSync.isBeyondCalibratedRange ? (
+            <div
+              role="note"
+              className="flex items-start gap-2 rounded-[14px] bg-[var(--color-surface-raised)] border border-[var(--color-warning-strong)] px-3 py-2 text-xs text-[var(--color-warning-strong)]"
+            >
+              <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
+              <span>
+                Jarak aktual marker Anda:{" "}
+                <strong className="tnum font-semibold">
+                  {distanceSync.formattedActualDistance}
+                </strong>{" "}
+                (&gt; 300 km, di luar rentang kalibrasi). Slider berhenti di 300 km; geser slider untuk menarik marker kembali ke ≤ 300 km.
+              </span>
+            </div>
+          ) : undefined
+        }
       />
-
-      <hr className="border-[var(--color-border)]" />
-
-      {/* Lokasi & koordinat episentrum */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <span className="block text-sm font-semibold text-[var(--color-text-primary)]">
-            Tipe lokasi episentrum
-          </span>
-          <div
-            role="group"
-            aria-label="Pilih tipe lokasi episentrum"
-            className="grid grid-cols-2 gap-2"
-          >
-            {(["DARAT", "LAUT"] as const).map((tipe) => {
-              const active = validInput.tipeLokasi === tipe;
-              return (
-                <button
-                  key={tipe}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => onTipeLokasiChange(tipe)}
-                  className={`min-h-[44px] rounded-full text-sm font-medium border transition-colors duration-150 ${
-                    active
-                      ? "bg-[var(--color-cta)] text-[var(--color-on-cta)] border-[var(--color-cta)]"
-                      : "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] border-[var(--color-border-strong)] hover:bg-[var(--color-background)]"
-                  }`}
-                >
-                  {tipe === "DARAT" ? "Darat" : "Laut"}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label
-              htmlFor="sim-lat"
-              className="block text-xs font-semibold text-[var(--color-text-primary)]"
-            >
-              Lintang (-90 s.d. 90)
-            </label>
-            <input
-              id="sim-lat"
-              type="number"
-              step="0.01"
-              min={SIMULASI_LIMITS.LAT_MIN}
-              max={SIMULASI_LIMITS.LAT_MAX}
-              value={drafts.lat}
-              onChange={(e) => onDraftChange("lat", e.target.value)}
-              aria-invalid={Boolean(errors.lat)}
-              className="tnum w-full min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] px-3.5 text-sm font-medium text-[var(--color-text-primary)]"
-            />
-            {errors.lat && (
-              <p role="alert" className="text-xs text-[var(--color-error-strong)]">
-                {errors.lat}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <label
-              htmlFor="sim-lon"
-              className="block text-xs font-semibold text-[var(--color-text-primary)]"
-            >
-              Bujur (-180 s.d. 180)
-            </label>
-            <input
-              id="sim-lon"
-              type="number"
-              step="0.01"
-              min={SIMULASI_LIMITS.LON_MIN}
-              max={SIMULASI_LIMITS.LON_MAX}
-              value={drafts.lon}
-              onChange={(e) => onDraftChange("lon", e.target.value)}
-              aria-invalid={Boolean(errors.lon)}
-              className="tnum w-full min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] px-3.5 text-sm font-medium text-[var(--color-text-primary)]"
-            />
-            {errors.lon && (
-              <p role="alert" className="text-xs text-[var(--color-error-strong)]">
-                {errors.lon}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <p className="flex items-start gap-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
-          <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
-          <span>
-            Konteks koordinat: <strong className="tnum text-[var(--color-text-primary)]">{formatCoordPreview(validInput.lat, validInput.lon)}</strong>.
-            Lintang dan bujur hanya sebagai konteks lokasi dan tidak memengaruhi hasil hitungan simulasi.
-          </span>
-        </p>
-      </div>
     </section>
   );
 }

@@ -119,12 +119,12 @@ body {
 .simulasi-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 9999px;
   background: var(--color-surface-raised);
   border: 2px solid var(--color-border-strong);
-  margin-top: -7px;
+  margin-top: -8px;
   transition: transform 150ms cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -139,12 +139,18 @@ body {
 }
 
 .simulasi-range::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 9999px;
   background: var(--color-surface-raised);
   border: 2px solid var(--color-border-strong);
   transition: transform 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+button:not(:disabled):active,
+[role="button"]:not([aria-disabled="true"]):active,
+[role="tab"]:not([aria-disabled="true"]):active {
+  transform: scale(0.98);
 }
 
 /* Penghormatan prefers-reduced-motion */
@@ -158,4 +164,36 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Gaya aksesibel & kontras DESIGN.md untuk kontrol Leaflet */
+.leaflet-container {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface);
+}
+
+.leaflet-control-attribution {
+  background-color: var(--color-surface-raised) !important;
+  color: var(--color-text-primary) !important;
+  font-size: 0.75rem !important;
+  padding: 2px 8px !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--color-text-primary) !important;
+  text-decoration: underline;
+}
+
+.leaflet-bar a {
+  width: 44px !important;
+  height: 44px !important;
+  line-height: 42px !important;
+  background-color: var(--color-surface-raised) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border-strong) !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
 }

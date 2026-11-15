@@ -1,61 +1,83 @@
-# Screen 03 — Simulasi Dampak Gempa  (/simulasi)   Fase 4
+# Screen 03 — Simulasi Dampak Gempa (/simulasi) — Dua Mode (Revisi Fase 4)
 
-Tujuan: edukasi interaktif. SEMUA hitungan di klien (NFR-DB-06, TC-DB-15/16/17).
-Kebutuhan: FR-DB-14, 16, 17, 19. (**FR-DB-18 perbandingan bangunan DITUNDA**, tidak dibangun di fase ini.)
-Label WAJIB selalu terlihat di area hasil:
-"Estimasi edukasi, bukan data resmi BMKG" (banner pill, bukan tooltip).
+Tujuan: edukasi interaktif. **Semua kalkulasi dijalankan 100% di sisi klien** (`src/lib/simulasi` dan `src/lib/simulasi-visual`, memenuhi NFR-DB-06, TC-DB-15/16/17) tanpa permintaan ke API maupun database saat parameter berubah.
+Kebutuhan: FR-DB-16, FR-DB-17, FR-DB-19. (**FR-DB-18 perbandingan bangunan tetap ditunda**.)
 
-## Layout (desktop 1440, 2 kolom)
-Header: H2/title satu warna "Simulasi dampak gempa" + subcopy "Atur parameter dan lihat
-perkiraan guncangan, waktu rambat gelombang, dan potensi tsunami."
+Label **WAJIB** selalu tampil di kedua mode pada area hasil:
+**"Estimasi edukasi, bukan data resmi BMKG"** (pill tetap, bukan tooltip).
 
-Kolom kiri (≈40%) — Panel kontrol (surface, radius 28, padding 24):
-- Preset: select "Pilih gempa bersejarah" dari SkenarioSimulasi (dimuat sekali di server;
-  mengganti preset TIDAK memanggil API) + opsi "Kustom".
-- Magnitudo: slider 1,0–9,5 langkah 0,1 + input angka tabular.
-- Kedalaman (km): slider 1–700 + input angka.
-- Koordinat episentrum: input lat/lon (LS/BT) + tipe lokasi (Darat / Laut). Catat secara eksplisit
-  di UI bahwa lintang dan bujur hanya sebagai konteks dan tidak memengaruhi hasil hitungan.
-- Jarak pengamat dari episentrum (km): slider/input 0–300 km (default 50; dipakai untuk MMI & waktu rambat).
-- Catatan kalibrasi: nilai di luar rentang kalibrasi rumus MMI (Mw 5,0–7,9; R < 300 km) tetap
-  dihitung, tetapi diberi catatan jelas "di luar rentang kalibrasi".
-- Tombol outline "Reset". Parameter dari URL (?m=&d=&lat=&lon=&jarak=) mengisi form saat load
-  dan divalidasi (nilai tidak valid di URL ditolak dengan pesan, bukan crash).
-- Label slider eksplisit, nilai terbaca screen reader (aria-valuetext).
+---
 
-Kolom kanan (≈60%) — Hasil (diperbarui langsung saat input berubah):
-1. Kartu MMI (focal point): angka Romawi sangat besar (I–XII, `text-primary` netral gelap,
-   bukan hijau/primary), deskripsi teks dampak (rujukan skala MMI BMKG), skala bar 12 segmen
-   (dengan label teks I–XII, memakai warna netral gelap `cta`/`text-primary`).
-   Sertakan catatan eksplisit bahwa rumus MMI berlaku untuk kerak aktif dangkal, bukan model subduksi.
-2. Baris kartu ringkas: Energi (notasi ilmiah, joule), Jarak hiposenter (km), dan Radius guncangan:
-   - Radius terasa (MMI >= III, km)
-   - Radius berpotensi merusak ringan (MMI >= VI, km)
-   Jika ambang MMI tak pernah tercapai bahkan pada jarak episentrum 0 km, tampilkan "tidak terasa"
-   (atau "tidak tercapai").
-3. Kartu Waktu Rambat: tP, tS (detik, 1 desimal), dan "Golden time = tS − tP" besar.
-   Visual: dua bar horizontal berjalan; animasi opsional, nonaktif bila prefers-reduced-motion.
-4. Kartu Potensi Tsunami: StatusBadge (ikon+teks) "Berpotensi memenuhi kriteria simulasi" bila
-   tipe lokasi LAUT, M > 6,8, dan kedalaman <= 70 km (Buku Saku BNPB 2012; jenis sesar tidak dipakai);
-   selain itu "Tidak memenuhi kriteria simulasi". Teks tetap:
-   "Indikator edukasi. Peringatan tsunami resmi hanya dari BMKG."
-5. Rekomendasi keselamatan: tautan ke Artikel/FaqGempa terkait + tombol CTA hitam
-   "Tanyakan skenario ini ke chatbot" (meneruskan parameter ke `/chatbot?m=&d=&wilayah=&mmi=`).
-6. Bagian/panel "Lihat rumus & asumsi" -> menampilkan ringkas rumus, sitasi, dan batasannya.
+## 1. Kontrol Bersama (3 Kontrol Utama + Pemilih Preset)
 
-## Rumus (lib/simulasi, fungsi murni + unit test)
-- log10 E = 1,5 M + 4,8 (J)
-- jarak hiposenter = √(jarak² + kedalaman²)
-- tP = jarak_hiposenter / 6 ; tS = jarak_hiposenter / 3,5 (km/s), golden time = tS − tP
-- MMI: Allen, Wald & Worden (2012) versi jarak hiposenter (`AllenEtAl2012Rhypo`), dibatasi I–XII.
-- Radius MMI >= III dan MMI >= VI: pencarian numerik (bisection) atas fungsi MMI mentah terhadap jarak episentrum.
-- Verifikasi dengan TC-DB-15/16: M7,0, jarak episentrum 100 km, kedalaman 10 km -> E ≈ 2,0×10^15 J;
-  tP ≈ 16,8 dtk; tS ≈ 28,7 dtk (±5%).
+Panel kontrol (`surface`, radius 28, padding 24) berisi:
+1. **Preset gempa bersejarah** (`select` dari `SkenarioSimulasi`, dimuat sekali di server; mengganti preset tidak memanggil API) + opsi **Kustom** + tombol outline **Reset**. Saat database tidak tersedia, mode **Kustom** tetap berfungsi penuh.
+2. **Magnitudo** (`slider` 1,0–9,5 langkah 0,1 + input angka tabular).
+3. **Kedalaman** (`Dangkal 10 km` | `Menengah 70 km` | `Dalam 200 km`). Preset ber-kedalaman khusus (mis. Aceh 30 km, Palu 20 km) menampilkan nilai aktual secara ringkas dan dapat diubah presisi (`1–700 km`) di **Detail lanjutan**.
+4. **Jarak dari pusat gempa** (`slider` 0–300 km + input angka tabular), tersinkron dua arah dengan marker **"Anda"** pada mode *Peta dampak*.
 
-## State
-Input tidak valid (di luar rentang): pesan inline, hasil tidak berubah. Parameter URL tidak valid:
-pesan peringatan dan kembali ke nilai aman/default. Preset gagal dimuat dari DB: tetap bisa pakai mode Kustom.
+---
 
-## Mobile (390)
-Kontrol di atas, hasil di bawah; kartu hasil bertumpuk; ringkasan MMI + golden time
-sticky di bawah layar saat menggeser slider.
+## 2. Pemilih Mode & Ringkasan Hasil Bersama
+
+Di atas area hasil terdapat:
+- **Pemilih mode** (`tablist` segmented, dapat dioperasikan keyboard `Tab`, `ArrowLeft`/`ArrowRight`, `Home`/`End`):
+  1. **`Peta dampak`** *(mode bawaan)*
+  2. **`Getaran 3D`** *(chunk `three` hanya dimuat via `next/dynamic(..., { ssr: false })` saat mode ini dibuka)*
+- **Ringkasan hasil bersama** (tampil di kedua mode):
+  - Kalimat dampak awam sesuai kutipan resmi skala MMI BMKG untuk jarak terpilih.
+  - Angka **MMI kecil** berwarna **netral gelap** (`text-primary`, tanpa hijau dan tanpa token `success`).
+  - Jarak pengamat aktual (menampilkan angka sebenarnya, mis. `"412 km"`, ketika marker `"Anda"` ditempatkan `> 300 km` di luar rentang kalibrasi).
+  - Label wajib **"Estimasi edukasi, bukan data resmi BMKG"**.
+
+---
+
+## 3. Mode 1 — Peta Dampak (Default)
+
+- Dibangun dengan **Leaflet** (`next/dynamic`, `ssr: false`), tile OpenStreetMap standar yang dikonfigurasi lewat `NEXT_PUBLIC_MAP_TILE_URL` dan `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION`.
+- Atribusi **"© OpenStreetMap contributors"** (tautan ke `https://www.openstreetmap.org/copyright`) **wajib terlihat** di pojok kanan bawah peta dan tidak boleh disembunyikan.
+- Memakai marker **`L.divIcon` SVG kustom** (tidak memakai aset ikon bawaan Leaflet):
+  - **Pusat gempa**: mengikuti koordinat preset atau diubah lewat klik/geser di peta (otomatis masuk mode **Kustom**).
+  - **Marker "Anda"**: dapat digeser, dipilih dengan klik peta, digerakkan dengan kontrol keyboard (tombol arah N/S/E/W + `Arrow` pada marker), maupun diatur manual lewat Lintang/Bujur di *Detail lanjutan*. Jarak dihitung menggunakan **Haversine** dan tersinkronisasi dua arah dengan slider `0–300 km`.
+- **Lingkaran berskala meter nyata (`L.circle`)** berwarna **netral gelap** berbeda opasitas (tanpa hijau dan tanpa merah untuk data kebahayaan):
+  - **Radius terasa (`MMI >= III`)** dan **merusak ringan (`MMI >= VI`)**:
+    - `M` dalam `5,0–7,9` dan radius `<= 300 km`: gambar lingkaran sesuai hasil bisection.
+    - Radius `> 300 km`: tampil **"> 300 km (di luar rentang kalibrasi)"** dan gambar **lingkaran putus-putus di 300 km** tanpa angka ekstrapolasi.
+    - `M` di luar `5,0–7,9` (`M < 5,0` atau `M > 7,9`): **tidak menggambar lingkaran** dan menampilkan **"tidak dapat diperkirakan (di luar rentang kalibrasi)"**.
+    - Jika ambang tidak tercapai di jarak `0 km`: tampil **"tidak terasa"**.
+- `fitBounds` otomatis menjaga kedua marker dan lingkaran tampak utuh di viewport.
+- **Perlindungan gulir halaman pada layar sentuh (`390px`)**: di perangkat sentuh, peta tidak langsung merebut gulir halaman satu jari; pengguna dapat mengaktifkan mode geser peta lewat tombol/sentuhan peta atau memakai gerakan dua jari.
+- **Degradasi & aksesibilitas**: ringkasan teks (pusat, titik "Anda", jarak, radius `"Terasa sampai ± X km"` & `"Mulai merusak ringan sampai ± Y km"`) selalu tampil di **luar peta**. Jika tile gagal dimuat atau offline, tampil pesan **"Peta tidak dapat dimuat"** sementara ringkasan teks dan seluruh hitungan tetap berfungsi normal.
+
+---
+
+## 4. Mode 2 — Getaran 3D (Lazy-Loaded)
+
+- Dibangun dengan **`three` murni** (`next/dynamic`, `ssr: false`, tanpa `@react-three/*`), hanya dimuat saat pengguna membuka tab **Getaran 3D**.
+- Adegan low-poly sudut ruangan (lantai, dua dinding, lampu gantung, rak dengan benda ringan, meja dengan gelas, perabot samping) memakai warna netral sesuai [DESIGN.md](../DESIGN.md) tanpa warna hijau.
+- Profil getaran dipetakan secara **ilustratif** (bukan fisika struktur dan bukan teks BMKG) berdasarkan MMI pada jarak terpilih:
+  - Yang digetarkan adalah **benda dan ruangan**, **BUKAN kamera**; tanpa kedipan cahaya, tanpa audio, amplitudo dibatasi batas aman maksimum, tanpa adegan bangunan runtuh maupun korban.
+- Pengguna menekan **"Mulai getaran"** (tidak berjalan otomatis) dan dapat menekan **"Berhenti"** kapan saja. Durasi urutan **± 12 detik** (getaran lemah gelombang P → getaran utama gelombang S → mereda).
+- Menampilkan teks **"Jeda gelombang P ke S di jarak ini: ± X detik"** (dari `goldenTimeSeconds` engine).
+- Menyertakan peringatan kecil **"Animasi getaran. Hentikan jika tidak nyaman."** dan label tetap di area adegan **"Ilustrasi getaran, bukan simulasi kekuatan bangunan"**.
+- **`prefers-reduced-motion`**: tidak ada animasi otomatis; saat diputar, amplitudo dan frekuensi diturunkan jauh disertai keterangan teks.
+- **Performa & Fallback WebGL**: `devicePixelRatio` maksimal `2`, render hanya saat animasi berlangsung atau adegan berubah, berhenti saat tab tidak terlihat (`visibilityState === "hidden"`), geometri/material/renderer dibuang (`dispose()`) saat unmount. Jika WebGL tidak tersedia, tampil pesan aman beserta ringkasan teks dampak tanpa error.
+- **Pemisahan atribusi**: kutipan dampak resmi BMKG (`MMI_SCALE_INFO`) dan deskripsi pilihan efek ilustratif 3D ditampilkan terpisah secara eksplisit.
+
+---
+
+## 5. Detail Lanjutan (Tertutup secara Default)
+
+Bagian `<details>` tertutup secara default saat halaman dimuat dan berisi:
+- **`Tipe lokasi episentrum` dengan 3 keadaan**:
+  - Otomatis `DARAT` / `LAUT` saat memakai preset atau parameter URL `?lokasi=`.
+  - Awalnya **"Belum dipilih"** pada mode `Kustom` (indikator tsunami menampilkan **"Pilih tipe lokasi untuk melihat indikator tsunami"**, bukan default Darat).
+- **Input manual koordinat** (Lintang & Bujur untuk pusat gempa serta posisi `"Anda"`) dan **Kedalaman presisi (`1–700 km`)**.
+- **Indikator kriteria tsunami** (BNPB 2012 + catatan keterbatasan kasus **Palu 2018 & Lombok 2018**).
+- **Energi seismik**, **Jarak hiposenter**, **Waktu rambat P & S + Golden time**, **Skala 12 tingkat MMI lengkap**, **Rekomendasi kesiapsiagaan + tautan ke Chatbot**, serta **Rumus & asumsi simulasi**.
+
+---
+
+## 6. Mobile (`390px`)
+
+Kontrol di atas, bilah ringkasan sticky atas (`MMI` + `Golden time`, agar tidak menutupi slider kontrol di layar awal), pemilih mode + strip ringkasan hasil bersama, kanvas mode aktif, dan Detail lanjutan tertutup di bawah. Peta tidak menghalangi gulir vertikal layar sentuh.

@@ -86,6 +86,36 @@ export const BibliographyList: React.FC<BibliographyListProps> = ({ sumberList }
             );
           })}
         </ul>
+
+        <div className="rounded-[20px] bg-[var(--color-surface-raised)] border border-[var(--color-border)] p-4 sm:p-5 space-y-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
+          <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+            Peta, Layanan Tile, &amp; Pustaka Visualisasi Simulasi
+          </p>
+          <ul className="space-y-1.5 list-disc pl-5">
+            <li>
+              <strong className="text-[var(--color-text-primary)]">Peta Dasar OpenStreetMap:</strong>{" "}
+              <a
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 text-[var(--color-text-primary)] font-medium"
+              >
+                © OpenStreetMap contributors
+              </a>
+              . Catatan privasi &amp; lalu lintas jaringan: permintaan gambar tile peta dikirim langsung dari peramban pengguna ke server OpenStreetMap ketika mode Peta Dampak dibuka.
+            </li>
+            <li>
+              <strong className="text-[var(--color-text-primary)]">Leaflet (v1.9.4):</strong>{" "}
+              Pustaka peta interaktif sumber terbuka berlisensi{" "}
+              <span className="font-medium text-[var(--color-text-primary)]">BSD-2-Clause</span>.
+            </li>
+            <li>
+              <strong className="text-[var(--color-text-primary)]">Three.js (v0.187.0):</strong>{" "}
+              Pustaka visualisasi 3D WebGL berlisensi{" "}
+              <span className="font-medium text-[var(--color-text-primary)]">MIT</span>; hanya dimuat ketika mode Getaran 3D dibuka.
+            </li>
+          </ul>
+        </div>
       </div>
     </section>
   );

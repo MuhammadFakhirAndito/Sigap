@@ -32,6 +32,9 @@ interface SimulasiPageProps {
 export default async function SimulasiPage({ searchParams }: SimulasiPageProps) {
   const params = await searchParams;
   const initialUrlState = parseSimulasiSearchParams(params);
+  const normalizedLokasi = params.lokasi?.trim().toUpperCase();
+  const hasExplicitUrlLokasi =
+    normalizedLokasi === "DARAT" || normalizedLokasi === "LAUT";
 
   let presets: PresetScenarioItem[] = [];
   let presetsLoadError = false;
@@ -80,6 +83,7 @@ export default async function SimulasiPage({ searchParams }: SimulasiPageProps) 
           presets={presets}
           presetsLoadError={presetsLoadError}
           initialUrlState={initialUrlState}
+          hasExplicitUrlLokasi={hasExplicitUrlLokasi}
         />
       </main>
 

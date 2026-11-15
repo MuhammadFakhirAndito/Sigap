@@ -27,7 +27,7 @@ data realtime lewat database (autogempa langsung dari BMKG dengan cache).
 |---|---|---|---|
 | `/` | Beranda | Gempa terbaru (autogempa), status data, jalan pintas, gempa dirasakan terbaru, blok edukasi | 01-beranda.md |
 | `/riwayat` | Riwayat | Daftar dari DB, filter, paginasi, grafik, aksi "Simulasikan" | 02-riwayat.md |
-| `/simulasi` | Simulasi | Parameter, MMI, energi, radius, waktu rambat, indikator tsunami | 03-simulasi.md |
+| `/simulasi` | Simulasi | Dua mode (Peta dampak & Getaran 3D): parameter bersama, MMI, radius, energi, waktu rambat, indikator tsunami | 03-simulasi.md |
 | `/chatbot` | Chatbot | Tanya-jawab kontekstual, fallback bertingkat, 👍/👎 | 05-chatbot.md **[ASUMSI: halaman sendiri]** |
 | `/edukasi` | Edukasi | Artikel per kategori, berita, daftar pustaka | 04-edukasi.md |
 Navigasi utama: Beranda, Riwayat, Simulasi, Chatbot, Edukasi.
@@ -53,7 +53,7 @@ untuk fase yang dikerjakan. Setiap screen lulus alur skill (AGENTS.md) dan diuji
 390px dan 1440px.
 
 ## 8. Hal yang belum diputuskan
-- Pustaka peta (episentrum) dan pustaka grafik: **belum dipilih**; placeholder/SVG dulu.
+- Pustaka peta simulasi menggunakan **Leaflet (`leaflet@1.9.4`)** dengan tile **OpenStreetMap** yang dapat dikonfigurasi lewat env (`NEXT_PUBLIC_MAP_TILE_URL`) serta mode ilustrasi guncangan ruangan **Three.js (`three@0.187.0`)**; grafik distribusi riwayat tetap SVG/CSS murni.
 - Domain untuk demo (menentukan Caddy/HTTPS).
-- Rumus MMI dan angka preset simulasi (lihat PRD-DATABASE.md bagian 14).
+- Rumus atenuasi MMI telah ditetapkan memakai **Allen, Wald & Worden (2012) versi jarak hiposenter (`AllenEtAl2012Rhypo`)** beserta sitasinya di `docs/rumus-simulasi.md`; verifikasi lanjutan angka preset simulasi tetap mengacu pada tabel `Sumber`.
 - Konfirmasi semua butir **[ASUMSI]** di atas.

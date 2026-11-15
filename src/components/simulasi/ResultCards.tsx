@@ -10,6 +10,7 @@ import {
   type SimulasiInput,
   type SimulasiResult,
 } from "@/lib/simulasi";
+import type { UiTipeLokasi } from "@/lib/simulasi-visual";
 
 interface MmiCardProps {
   input: SimulasiInput;
@@ -18,6 +19,8 @@ interface MmiCardProps {
 
 export function MmiCard({ input, result }: MmiCardProps) {
   const { mmi } = result;
+  const distDecimals =
+    input.jarakPengamatKm >= 100 || Number.isInteger(input.jarakPengamatKm) ? 0 : 1;
 
   return (
     <section
@@ -26,9 +29,10 @@ export function MmiCard({ input, result }: MmiCardProps) {
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            Intensitas guncangan di jarak {formatIdNumber(input.jarakPengamatKm, 0)} km
-          </h2>
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+            Rincian 12 tingkat intensitas MMI di jarak{" "}
+            <span className="tnum">{formatIdNumber(input.jarakPengamatKm, distDecimals)} km</span>
+          </h3>
           <p className="text-xs text-[var(--color-text-secondary)]">
             Estimasi empiris Allen, Wald &amp; Worden (2012) pada jarak hiposenter{" "}
             <span className="tnum font-semibold text-[var(--color-text-primary)]">
@@ -91,9 +95,9 @@ export function MmiCard({ input, result }: MmiCardProps) {
           })}
         </div>
         <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
-          <span>I · Tidak terasa</span>
-          <span>VI · Merusak ringan</span>
-          <span>XII · Hancur total</span>
+          <span>I: Tidak terasa</span>
+          <span>VI: Merusak ringan</span>
+          <span>XII: Hancur total</span>
         </div>
       </div>
 
@@ -138,7 +142,7 @@ export function MetricsGrid({ input, result }: MetricsGridProps) {
           {result.energy.mantissa} × 10<sup>{result.energy.exponent}</sup> J
         </p>
         <p className="text-xs text-[var(--color-text-secondary)] tnum">
-          M {formatIdNumber(input.magnitudo, 1)} · Gutenberg–Richter
+          M {formatIdNumber(input.magnitudo, 1)}, Gutenberg-Richter
         </p>
       </div>
 
@@ -228,8 +232,8 @@ export function TravelTimeCard({ result }: TravelTimeCardProps) {
           </div>
           <div className="h-3 w-full rounded-full bg-[var(--color-surface-sunken)] overflow-hidden">
             <div
-              className="h-full rounded-full bg-[var(--color-text-secondary)] transition-all duration-200 motion-reduce:transition-none"
-              style={{ width: `${pPct}%` }}
+              className="h-full w-full origin-left rounded-full bg-[var(--color-text-secondary)] transition-transform duration-200 motion-reduce:transition-none"
+              style={{ transform: `scaleX(${pPct / 100})` }}
             />
           </div>
         </div>
@@ -246,8 +250,7 @@ export function TravelTimeCard({ result }: TravelTimeCardProps) {
           </div>
           <div className="h-3 w-full rounded-full bg-[var(--color-surface-sunken)] overflow-hidden">
             <div
-              className="h-full rounded-full bg-[var(--color-cta)] transition-all duration-200 motion-reduce:transition-none"
-              style={{ width: "100%" }}
+              className="h-full w-full rounded-full bg-[var(--color-cta)]"
             />
           </div>
         </div>
@@ -260,9 +263,15 @@ interface TsunamiCardProps {
   input: SimulasiInput;
   result: SimulasiResult;
   activePreset: PresetScenarioItem | null;
+  uiTipeLokasi: UiTipeLokasi;
 }
 
-export function TsunamiCard({ input, result, activePreset }: TsunamiCardProps) {
+export function TsunamiCard({
+  input,
+  result,
+  activePreset,
+  uiTipeLokasi,
+}: TsunamiCardProps) {
   const { tsunami } = result;
   const isSpecialCoastalPreset =
     activePreset &&
@@ -276,12 +285,20 @@ export function TsunamiCard({ input, result, activePreset }: TsunamiCardProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Waves className="w-4 h-4 text-[var(--color-text-primary)]" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
             Indikator kriteria tsunami
-          </h2>
+          </h3>
         </div>
 
-        {tsunami.meetsCriteria ? (
+        {uiTipeLokasi === "BELUM_DIPILIH" ? (
+          <span
+            role="status"
+            className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] px-3 py-1 text-xs font-medium text-[var(--color-text-primary)]"
+          >
+            <Info className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>Tipe lokasi belum dipilih</span>
+          </span>
+        ) : tsunami.meetsCriteria ? (
           <StatusBadge
             variant="tsunami_berpotensi"
             customText={tsunami.badgeLabel}
@@ -298,34 +315,47 @@ export function TsunamiCard({ input, result, activePreset }: TsunamiCardProps) {
         )}
       </div>
 
-      <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
-        {tsunami.explanation}
-      </p>
+      {uiTipeLokasi === "BELUM_DIPILIH" ? (
+        <div className="space-y-2 rounded-[16px] bg-[var(--color-surface-raised)] border border-[var(--color-border)] p-4">
+          <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+            Pilih tipe lokasi untuk melihat indikator tsunami
+          </p>
+          <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+            Pada mode Kustom, status lokasi pusat gempa (Darat atau Laut) sengaja belum ditetapkan agar tidak memberi asumsi keliru. Pilih Darat atau Laut pada bagian Parameter lanjutan di atas.
+          </p>
+        </div>
+      ) : (
+        <>
+          <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+            {tsunami.explanation}
+          </p>
 
-      {/* Checklist 3 syarat BNPB 2012 */}
-      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-        {[
-          { label: "Lokasi di laut", ok: input.tipeLokasi === "LAUT" },
-          { label: "Magnitudo > 6,8", ok: input.magnitudo > 6.8 },
-          { label: "Kedalaman ≤ 70 km", ok: input.kedalamanKm <= 70 },
-        ].map((item) => (
-          <li
-            key={item.label}
-            className="flex items-center gap-2 rounded-[14px] bg-[var(--color-surface-raised)] border border-[var(--color-border)] px-3 py-2 text-[var(--color-text-primary)]"
-          >
-            {item.ok ? (
-              <Check className="w-3.5 h-3.5 shrink-0 text-[var(--color-text-primary)]" aria-hidden="true" />
-            ) : (
-              <span className="w-3.5 h-3.5 shrink-0 text-center font-semibold text-[var(--color-text-secondary)]" aria-hidden="true">
-                –
-              </span>
-            )}
-            <span className={item.ok ? "font-semibold" : "text-[var(--color-text-secondary)]"}>
-              {item.label}
-            </span>
-          </li>
-        ))}
-      </ul>
+          {/* Checklist 3 syarat BNPB 2012 */}
+          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            {[
+              { label: "Lokasi di laut", ok: input.tipeLokasi === "LAUT" },
+              { label: "Magnitudo > 6,8", ok: input.magnitudo > 6.8 },
+              { label: "Kedalaman ≤ 70 km", ok: input.kedalamanKm <= 70 },
+            ].map((item) => (
+              <li
+                key={item.label}
+                className="flex items-center gap-2 rounded-[14px] bg-[var(--color-surface-raised)] border border-[var(--color-border)] px-3 py-2 text-[var(--color-text-primary)]"
+              >
+                {item.ok ? (
+                  <Check className="w-3.5 h-3.5 shrink-0 text-[var(--color-text-primary)]" aria-hidden="true" />
+                ) : (
+                  <span className="w-3.5 h-3.5 shrink-0 text-center font-semibold text-[var(--color-text-secondary)]" aria-hidden="true">
+                    ×
+                  </span>
+                )}
+                <span className={item.ok ? "font-semibold" : "text-[var(--color-text-secondary)]"}>
+                  {item.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       {/* Catatan wajib mengenai Palu 2018 & Lombok 2018 selalu tampil di UI di samping indikator tsunami */}
       <div className="rounded-[16px] bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] p-4 space-y-2 text-xs leading-relaxed text-[var(--color-text-primary)]">

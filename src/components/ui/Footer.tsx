@@ -44,6 +44,18 @@ export const Footer: React.FC<FooterProps> = ({
           <p className="text-xs font-medium text-[var(--color-text-secondary)] pt-1">
             Situs ini bukan sistem peringatan dini resmi. Informasi disediakan untuk keperluan edukasi dan kesiapsiagaan masyarakat.
           </p>
+          <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+            Peta simulasi bersumber dari{" "}
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 text-[var(--color-text-primary)] font-medium"
+            >
+              © OpenStreetMap contributors
+            </a>{" "}
+            (permintaan tile dikirim langsung dari peramban pengguna ke server OSM), dengan pustaka Leaflet (BSD-2-Clause) dan Three.js (MIT).
+          </p>
         </div>
 
         <nav aria-label="Tautan Footer" className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-[var(--color-text-secondary)]">
