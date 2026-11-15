@@ -108,8 +108,6 @@ export default async function HomePage() {
   let lastSyncTime: Date | null = null;
   let skenarioList: SkenarioPreview[] = [];
   let artikelList: ArtikelPreview[] = [];
-  let totalGempa = 0;
-  let totalSkenario = 0;
   let totalArtikel = 0;
   let isDbDegraded = false;
 
@@ -140,9 +138,9 @@ export default async function HomePage() {
     }
   }
 
-  // 2. Ambil catatan sinkronisasi terakhir, statistik riil DB, skenario simulasi, & 3 modul edukasi inti
+  // 2. Ambil catatan sinkronisasi terakhir, skenario simulasi, & 3 modul edukasi inti
   try {
-    const [syncLog, skenarios, allArtikels, countGempa, countSkenario, countArtikel] =
+    const [syncLog, skenarios, allArtikels] =
       await Promise.all([
         prisma.syncLog.findFirst({
           where: { status: "OK" },
@@ -156,9 +154,6 @@ export default async function HomePage() {
           orderBy: [{ urutan: "asc" }, { updatedAt: "desc" }],
           include: { sumber: true },
         }),
-        prisma.gempa.count(),
-        prisma.skenarioSimulasi.count(),
-        prisma.artikel.count(),
       ]);
     if (syncLog) lastSyncTime = syncLog.createdAt;
     skenarioList = skenarios;
@@ -176,10 +171,7 @@ export default async function HomePage() {
       if (!picked.some((p) => p.id === a.id)) picked.push(a);
     }
     artikelList = picked;
-
-    totalGempa = countGempa;
-    totalSkenario = countSkenario;
-    totalArtikel = countArtikel;
+    totalArtikel = allArtikels.length;
   } catch {
     skenarioList = [];
     artikelList = [];
@@ -352,37 +344,8 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ================= SECTION 2: SIMULASI PREVIEW + STATISTIK ================= */}
-        <section aria-labelledby="ringkasan-sigap-heading" className="pt-2 sm:pt-4">
-          {/* Bar statistik ringkas */}
-          <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-4 mb-10 sm:mb-14">
-            <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Platform pemantauan dan edukasi gempa bumi berbasis data BMKG
-              </p>
-              <dl className="flex items-center gap-8 sm:gap-10">
-                <div className="flex items-baseline gap-2">
-                  <dd className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--color-text-primary)] tnum">
-                    {isDbDegraded ? "–" : nf.format(totalGempa)}
-                  </dd>
-                  <dt className="text-xs text-[var(--color-text-secondary)]">gempa</dt>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <dd className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--color-text-primary)] tnum">
-                    {isDbDegraded ? "–" : nf.format(totalSkenario)}
-                  </dd>
-                  <dt className="text-xs text-[var(--color-text-secondary)]">skenario</dt>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <dd className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--color-text-primary)] tnum">
-                    {isDbDegraded ? "–" : nf.format(totalArtikel)}
-                  </dd>
-                  <dt className="text-xs text-[var(--color-text-secondary)]">artikel</dt>
-                </div>
-              </dl>
-            </div>
-          </div>
-
+        {/* ================= SECTION 2: RINGKASAN + GEMPA TERBARU ================= */}
+        <section aria-labelledby="ringkasan-sigap-heading" className="pt-4 sm:pt-6">
           {/* Dua kolom: heading kiri + data gempa terbaru kanan */}
           <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10">
             <div className="flex flex-col justify-center gap-7">
