@@ -11,11 +11,13 @@ import { prisma } from "@/lib/prisma";
 import { NormalizedGempa, StatusTsunamiType } from "@/types/bmkg";
 import type { Prisma } from "@prisma/client";
 import {
+  Activity,
   AlertTriangle,
   ArrowUpRight,
   CheckCircle2,
   Globe,
   HelpCircle,
+  History,
   MessageSquareText,
   Radio,
   Send,
@@ -381,40 +383,61 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Dua kolom: heading kiri + pratinjau simulasi kanan (dark card) */}
+          {/* Dua kolom: heading kiri + data gempa terbaru kanan */}
           <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10">
             <div className="flex flex-col justify-center gap-7">
               <div>
                 <h2
                   id="ringkasan-sigap-heading"
-                  className="max-w-lg text-3xl sm:text-4xl lg:text-[42px] font-normal leading-[1.1] tracking-[-0.025em] text-[var(--color-text-primary)]"
+                  className="max-w-[35rem] text-balance text-3xl sm:text-4xl lg:text-[2.75rem] font-normal leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)]"
                 >
-                  Pahami risiko gempa sebelum guncangan datang
+                  <span className="font-semibold text-[var(--color-primary-strong)]">
+                    Pahami risiko gempa
+                  </span>{" "}
+                  sebelum guncangan datang
                 </h2>
-                <p className="mt-4 max-w-md text-sm sm:text-base leading-relaxed text-[var(--color-text-secondary)]">
-                  Data resmi BMKG dipadukan kalkulator intensitas MMI, waktu tiba gelombang P–S, serta panduan mitigasi berbasis rujukan.
+                <p className="mt-4 max-w-[46ch] text-sm sm:text-base leading-relaxed text-[var(--color-text-secondary)]">
+                  Data resmi{" "}
+                  <span className="font-medium text-[var(--color-text-primary)]">
+                    BMKG
+                  </span>{" "}
+                  dipadukan kalkulator{" "}
+                  <span className="font-medium text-[var(--color-primary-strong)]">
+                    intensitas MMI
+                  </span>
+                  , waktu tiba{" "}
+                  <span className="font-medium text-[var(--color-primary-strong)]">
+                    gelombang P/S
+                  </span>
+                  , serta{" "}
+                  <span className="font-medium text-[var(--color-text-primary)]">
+                    panduan mitigasi
+                  </span>{" "}
+                  berbasis rujukan.
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href="/riwayat"
-                  className="inline-flex items-center min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-4 text-xs sm:text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  Riwayat BMKG
-                </Link>
-                <Link
-                  href="/simulasi"
-                  className="inline-flex items-center min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-4 text-xs sm:text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  Simulasi MMI &amp; P–S
-                </Link>
-                <Link
-                  href="/chatbot"
-                  className="inline-flex items-center min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-4 text-xs sm:text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  Tanya chatbot
-                </Link>
+              <div className="flex flex-wrap gap-2.5">
+                {[
+                  { href: "/riwayat", label: "Riwayat BMKG", Icon: History },
+                  { href: "/simulasi", label: "Simulasi MMI & P/S", Icon: Activity },
+                  { href: "/chatbot", label: "Tanya chatbot", Icon: MessageSquareText },
+                ].map(({ href, label, Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="group inline-flex items-center gap-2.5 min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] pl-2 pr-4 py-1.5 text-xs sm:text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  >
+                    <span className="w-7 h-7 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary-strong)] flex items-center justify-center shrink-0 transition-colors motion-reduce:transition-none group-hover:border-[var(--color-cta)] group-hover:bg-[var(--color-cta)] group-hover:text-[var(--color-on-cta)]">
+                      <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                    </span>
+                    <span>{label}</span>
+                    <ArrowUpRight
+                      className="w-3.5 h-3.5 text-[var(--color-text-secondary)] transition-colors motion-reduce:transition-none group-hover:text-[var(--color-on-primary)]"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                ))}
               </div>
             </div>
 
