@@ -8,17 +8,20 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ArticleListItem } from "@/components/edukasi/ArticleListItem";
 import { fetchBmkgAutogempa } from "@/lib/bmkg/client";
+import { ReloadPageButton } from "@/components/beranda/ReloadPageButton";
 import { prisma } from "@/lib/prisma";
-import { runSimulasiCalculation, formatIdNumber } from "@/lib/simulasi";
 import { NormalizedGempa, StatusTsunamiType } from "@/types/bmkg";
 import type { Prisma } from "@prisma/client";
 import {
+  AlertTriangle,
   ArrowUpRight,
-  MessageSquareText,
+  CheckCircle2,
   Globe,
-  Share2,
-  Send,
+  HelpCircle,
+  MessageSquareText,
   Radio,
+  Send,
+  Share2,
 } from "lucide-react";
 
 export const revalidate = 60; // Cache 60 detik sesuai spec
@@ -135,18 +138,12 @@ export default async function HomePage() {
     ? `/simulasi?m=${latestQuake.magnitudo}&d=${latestQuake.kedalamanKm}&lat=${latestQuake.lat}&lon=${latestQuake.lon}&wilayah=${encodeURIComponent(latestQuake.wilayah)}`
     : "/simulasi";
 
-  const previewSimInput = latestQuake
-    ? {
-        magnitudo: latestQuake.magnitudo,
-        kedalamanKm: latestQuake.kedalamanKm,
-        lat: latestQuake.lat,
-        lon: latestQuake.lon,
-        jarakPengamatKm: 50,
-        tipeLokasi: (latestQuake.wilayah.toLowerCase().includes("darat") ? "DARAT" : "LAUT") as "DARAT" | "LAUT",
-        wilayah: latestQuake.wilayah,
-      }
-    : null;
-  const previewSim = previewSimInput ? runSimulasiCalculation(previewSimInput) : null;
+  const dirasakanTeks =
+    latestQuake?.dirasakan &&
+    latestQuake.dirasakan.trim() !== "" &&
+    latestQuake.dirasakan.trim() !== "-"
+      ? latestQuake.dirasakan.trim()
+      : "Tidak tercatat dirasakan";
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)] overflow-x-hidden">
@@ -371,99 +368,198 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Kartu gelap pratinjau simulasi */}
-            <div className="rounded-[24px] bg-[var(--color-cta)] text-[var(--color-on-cta)] p-6 sm:p-8 flex flex-col justify-between gap-5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="inline-flex items-center rounded-full bg-[var(--color-on-cta)]/10 border border-[var(--color-on-cta)]/15 px-3 py-1 text-xs font-medium">
-                  {isBmkgFallback ? "Pratinjau · data lokal" : "Pratinjau simulasi · 50 km"}
-                </span>
-                <span className="text-xs opacity-60">Estimasi edukasi</span>
-              </div>
-
-              {latestQuake && previewSim ? (
-                <div className="space-y-5">
-                  <p className="text-xs opacity-70 line-clamp-1 tnum">
-                    M {formatMagnitude(latestQuake.magnitudo)} · {latestQuake.wilayah}
-                  </p>
-
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-5xl sm:text-6xl font-normal tracking-tight tnum">
-                      {previewSim.mmi.roman}
-                    </span>
-                    <div>
-                      <p className="text-base sm:text-lg font-medium">{previewSim.mmi.label}</p>
-                      <p className="text-xs opacity-55">Skala MMI (Allen dkk., 2012)</p>
+            {/* Ringkasan gempa terbaru dari BMKG */}
+            <div
+              aria-labelledby="latest-quake-heading"
+              className="rounded-[28px] overflow-hidden bg-[var(--color-surface-raised)] border border-[var(--color-border)] flex flex-col justify-between"
+            >
+              {latestQuake ? (
+                <>
+                  {/* Strip header editorial */}
+                  <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] px-6 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          isBmkgFallback
+                            ? "bg-[var(--color-warning-strong)]"
+                            : "bg-[var(--color-text-primary)]"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <h3
+                        id="latest-quake-heading"
+                        className="text-base font-medium tracking-[-0.015em] text-[var(--color-text-primary)]"
+                      >
+                        Gempa terbaru
+                      </h3>
                     </div>
+
+                    <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)]">
+                      {isBmkgFallback ? (
+                        <>
+                          <AlertTriangle
+                            className="w-3.5 h-3.5 shrink-0 text-[var(--color-warning-strong)]"
+                            aria-hidden="true"
+                          />
+                          <span className="text-[var(--color-warning-strong)]">
+                            Cadangan lokal
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2
+                            className="w-3.5 h-3.5 shrink-0 text-[var(--color-text-primary)]"
+                            aria-hidden="true"
+                          />
+                          <span>Data langsung BMKG</span>
+                        </>
+                      )}
+                    </p>
                   </div>
 
-                  {/* 12-segmen skala MMI */}
-                  <div className="space-y-1.5">
-                    <div
-                      className="grid grid-cols-12 gap-1"
-                      role="img"
-                      aria-label={`Tingkat guncangan ${previewSim.mmi.roman} dari XII pada skala MMI`}
-                    >
-                      {Array.from({ length: 12 }, (_, idx) => (
-                        <span
-                          key={idx}
-                          className={`h-2 rounded-full ${
-                            idx + 1 <= previewSim.mmi.clampedLevel
-                              ? "bg-[var(--color-primary)]"
-                              : "bg-[var(--color-on-cta)]/15"
-                          }`}
+                  <div className="p-6 sm:p-8 flex flex-col justify-between gap-6 flex-1">
+                    {isBmkgFallback && (
+                      <div
+                        role="status"
+                        className="rounded-[16px] border border-[var(--color-warning-strong)]/40 bg-[var(--color-background)] px-3.5 py-2.5 flex items-start gap-2.5 text-xs leading-relaxed text-[var(--color-warning-strong)]"
+                      >
+                        <AlertTriangle
+                          className="w-4 h-4 shrink-0 mt-0.5"
+                          aria-hidden="true"
                         />
-                      ))}
+                        <span>
+                          BMKG tidak dapat diakses. Data terakhir{" "}
+                          {formatWibDate(lastSyncTime ?? latestQuake.waktuUtc)}.
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Fokus utama: magnitudo + lokasi episentrum + potensi tsunami */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                      <div className="shrink-0">
+                        <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                          Magnitudo
+                        </p>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-5xl sm:text-6xl font-normal leading-none tracking-[-0.03em] text-[var(--color-text-primary)] tnum">
+                            {formatMagnitude(latestQuake.magnitudo)}
+                          </span>
+                          <span className="text-lg font-medium text-[var(--color-text-secondary)]">
+                            M
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="min-w-0 flex-1 sm:border-l sm:border-[var(--color-border)] sm:pl-6">
+                        <p className="text-base sm:text-lg font-medium leading-snug text-[var(--color-text-primary)] break-words">
+                          {latestQuake.wilayah}
+                        </p>
+                        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                          {latestQuake.statusTsunami === "BERPOTENSI" ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-error-strong)]/40 bg-[var(--color-background)] px-3 py-1 text-xs font-medium text-[var(--color-error-strong)]">
+                              <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                              <span>{latestQuake.potensiTeks}</span>
+                            </span>
+                          ) : latestQuake.statusTsunami === "AMAN" ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-background)] px-3 py-1 text-xs font-medium text-[var(--color-text-primary)]">
+                              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                              <span>{latestQuake.potensiTeks || "Tidak berpotensi tsunami"}</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                              <HelpCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                              <span>
+                                {latestQuake.potensiTeks || "Potensi tsunami tidak dinyatakan"}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-xs opacity-50 tnum">
-                      <span>I</span>
-                      <span>VI</span>
-                      <span>XII</span>
+
+                    {/* Detail terukur tanpa kartu di dalam kartu */}
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 pt-5 border-t border-[var(--color-border)]">
+                      <div className="min-w-0">
+                        <dt className="text-xs font-medium text-[var(--color-text-secondary)]">
+                          Waktu (WIB)
+                        </dt>
+                        <dd className="mt-1 text-sm font-medium text-[var(--color-text-primary)] tnum">
+                          {formatWibDate(latestQuake.waktuUtc)}
+                        </dd>
+                      </div>
+
+                      <div className="min-w-0">
+                        <dt className="text-xs font-medium text-[var(--color-text-secondary)]">
+                          Kedalaman
+                        </dt>
+                        <dd className="mt-1 text-sm font-medium text-[var(--color-text-primary)] tnum">
+                          {latestQuake.kedalamanKm.toLocaleString("id-ID")} km
+                        </dd>
+                      </div>
+
+                      <div className="min-w-0">
+                        <dt className="text-xs font-medium text-[var(--color-text-secondary)]">
+                          Koordinat
+                        </dt>
+                        <dd className="mt-1 text-sm font-medium text-[var(--color-text-primary)] tnum">
+                          {formatCoordinate(latestQuake.lat, latestQuake.lon)}
+                        </dd>
+                      </div>
+
+                      <div className="min-w-0">
+                        <dt className="text-xs font-medium text-[var(--color-text-secondary)]">
+                          Dirasakan
+                        </dt>
+                        <dd className="mt-1 text-sm font-medium text-[var(--color-text-primary)] break-words">
+                          {dirasakanTeks}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[var(--color-border)]">
+                      <p className="text-xs leading-relaxed text-[var(--color-text-secondary)] max-w-[280px] tnum">
+                        Sumber: BMKG · diperbarui {formatWibDate(latestQuake.waktuUtc)}. Bukan
+                        sistem peringatan dini resmi.
+                      </p>
+                      <Link
+                        href={hrefSimulasiLatest}
+                        className="inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-full bg-[var(--color-cta)] px-5 text-sm font-medium text-[var(--color-on-cta)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] active:bg-[var(--color-primary-strong)] active:text-[var(--color-on-cta)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                      >
+                        <span>Simulasikan gempa ini</span>
+                        <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+                      </Link>
                     </div>
                   </div>
-
-                  {/* Waktu gelombang */}
-                  <dl className="grid grid-cols-3 gap-3 rounded-[16px] bg-[var(--color-on-cta)]/[0.07] p-4 text-xs">
-                    <div>
-                      <dt className="opacity-65">Gel. P</dt>
-                      <dd className="mt-1 text-sm font-medium tnum">
-                        {formatIdNumber(previewSim.tpSeconds, 1)} dtk
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="opacity-65">Gel. S</dt>
-                      <dd className="mt-1 text-sm font-medium tnum">
-                        {formatIdNumber(previewSim.tsSeconds, 1)} dtk
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="opacity-65">Golden time</dt>
-                      <dd className="mt-1 text-sm font-medium tnum">
-                        {formatIdNumber(previewSim.goldenTimeSeconds, 1)} dtk
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
+                </>
               ) : (
-                <div className="rounded-[16px] bg-[var(--color-on-cta)]/[0.07] p-5 space-y-2">
-                  <p className="text-sm font-medium">Pratinjau belum tersedia</p>
-                  <p className="text-xs opacity-65 leading-relaxed">
-                    Data gempa terkini belum dapat dimuat. Masukkan parameter manual di simulator.
-                  </p>
+                <div className="p-6 sm:p-8 flex flex-col justify-between gap-6 my-auto">
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 text-xs font-medium text-[var(--color-error-strong)]">
+                      <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <span>Koneksi data terputus</span>
+                    </div>
+                    <h3
+                      id="latest-quake-heading"
+                      className="text-lg font-medium text-[var(--color-text-primary)]"
+                    >
+                      Data gempa terbaru belum tersedia
+                    </h3>
+                    <p className="text-sm leading-relaxed text-[var(--color-text-secondary)] max-w-[42ch]">
+                      Gagal terhubung ke BMKG dan belum ada catatan gempa lokal yang dapat
+                      ditampilkan.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <ReloadPageButton />
+                    <Link
+                      href="/riwayat"
+                      className="inline-flex items-center justify-center min-h-[44px] rounded-full border border-[var(--color-border-strong)] px-5 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] active:bg-[var(--color-surface-sunken)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                    >
+                      Buka riwayat
+                    </Link>
+                  </div>
                 </div>
               )}
-
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--color-on-cta)]/12">
-                <p className="text-xs opacity-55 max-w-[240px]">
-                  Bukan data resmi BMKG
-                </p>
-                <Link
-                  href={hrefSimulasiLatest}
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-full bg-[var(--color-on-cta)] px-5 text-xs sm:text-sm font-medium text-[var(--color-cta)] hover:bg-[var(--color-surface)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
-                >
-                  <span>Buka simulator</span>
-                  <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-                </Link>
-              </div>
             </div>
           </div>
         </section>
