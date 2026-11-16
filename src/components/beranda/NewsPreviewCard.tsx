@@ -1,6 +1,12 @@
 import React from "react";
 import { ExternalLink } from "lucide-react";
-import { formatTanggalIndonesia, getSafeExternalHref } from "@/lib/edukasi";
+import {
+  formatTanggalIndonesia,
+  getNewsPublisherSpec,
+  getNewsThumbnailVisual,
+  getSafeExternalHref,
+  getUrlHostname,
+} from "@/lib/edukasi";
 
 export interface NewsPreviewCardProps {
   judul: string;
@@ -8,54 +14,8 @@ export interface NewsPreviewCardProps {
   url: string;
   tanggalTerbit: Date;
   ringkasan?: string | null;
-  thumbnailSrc: string;
-  thumbnailAlt: string;
-}
-
-interface PublisherBadgeSpec {
-  initials: string;
-  badgeClassName: string;
-}
-
-function getPublisherSpec(sumber: string): PublisherBadgeSpec {
-  const normalized = sumber.trim().toLowerCase();
-  if (normalized.includes("cnn")) {
-    return {
-      initials: "CNN",
-      badgeClassName: "bg-[var(--color-error)] text-[var(--color-on-cta)]",
-    };
-  }
-  if (normalized.includes("cnbc")) {
-    return {
-      initials: "CNBC",
-      badgeClassName: "bg-[var(--color-primary-strong)] text-[var(--color-on-cta)]",
-    };
-  }
-  if (normalized.includes("bisnis")) {
-    return {
-      initials: "BI",
-      badgeClassName: "bg-[var(--color-cta)] text-[var(--color-on-cta)]",
-    };
-  }
-  const letters = sumber
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
-  return {
-    initials: letters || "BR",
-    badgeClassName:
-      "bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border-strong)]",
-  };
-}
-
-function getHostname(rawUrl: string): string {
-  try {
-    return new URL(rawUrl).hostname.replace(/^www\./i, "");
-  } catch {
-    return "";
-  }
+  thumbnailSrc?: string;
+  thumbnailAlt?: string;
 }
 
 /**
@@ -72,14 +32,16 @@ export function NewsPreviewCard({
   thumbnailAlt,
 }: NewsPreviewCardProps) {
   const safeHref = getSafeExternalHref(url);
-  const publisher = getPublisherSpec(sumber);
-  const hostname = getHostname(url);
+  const publisher = getNewsPublisherSpec(sumber);
+  const hostname = getUrlHostname(url);
+  const visual = getNewsThumbnailVisual(judul);
+  const imgSrc = thumbnailSrc ?? visual.src;
+  const imgAlt = thumbnailAlt ?? visual.alt;
 
   return (
     <article className="group relative rounded-[20px] border border-[var(--color-border)] bg-[var(--color-background)]/75 hover:bg-[var(--color-surface)]/75 active:bg-[var(--color-surface-sunken)] hover:border-[var(--color-border-strong)] p-4 sm:p-5 transition-colors">
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1 space-y-2.5">
-          {/* Bar atas: monogram penerbit, nama media + domain, tanggal */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               <span
@@ -128,11 +90,10 @@ export function NewsPreviewCard({
           )}
         </div>
 
-        {/* Thumbnail berita editorial */}
         <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 overflow-hidden rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface)] self-center">
           <img
-            src={thumbnailSrc}
-            alt={thumbnailAlt}
+            src={imgSrc}
+            alt={imgAlt}
             className="w-full h-full object-cover"
           />
         </div>

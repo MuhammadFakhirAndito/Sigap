@@ -891,36 +891,16 @@ export default async function HomePage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {beritaList.map((berita) => {
-                    const lowerJudul = berita.judul.toLowerCase();
-                    const visual = lowerJudul.includes("disiapkan") || lowerJudul.includes("siaga")
-                      ? {
-                          src: "/images/berita-siaga-megathrust.jpg",
-                          alt: "Tas siaga bencana, air minum kemasan, senter engkol, dan kotak P3K tersusun rapi di dekat pintu rumah",
-                        }
-                      : lowerJudul.includes("13 zona") || lowerJudul.includes("ancaman")
-                        ? {
-                            src: "/images/berita-zona-megathrust.jpg",
-                            alt: "Maket relief geologi kepulauan Indonesia dan palung zona subduksi di atas batu travertine",
-                          }
-                        : {
-                            src: "/images/berita-tiga-lempeng.jpg",
-                            alt: "Model tiga lempeng tektonik berlapis batuan yang saling bertemu di atas batu travertine",
-                          };
-
-                    return (
-                      <NewsPreviewCard
-                        key={berita.id}
-                        judul={berita.judul}
-                        sumber={berita.sumber}
-                        url={berita.url}
-                        tanggalTerbit={berita.tanggalTerbit}
-                        ringkasan={berita.ringkasan}
-                        thumbnailSrc={visual.src}
-                        thumbnailAlt={visual.alt}
-                      />
-                    );
-                  })}
+                  {beritaList.map((berita) => (
+                    <NewsPreviewCard
+                      key={berita.id}
+                      judul={berita.judul}
+                      sumber={berita.sumber}
+                      url={berita.url}
+                      tanggalTerbit={berita.tanggalTerbit}
+                      ringkasan={berita.ringkasan}
+                    />
+                  ))}
                 </div>
               )}
             </div>
