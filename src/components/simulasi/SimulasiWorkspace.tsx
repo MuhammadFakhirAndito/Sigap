@@ -596,10 +596,10 @@ export function SimulasiWorkspace({
                 aria-controls="panel-mode-peta"
                 tabIndex={activeMode === "peta" ? 0 : -1}
                 onClick={() => setActiveMode("peta")}
-                className={`inline-flex items-center gap-1.5 min-h-[44px] rounded-full px-4 text-xs sm:text-sm font-semibold transition-colors duration-150 ${
+                className={`inline-flex items-center gap-1.5 min-h-[44px] rounded-full px-4 text-xs sm:text-sm font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)] ${
                   activeMode === "peta"
                     ? "bg-[var(--color-cta)] text-[var(--color-on-cta)]"
-                    : "text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]"
+                    : "text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] active:bg-[var(--color-surface-sunken)]"
                 }`}
               >
                 <Compass className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -615,10 +615,10 @@ export function SimulasiWorkspace({
                 aria-controls="panel-mode-3d"
                 tabIndex={activeMode === "3d" ? 0 : -1}
                 onClick={() => setActiveMode("3d")}
-                className={`inline-flex items-center gap-1.5 min-h-[44px] rounded-full px-4 text-xs sm:text-sm font-semibold transition-colors duration-150 ${
+                className={`inline-flex items-center gap-1.5 min-h-[44px] rounded-full px-4 text-xs sm:text-sm font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)] ${
                   activeMode === "3d"
                     ? "bg-[var(--color-cta)] text-[var(--color-on-cta)]"
-                    : "text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]"
+                    : "text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] active:bg-[var(--color-surface-sunken)]"
                 }`}
               >
                 <Layers className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -631,58 +631,6 @@ export function SimulasiWorkspace({
               Estimasi edukasi, bukan data resmi BMKG
             </span>
           </div>
-
-          {/* Ringkasan getaran awam + angka MMI kecil netral gelap (tampil di KEDUA mode) */}
-          <section
-            aria-label="Ringkasan intensitas guncangan di lokasi Anda"
-            className="bg-[var(--color-surface)] rounded-[24px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-          >
-            <div className="flex items-start sm:items-center gap-3.5">
-              {/* Angka MMI kecil netral gelap (TANPA hijau / token success) */}
-              <div className="shrink-0 rounded-[16px] bg-[var(--color-cta)] text-[var(--color-on-cta)] px-3.5 py-2 text-center min-w-[78px]">
-                <span className="block text-xs font-medium opacity-80">
-                  MMI
-                </span>
-                <span className="tnum block text-2xl font-bold leading-tight">
-                  {result.mmi.roman}
-                </span>
-                <span className="tnum block text-xs opacity-85">
-                  {formatIdNumber(result.mmi.raw, 1)}
-                </span>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-sm sm:text-base font-semibold text-[var(--color-text-primary)]">
-                  {result.mmi.label}
-                </p>
-                <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                  {result.mmi.description}
-                </p>
-                <p className="tnum text-xs font-medium text-[var(--color-text-primary)]">
-                  <span>
-                    Jarak Anda:{" "}
-                    <strong className="font-semibold">
-                      {distanceSync.formattedActualDistance}
-                    </strong>
-                  </span>
-                  <span className="mx-2 text-[var(--color-text-secondary)]" aria-hidden="true">|</span>
-                  <span>
-                    Jeda P ke S:{" "}
-                    <strong className="font-semibold">
-                      {formatIdNumber(result.goldenTimeSeconds, 1)} detik
-                    </strong>
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            {(result.mmi.outsideMagRange || result.mmi.outsideDistRange) && (
-              <span className="inline-flex items-center gap-1.5 self-start sm:self-center shrink-0 rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-warning-strong)] px-3 py-1 text-xs font-medium text-[var(--color-warning-strong)]">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span>di luar kalibrasi</span>
-              </span>
-            )}
-          </section>
 
           {/* Panggung mode aktif: default Peta dampak; Getaran 3D dimuat dinamis HANYA saat dibuka */}
           {activeMode === "peta" ? (
