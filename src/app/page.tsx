@@ -8,6 +8,7 @@ import { ArticleNotchedCard } from "@/components/edukasi/ArticleNotchedCard";
 import { fetchBmkgAutogempa } from "@/lib/bmkg/client";
 import { ReloadPageButton } from "@/components/beranda/ReloadPageButton";
 import { HeroScrollRock } from "@/components/beranda/HeroScrollRock";
+import { ScenarioOverlayCard } from "@/components/beranda/ScenarioOverlayCard";
 import { prisma } from "@/lib/prisma";
 import { NormalizedGempa, StatusTsunamiType } from "@/types/bmkg";
 import type { Prisma } from "@prisma/client";
@@ -18,9 +19,11 @@ import {
   Globe,
   HelpCircle,
   MessageSquareText,
+  Mountain,
   Radio,
   Send,
   Share2,
+  Waves,
 } from "lucide-react";
 
 export const revalidate = 60; // Cache 60 detik sesuai spec
@@ -728,56 +731,61 @@ export default async function HomePage() {
               <EmptyState message="Belum ada skenario sejarah tersimpan di database." />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {skenarioList.map((sk) => {
                 const hrefPreset = `/simulasi?m=${sk.magnitudo}&d=${sk.kedalamanKm}&lat=${sk.lat}&lon=${sk.lon}&wilayah=${encodeURIComponent(sk.nama)}`;
+                const normalizedName = sk.nama.toLowerCase();
+                const media = normalizedName.includes("aceh")
+                  ? {
+                      url: "/images/skenario-aceh.jpg",
+                      alt: "Lanskap pesisir barat Aceh yang tenang menghadap Samudra Hindia pada pagi hari",
+                    }
+                  : normalizedName.includes("nias")
+                    ? {
+                        url: "/images/skenario-nias.jpg",
+                        alt: "Garis pantai Pulau Nias di Sumatra Utara dengan batuan basalt dan laut tenang",
+                      }
+                    : normalizedName.includes("yogyakarta") || normalizedName.includes("bantul")
+                      ? {
+                          url: "/images/skenario-yogyakarta.jpg",
+                          alt: "Lembah hijau dan perbukitan kapur selatan Yogyakarta diselimuti kabut pagi",
+                        }
+                      : sk.tipeLokasi === "LAUT"
+                        ? {
+                            url: "/images/skenario-aceh.jpg",
+                            alt: `Ilustrasi wilayah pesisir untuk skenario ${sk.nama}`,
+                          }
+                        : {
+                            url: "/images/skenario-yogyakarta.jpg",
+                            alt: `Ilustrasi wilayah daratan untuk skenario ${sk.nama}`,
+                          };
+
+                const depthText = String(sk.kedalamanKm).replace(".", ",");
+                const locationTypeLabel =
+                  sk.tipeLokasi === "LAUT" ? "Lokasi laut" : "Lokasi darat";
+
                 return (
-                  <article
+                  <ScenarioOverlayCard
                     key={sk.id}
-                    className="group relative rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] p-5 sm:p-6 flex flex-col justify-between gap-4 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-normal tracking-tight text-[var(--color-text-primary)] leading-none tnum">
-                            {formatMagnitude(sk.magnitudo)}
-                          </span>
-                          <span className="text-xs font-medium text-[var(--color-text-secondary)]">
-                            M
-                          </span>
-                        </div>
-                        <p className="mt-1.5 text-xs text-[var(--color-text-secondary)]">
-                          {sk.tipeLokasi === "LAUT" ? "Lokasi laut" : "Lokasi darat"}
-                        </p>
-                      </div>
-                      <span
-                        aria-hidden="true"
-                        className="w-11 h-11 shrink-0 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] group-hover:bg-[var(--color-cta)] group-hover:text-[var(--color-on-cta)] group-hover:border-[var(--color-cta)] flex items-center justify-center transition-colors"
-                      >
-                        <ArrowUpRight className="w-4 h-4" />
-                      </span>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <h3 className="text-base font-medium text-[var(--color-text-primary)] leading-snug">
-                        <Link
-                          href={hrefPreset}
-                          className="after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-primary-strong)] rounded"
-                        >
-                          {sk.nama}
-                        </Link>
-                      </h3>
-                      {sk.deskripsiSingkat && (
-                        <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
-                          {sk.deskripsiSingkat}
-                        </p>
-                      )}
-                    </div>
-
-                    <p className="pt-3 border-t border-[var(--color-border)]/70 text-xs text-[var(--color-text-secondary)] tnum">
-                      Kedalaman {sk.kedalamanKm} km · {formatCoordinate(sk.lat, sk.lon)}
-                    </p>
-                  </article>
+                    imageUrl={media.url}
+                    imageAlt={media.alt}
+                    icon={
+                      sk.tipeLokasi === "LAUT" ? (
+                        <Waves className="h-5 w-5" />
+                      ) : (
+                        <Mountain className="h-5 w-5" />
+                      )
+                    }
+                    title={sk.nama}
+                    metaLine={`Kedalaman ${depthText} km · ${formatCoordinate(sk.lat, sk.lon)}`}
+                    overview={
+                      sk.deskripsiSingkat ??
+                      "Skenario gempa historis untuk mempelajari perkiraan guncangan MMI dan waktu tiba gelombang seismik."
+                    }
+                    magnitudeText={formatMagnitude(sk.magnitudo)}
+                    locationTypeLabel={locationTypeLabel}
+                    href={hrefPreset}
+                  />
                 );
               })}
             </div>
