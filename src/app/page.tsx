@@ -375,7 +375,7 @@ export default async function HomePage() {
               </div>
 
               <div className="space-y-8 sm:space-y-10">
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-0 sm:-space-x-px">
+                <div className="flex flex-wrap gap-2 sm:grid sm:grid-cols-3 sm:gap-0">
                   {[
                     { href: "/riwayat", label: "Riwayat BMKG" },
                     { href: "/simulasi", label: "Simulasi MMI & P/S" },
@@ -384,14 +384,14 @@ export default async function HomePage() {
                     <Link
                       key={href}
                       href={href}
-                      className="inline-flex items-center justify-center min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-5 sm:px-6 text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] whitespace-nowrap hover:relative hover:z-10 hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors motion-reduce:transition-none focus-visible:relative focus-visible:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                      className="inline-flex items-center justify-center min-h-[44px] sm:w-full rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-5 sm:px-3 text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] whitespace-nowrap hover:relative hover:z-10 hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors motion-reduce:transition-none focus-visible:relative focus-visible:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
                     >
                       {label}
                     </Link>
                   ))}
                 </div>
 
-                <dl className="grid grid-cols-3 gap-3 sm:gap-8">
+                <dl className="grid grid-cols-3 gap-3 sm:gap-4">
                   {[
                     {
                       value: isDbDegraded ? "–" : nf.format(totalGempa),
@@ -406,7 +406,7 @@ export default async function HomePage() {
                       label: "modul edukasi",
                     },
                   ].map(({ value, label }) => (
-                    <div key={label} className="space-y-1.5 min-w-0">
+                    <div key={label} className="space-y-1.5 min-w-0 sm:pl-2">
                       <dd className="text-2xl sm:text-4xl font-normal tracking-[-0.03em] leading-none text-[var(--color-text-primary)] tnum">
                         {value}
                       </dd>
