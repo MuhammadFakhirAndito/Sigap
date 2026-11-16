@@ -39,3 +39,7 @@ tsconfig.tsbuildinfo
 
 # Installer
 DockerDesktopInstaller.exe
+
+# Local database dumps
+/backups/
+*.dump

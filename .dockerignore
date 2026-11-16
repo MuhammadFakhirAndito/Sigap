@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+node_modules
+.next
+.next-verify
+backups
+*.dump
+*.log
+*.tsbuildinfo
+docs/screenshots

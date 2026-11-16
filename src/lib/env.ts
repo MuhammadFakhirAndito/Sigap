@@ -10,6 +10,7 @@ export interface ModelTierConfig {
 }
 
 const FORBIDDEN_SECRETS = [
+  'sigap_password',
   'dev-sync-secret-sigap-2026',
   'dev-log-hmac-secret-sigap-2026',
   'ganti-dengan-rahasia-acak-panjang-di-produksi',
@@ -22,6 +23,28 @@ const FORBIDDEN_SECRETS = [
   'password',
   'test',
 ];
+
+function isForbiddenOrPlaceholder(value: string | undefined): boolean {
+  if (!value) return true;
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  const lower = trimmed.toLowerCase();
+  if (FORBIDDEN_SECRETS.includes(lower)) return true;
+  if (lower.startsWith('<ganti') || lower.includes('placeholder') || lower.includes('openssl rand')) {
+    return true;
+  }
+  return false;
+}
+
+function extractDatabasePassword(databaseUrl: string | undefined): string | null {
+  if (!databaseUrl || !databaseUrl.trim()) return null;
+  try {
+    const parsed = new URL(databaseUrl.trim());
+    return decodeURIComponent(parsed.password || '');
+  } catch {
+    return null;
+  }
+}
 
 const VALID_THINKING_LEVELS: readonly ThinkingLevel[] = [
   'MINIMAL',
@@ -137,6 +160,7 @@ export function getGeminiModelsConfig(
 
 export function validateEnvironment(customEnv?: {
   NODE_ENV?: string;
+  DATABASE_URL?: string;
   SYNC_SECRET?: string;
   LOG_HMAC_SECRET?: string;
   GEMINI_API_KEY?: string;
@@ -146,26 +170,33 @@ export function validateEnvironment(customEnv?: {
   const syncSecret = env.SYNC_SECRET;
   const logHmacSecret = env.LOG_HMAC_SECRET;
   const shouldCheckGeminiKey = !customEnv || 'GEMINI_API_KEY' in customEnv;
+  const shouldCheckDatabaseUrl = !customEnv || 'DATABASE_URL' in customEnv;
   const geminiApiKey = env.GEMINI_API_KEY;
+  const databaseUrl = env.DATABASE_URL;
 
   if (nodeEnv === 'production') {
-    if (!syncSecret || FORBIDDEN_SECRETS.includes(syncSecret.trim().toLowerCase())) {
+    if (isForbiddenOrPlaceholder(syncSecret)) {
       throw new Error(
         'FATAL [SIGAP]: SYNC_SECRET tidak boleh kosong atau menggunakan nilai bawaan di lingkungan produksi!'
       );
     }
-    if (!logHmacSecret || FORBIDDEN_SECRETS.includes(logHmacSecret.trim().toLowerCase())) {
+    if (isForbiddenOrPlaceholder(logHmacSecret)) {
       throw new Error(
         'FATAL [SIGAP]: LOG_HMAC_SECRET tidak boleh kosong atau menggunakan nilai bawaan di lingkungan produksi!'
       );
     }
-    if (
-      shouldCheckGeminiKey &&
-      (!geminiApiKey || FORBIDDEN_SECRETS.includes(geminiApiKey.trim().toLowerCase()))
-    ) {
+    if (shouldCheckGeminiKey && isForbiddenOrPlaceholder(geminiApiKey)) {
       throw new Error(
         'FATAL [SIGAP]: GEMINI_API_KEY tidak boleh kosong atau menggunakan nilai bawaan di lingkungan produksi!'
       );
+    }
+    if (shouldCheckDatabaseUrl) {
+      const dbPassword = extractDatabasePassword(databaseUrl);
+      if (dbPassword === null || isForbiddenOrPlaceholder(dbPassword)) {
+        throw new Error(
+          'FATAL [SIGAP]: Password DATABASE_URL tidak boleh kosong atau menggunakan nilai bawaan/placeholder di lingkungan produksi!'
+        );
+      }
     }
   }
 }

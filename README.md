@@ -152,18 +152,21 @@ Salin contoh konfigurasi dari `.env.example`:
 ```bash
 cp .env.example .env
 ```
-Sesuaikan nilai variabel di `.env` (khususnya rahasia wajib produksi):
+Sesuaikan nilai variabel di `.env` (buat nilai acak lewat `openssl rand -hex 32`; lihat [`.env.example`](.env.example)):
 ```env
-DATABASE_URL="postgresql://sigap:sigap_password@127.0.0.1:5432/sigap?schema=public"
+POSTGRES_ADMIN_USER="pgadmin"
+POSTGRES_ADMIN_PASSWORD="<password-admin-acak>"
+POSTGRES_APP_PASSWORD="<password-aplikasi-acak>"
+DATABASE_URL="postgresql://sigap:<password-aplikasi-acak>@127.0.0.1:5432/sigap?schema=public"
 
-SYNC_SECRET="ganti-dengan-rahasia-acak-panjang-di-produksi"
-LOG_HMAC_SECRET="ganti-dengan-rahasia-hmac-panjang-di-produksi"
+SYNC_SECRET="<rahasia-sync-acak>"
+LOG_HMAC_SECRET="<rahasia-hmac-acak>"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 NEXT_PUBLIC_MAP_TILE_URL="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 NEXT_PUBLIC_MAP_TILE_ATTRIBUTION='© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'
 
-GEMINI_API_KEY="ganti-dengan-gemini-api-key-anda"
+GEMINI_API_KEY="<gemini-api-key-anda>"
 GEMINI_PRIMARY_MODEL="gemini-3.5-flash-lite"
 GEMINI_FALLBACK_MODEL="gemini-4-hydrogen"
 ```
@@ -172,7 +175,7 @@ GEMINI_FALLBACK_MODEL="gemini-4-hydrogen"
 ```bash
 docker compose up -d postgres
 ```
-> **Catatan Keamanan**: Container `sigap_postgres` pada [`docker-compose.yml`](docker-compose.yml) mengikat port ke `127.0.0.1:5432` dengan user non-superuser `sigap` sehingga database tidak terekspos ke jaringan publik.
+> **Catatan Keamanan**: Container `sigap_postgres` pada [`docker-compose.yml`](docker-compose.yml) mengikat port ke `127.0.0.1:5432`. Bootstrap awal memakai peran admin terpisah (`pgadmin`) lewat `docker-entrypoint-initdb.d`, sedangkan aplikasi dan `prisma migrate deploy` memakai peran `sigap` (`NOSUPERUSER NOCREATEDB NOCREATEROLE`). Password contoh lama yang pernah ada di riwayat Git awal tidak boleh dipakai di produksi.
 
 ### 4. Migrasi Skema & Seed Konten Idempoten
 ```bash

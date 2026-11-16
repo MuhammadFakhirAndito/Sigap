@@ -159,10 +159,21 @@ describe('Uji Kepatuhan TC-DB Fase 1a (SIGAP)', () => {
       })
     ).toThrowError(/LOG_HMAC_SECRET/);
 
-    // 3. Uji secret produksi sah diterima
+    // 3. Uji password DATABASE_URL default / placeholder ditolak di produksi
     expect(() =>
       validateEnvironment({
         NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://sigap:sigap_password@postgres:5432/sigap?schema=public',
+        SYNC_SECRET: 'custom-prod-secret-999',
+        LOG_HMAC_SECRET: 'custom-prod-hmac-888',
+      })
+    ).toThrowError(/DATABASE_URL/);
+
+    // 4. Uji secret produksi sah diterima
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://sigap:random99hexvalue@postgres:5432/sigap?schema=public',
         SYNC_SECRET: 'custom-prod-secret-999',
         LOG_HMAC_SECRET: 'custom-prod-hmac-888',
       })
