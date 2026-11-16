@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { ArticleNotchedCard } from "@/components/edukasi/ArticleNotchedCard";
 import { fetchBmkgAutogempa } from "@/lib/bmkg/client";
 import { ReloadPageButton } from "@/components/beranda/ReloadPageButton";
+import { HeroScrollRock } from "@/components/beranda/HeroScrollRock";
 import { prisma } from "@/lib/prisma";
 import { NormalizedGempa, StatusTsunamiType } from "@/types/bmkg";
 import type { Prisma } from "@prisma/client";
@@ -194,7 +195,7 @@ export default async function HomePage() {
       : "Tidak tercatat dirasakan";
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-background)] overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)] overflow-x-clip">
       {/* Container utama SIGAP Gempa: max-w-[1320px] pas & seimbang */}
       <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-7 lg:px-8 pt-4 sm:pt-6 pb-16 sm:pb-20 flex-1 flex flex-col space-y-14 sm:space-y-20">
 
@@ -275,14 +276,11 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* BATU TEKTONIK: lg meluber ke kiri (dibatasi tepi viewport) dan ke bawah card */}
-            <div className="order-3 relative z-10 pointer-events-none mt-6 -mx-[8%] w-[116%] lg:mx-0 lg:mt-0 lg:absolute lg:top-[16%] lg:w-[78%] lg:left-[max(-7%,calc((100%_-_100vw)/2_+_16px))]">
-              <img
-                src="/images/tectonic-island.png"
-                alt="Fragmen lempeng tektonik bumi dengan batuan berlumut dan retakan seismik"
-                className="w-full h-auto object-contain select-none"
-              />
-            </div>
+            {/* BATU TEKTONIK: meluber di hero dan bergerak mengecil ke Section 2 saat scroll */}
+            <HeroScrollRock
+              targetId="sec2-rock-target"
+              targetSectionId="ringkasan-sigap-section"
+            />
 
             {/* 3 CHIP KECIL DI SUDUT KIRI BAWAH (DI DEPAN BATU) */}
             <div className="order-4 relative z-20 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3 mt-4 lg:mt-0 lg:absolute lg:left-12 lg:bottom-[8%]">
@@ -350,13 +348,14 @@ export default async function HomePage() {
 
         {/* ================= SECTION 2: RINGKASAN + GEMPA TERBARU ================= */}
         <section
+          id="ringkasan-sigap-section"
           aria-labelledby="ringkasan-sigap-heading"
           className="pt-2 sm:pt-4 lg:!mt-16 lg:min-h-[100svh] lg:flex lg:flex-col lg:justify-center lg:py-12"
         >
           {/* Dua kolom: heading kiri + data gempa terbaru kanan */}
           <div className="grid items-stretch gap-10 lg:grid-cols-2 lg:gap-12">
-            <div className="flex flex-col justify-between gap-10 sm:gap-14 lg:gap-40 lg:py-1">
-              <div>
+            <div className="flex flex-col justify-between gap-10 sm:gap-14 lg:gap-6 lg:py-1">
+              <div className="relative z-20">
                 <h2
                   id="ringkasan-sigap-heading"
                   className="max-w-[32rem] text-3xl sm:text-4xl lg:text-[2.75rem] font-normal leading-[1.08] tracking-[-0.035em] text-[var(--color-text-primary)]"
@@ -374,7 +373,21 @@ export default async function HomePage() {
                 </p>
               </div>
 
-              <div className="w-full sm:max-w-[32rem] space-y-8 sm:space-y-10">
+              {/* Slot pendaratan batu tektonik saat scroll ke Section 2 di desktop */}
+              <div
+                aria-hidden="true"
+                className="hidden lg:flex w-full max-w-[32rem] justify-center py-2 pointer-events-none"
+              >
+                <div id="sec2-rock-target" className="w-[240px] h-[150px] shrink-0">
+                  <img
+                    src="/images/tectonic-island.png"
+                    alt=""
+                    className="hidden motion-reduce:block w-full h-full object-contain select-none opacity-90"
+                  />
+                </div>
+              </div>
+
+              <div className="relative z-20 w-full sm:max-w-[32rem] space-y-8 sm:space-y-10">
                 <div className="flex flex-wrap gap-2 sm:grid sm:grid-cols-3 sm:gap-0">
                   {[
                     { href: "/riwayat", label: "Riwayat BMKG" },
