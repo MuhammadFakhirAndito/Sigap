@@ -6,10 +6,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ArticleNotchedCard } from "@/components/edukasi/ArticleNotchedCard";
 import { fetchBmkgAutogempa } from "@/lib/bmkg/client";
-import { formatTanggalIndonesia, getSafeExternalHref } from "@/lib/edukasi";
 import { ReloadPageButton } from "@/components/beranda/ReloadPageButton";
 import { HeroScrollRock } from "@/components/beranda/HeroScrollRock";
 import { ScenarioOverlayCard } from "@/components/beranda/ScenarioOverlayCard";
+import { NewsPreviewCard } from "@/components/beranda/NewsPreviewCard";
 import { prisma } from "@/lib/prisma";
 import { NormalizedGempa, StatusTsunamiType } from "@/types/bmkg";
 import type { Prisma } from "@prisma/client";
@@ -17,7 +17,6 @@ import {
   AlertTriangle,
   ArrowUpRight,
   CheckCircle2,
-  ExternalLink,
   Globe,
   HelpCircle,
   MessageSquareText,
@@ -893,43 +892,33 @@ export default async function HomePage() {
               ) : (
                 <div className="space-y-3">
                   {beritaList.map((berita) => {
-                    const safeHref = getSafeExternalHref(berita.url);
+                    const lowerJudul = berita.judul.toLowerCase();
+                    const visual = lowerJudul.includes("disiapkan") || lowerJudul.includes("siaga")
+                      ? {
+                          src: "/images/berita-siaga-megathrust.jpg",
+                          alt: "Tas siaga bencana, air minum kemasan, senter engkol, dan kotak P3K tersusun rapi di dekat pintu rumah",
+                        }
+                      : lowerJudul.includes("13 zona") || lowerJudul.includes("ancaman")
+                        ? {
+                            src: "/images/berita-zona-megathrust.jpg",
+                            alt: "Maket relief geologi kepulauan Indonesia dan palung zona subduksi di atas batu travertine",
+                          }
+                        : {
+                            src: "/images/berita-tiga-lempeng.jpg",
+                            alt: "Model tiga lempeng tektonik berlapis batuan yang saling bertemu di atas batu travertine",
+                          };
+
                     return (
-                      <article
+                      <NewsPreviewCard
                         key={berita.id}
-                        className="group relative rounded-[20px] border border-[var(--color-border)] bg-[var(--color-background)]/75 hover:bg-[var(--color-surface)]/70 hover:border-[var(--color-border-strong)] p-4 sm:p-5 transition-colors"
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-secondary)]">
-                          <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-2.5 py-0.5 font-medium text-[var(--color-text-primary)]">
-                            {berita.sumber}
-                          </span>
-                          <span className="tnum">
-                            {formatTanggalIndonesia(berita.tanggalTerbit, "short")}
-                          </span>
-                        </div>
-
-                        <h3 className="mt-2.5 text-base font-medium text-[var(--color-text-primary)] leading-snug group-hover:text-[var(--color-primary-strong)] transition-colors">
-                          <a
-                            href={safeHref}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-primary-strong)] rounded inline-flex items-baseline gap-1.5"
-                            aria-label={`Buka berita "${berita.judul}" di ${berita.sumber} (tab baru)`}
-                          >
-                            <span>{berita.judul}</span>
-                            <ExternalLink
-                              className="w-3.5 h-3.5 shrink-0 translate-y-0.5 text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary-strong)]"
-                              aria-hidden="true"
-                            />
-                          </a>
-                        </h3>
-
-                        {berita.ringkasan && (
-                          <p className="mt-1.5 text-xs sm:text-sm text-[var(--color-text-secondary)] leading-relaxed line-clamp-2">
-                            {berita.ringkasan}
-                          </p>
-                        )}
-                      </article>
+                        judul={berita.judul}
+                        sumber={berita.sumber}
+                        url={berita.url}
+                        tanggalTerbit={berita.tanggalTerbit}
+                        ringkasan={berita.ringkasan}
+                        thumbnailSrc={visual.src}
+                        thumbnailAlt={visual.alt}
+                      />
                     );
                   })}
                 </div>
