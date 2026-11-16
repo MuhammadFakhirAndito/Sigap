@@ -345,7 +345,10 @@ export default async function HomePage() {
         </section>
 
         {/* ================= SECTION 2: RINGKASAN + GEMPA TERBARU ================= */}
-        <section aria-labelledby="ringkasan-sigap-heading" className="pt-2 sm:pt-4 lg:pt-12">
+        <section
+          aria-labelledby="ringkasan-sigap-heading"
+          className="pt-2 sm:pt-4 lg:!mt-16 lg:min-h-[100svh] lg:flex lg:flex-col lg:justify-center lg:py-12"
+        >
           {/* Dua kolom: heading kiri + data gempa terbaru kanan */}
           <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10">
             <div className="flex flex-col justify-center gap-7">
@@ -600,7 +603,7 @@ export default async function HomePage() {
         </section>
 
         {/* ================= SECTION 3: MODUL EDUKASI ================= */}
-        <section aria-labelledby="edukasi-modul-heading">
+        <section aria-labelledby="edukasi-modul-heading" className="lg:!mt-0">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
             <h2
               id="edukasi-modul-heading"
