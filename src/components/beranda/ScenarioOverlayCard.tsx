@@ -61,7 +61,7 @@ export function ScenarioOverlayCard({
         }}
       />
 
-      <div className="relative flex flex-1 flex-col justify-between p-6 text-[var(--color-on-cta)]">
+      <div className="pointer-events-none relative z-10 flex flex-1 flex-col justify-between p-6 text-[var(--color-on-cta)]">
         {/* Bagian atas: badge ikon bulat */}
         <div className="flex h-28 items-start lg:h-32">
           <span
@@ -76,13 +76,7 @@ export function ScenarioOverlayCard({
         <div className="space-y-4 pb-24 lg:pb-0 motion-reduce:lg:pb-24 lg:transition-transform lg:duration-500 lg:ease-[cubic-bezier(0.2,0,0,1)] lg:group-hover:-translate-y-20 lg:group-focus-within:-translate-y-20 motion-reduce:transition-none motion-reduce:lg:group-hover:translate-y-0 motion-reduce:lg:group-focus-within:translate-y-0">
           <div>
             <h3 className="text-2xl font-medium tracking-tight text-[var(--color-on-cta)] leading-snug">
-              <Link
-                href={href}
-                aria-label={ariaLabel ?? `Simulasikan skenario ${title}`}
-                className="after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-on-cta)] rounded"
-              >
-                {title}
-              </Link>
+              {title}
             </h3>
             <p className="mt-1 text-xs sm:text-sm text-[var(--color-surface)] tnum">
               {metaLine}
@@ -100,7 +94,7 @@ export function ScenarioOverlayCard({
         </div>
 
         {/* Bagian bawah: magnitudo & CTA; selalu tampil di sentuh/reduced-motion, muncul halus di desktop */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-6 opacity-100 translate-y-0 lg:translate-y-4 lg:opacity-0 motion-reduce:lg:opacity-100 motion-reduce:lg:translate-y-0 lg:transition-[opacity,transform] lg:duration-500 lg:ease-[cubic-bezier(0.2,0,0,1)] lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-within:translate-y-0 lg:group-focus-within:opacity-100 motion-reduce:transition-none">
+        <div className="absolute inset-x-0 bottom-0 p-6 opacity-100 translate-y-0 lg:translate-y-4 lg:opacity-0 motion-reduce:lg:opacity-100 motion-reduce:lg:translate-y-0 lg:transition-[opacity,transform] lg:duration-500 lg:ease-[cubic-bezier(0.2,0,0,1)] lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-within:translate-y-0 lg:group-focus-within:opacity-100 motion-reduce:transition-none">
           <div className="flex items-end justify-between gap-3">
             <div>
               <div className="flex items-baseline gap-1">
@@ -117,6 +111,7 @@ export function ScenarioOverlayCard({
             </div>
 
             <span
+              data-cta-pill="true"
               aria-hidden="true"
               className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[var(--color-surface-raised)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] transition-colors duration-200 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-on-primary)] motion-reduce:transition-none"
             >
@@ -126,6 +121,13 @@ export function ScenarioOverlayCard({
           </div>
         </div>
       </div>
+
+      {/* Tautan overlay penuh setinggi kartu agar tidak terpotong transform konten tengah */}
+      <Link
+        href={href}
+        aria-label={ariaLabel ?? `Simulasikan skenario ${title} (${magnitudeText} M)`}
+        className="absolute inset-0 z-20 rounded-[28px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+      />
     </article>
   );
 }
