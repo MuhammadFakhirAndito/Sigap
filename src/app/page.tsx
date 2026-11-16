@@ -61,24 +61,24 @@ interface ModuleVisual {
 const MODULE_VISUAL_BY_SLUG: Record<string, ModuleVisual> = {
   "apa-itu-gempa-bumi": {
     src: "/images/modul-pengertian-sesar.jpg",
-    alt: "Ilustrasi diorama batu berlapis dengan bidang sesar geologi dan lumut hijau",
+    alt: "Penampang diorama kerak bumi yang menunjukkan patahan sesar tektonik di bawah perbukitan hijau",
     width: 1792,
-    height: 1024,
+    height: 1008,
     position: "object-center",
   },
   "persiapan-sebelum-gempa": {
     src: "/images/modul-mitigasi-siaga.jpg",
-    alt: "Ruang kerja minimalis dengan dinding lumut, meja kokoh, dan tas siaga bencana di dekat pintu",
-    width: 1344,
-    height: 768,
-    position: "object-[50%_68%]",
+    alt: "Perlengkapan tas siaga bencana berupa ransel darurat, kotak P3K, senter, radio portabel, air minum, peluit, dan map dokumen tahan air",
+    width: 1792,
+    height: 1024,
+    position: "object-center",
   },
   "saat-gempa-terjadi": {
     src: "/images/modul-penanggulangan-lindung.jpg",
-    alt: "Ruang paviliun dengan bangku kayu-batu kokoh yang terhubung ke halaman terbuka bebas hambatan",
+    alt: "Peragaan perlindungan diri saat gempa dengan berlutut di bawah meja kayu kokoh sambil melindungi kepala dan memegang kaki meja",
     width: 1792,
     height: 1024,
-    position: "object-[50%_65%]",
+    position: "object-center",
   },
 };
 
