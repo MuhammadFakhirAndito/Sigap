@@ -5,6 +5,7 @@ import React, { useEffect, useRef } from "react";
 interface HeroScrollRockProps {
   targetId: string;
   targetSectionId: string;
+  reticleId?: string;
 }
 
 interface ScrollMetrics {
@@ -18,14 +19,20 @@ interface ScrollMetrics {
   active: boolean;
 }
 
+function clamp01(value: number): number {
+  return Math.min(Math.max(value, 0), 1);
+}
+
 /**
  * Menggerakkan dan mengecilkan fragmen batu tektonik Hero mengikuti progres
  * scroll menuju slot dekoratif di Section 2 pada layar desktop (`lg:`).
- * Nonaktif secara otomatis pada layar sempit dan saat `prefers-reduced-motion`.
+ * Memakai kurva susut cepat + lengkungan gerak ke kanan agar tidak menutupi
+ * tipografi Section 2, dengan exponential damping agar guliran roda mouse halus.
  */
 export function HeroScrollRock({
   targetId,
   targetSectionId,
+  reticleId,
 }: HeroScrollRockProps) {
   const rockRef = useRef<HTMLDivElement | null>(null);
   const metricsRef = useRef<ScrollMetrics | null>(null);
@@ -36,29 +43,85 @@ export function HeroScrollRock({
 
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let rafId = 0;
+    let lastTs = 0;
+    let currentProgress = 0;
+    let targetProgress = 0;
 
-    const applyTransform = () => {
-      rafId = 0;
+    const renderProgress = (p: number) => {
       const metrics = metricsRef.current;
+      const reticleEl = reticleId ? document.getElementById(reticleId) : null;
+
       if (!metrics || !metrics.active) {
         rockEl.style.transform = "";
+        if (reticleEl) {
+          reticleEl.style.opacity = "";
+          reticleEl.style.transform = "";
+        }
         return;
       }
 
-      const raw = Math.min(Math.max(window.scrollY / metrics.endScroll, 0), 1);
-      // Smoothstep agar transisi keluar Hero dan mendarat di Section 2 terasa halus tanpa menyentak
-      const eased = raw * raw * (3 - 2 * raw);
-      const targetScale = metrics.targW / metrics.origW;
-      const scale = 1 + (targetScale - 1) * eased;
-      const dx = (metrics.targCx - metrics.origCx) * eased;
-      const dy = (metrics.targCy - metrics.origCy) * eased;
+      // Susut lebih awal saat keluar Hero supaya batu segera ramping di ruang terbuka
+      const easeScale = 1 - Math.pow(1 - p, 2.35);
+      const easeMove = p * p * (3 - 2 * p);
+      const arcX = Math.sin(Math.PI * p) * 120;
+      const rotateDeg = Math.sin(Math.PI * p) * -5.5;
 
-      rockEl.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+      const targetScale = metrics.targW / metrics.origW;
+      const scale = 1 + (targetScale - 1) * easeScale;
+      const dx = (metrics.targCx - metrics.origCx) * easeMove + arcX;
+      const dy = (metrics.targCy - metrics.origCy) * easeMove;
+
+      rockEl.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) rotate(${rotateDeg.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
+
+      if (reticleEl) {
+        const dock = clamp01((p - 0.62) / 0.38);
+        const dockEase = dock * dock * (3 - 2 * dock);
+        reticleEl.style.opacity = (dockEase * 0.72).toFixed(3);
+        reticleEl.style.transform = `scale(${(0.84 + 0.16 * dockEase).toFixed(4)})`;
+      }
     };
 
-    const scheduleApply = () => {
+    const tick = (ts: number) => {
+      const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.05) : 0.016;
+      lastTs = ts;
+
+      const factor = 1 - Math.exp(-13 * dt);
+      currentProgress += (targetProgress - currentProgress) * factor;
+
+      if (Math.abs(targetProgress - currentProgress) < 0.0004) {
+        currentProgress = targetProgress;
+        renderProgress(currentProgress);
+        rafId = 0;
+        lastTs = 0;
+        return;
+      }
+
+      renderProgress(currentProgress);
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    const startTick = () => {
       if (rafId !== 0) return;
-      rafId = window.requestAnimationFrame(applyTransform);
+      lastTs = 0;
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    const syncTarget = (immediate = false) => {
+      const metrics = metricsRef.current;
+      if (!metrics || !metrics.active) {
+        targetProgress = 0;
+        currentProgress = 0;
+        renderProgress(0);
+        return;
+      }
+
+      targetProgress = clamp01(window.scrollY / metrics.endScroll);
+      if (immediate) {
+        currentProgress = targetProgress;
+        renderProgress(currentProgress);
+      } else {
+        startTick();
+      }
     };
 
     const measure = () => {
@@ -68,7 +131,11 @@ export function HeroScrollRock({
 
       if (!targetEl || !sectionEl || !isDesktop || motionQuery.matches) {
         metricsRef.current = null;
-        rockEl.style.transform = "";
+        if (rafId !== 0) {
+          window.cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+        renderProgress(0);
         return;
       }
 
@@ -80,7 +147,7 @@ export function HeroScrollRock({
 
       if (origRect.width <= 0 || targRect.width <= 0) {
         metricsRef.current = null;
-        rockEl.style.transform = "";
+        renderProgress(0);
         return;
       }
 
@@ -98,7 +165,7 @@ export function HeroScrollRock({
         active: true,
       };
 
-      applyTransform();
+      syncTarget(true);
     };
 
     measure();
@@ -109,7 +176,7 @@ export function HeroScrollRock({
     const resizeObserver = new ResizeObserver(() => measure());
     resizeObserver.observe(document.body);
 
-    const onScroll = () => scheduleApply();
+    const onScroll = () => syncTarget(false);
     const onResize = () => measure();
     const onMotionChange = () => measure();
 
@@ -124,7 +191,7 @@ export function HeroScrollRock({
       window.removeEventListener("resize", onResize);
       motionQuery.removeEventListener("change", onMotionChange);
     };
-  }, [targetId, targetSectionId]);
+  }, [targetId, targetSectionId, reticleId]);
 
   return (
     <div

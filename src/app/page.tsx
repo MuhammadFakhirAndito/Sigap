@@ -280,6 +280,7 @@ export default async function HomePage() {
             <HeroScrollRock
               targetId="sec2-rock-target"
               targetSectionId="ringkasan-sigap-section"
+              reticleId="sec2-rock-reticle"
             />
 
             {/* 3 CHIP KECIL DI SUDUT KIRI BAWAH (DI DEPAN BATU) */}
@@ -378,11 +379,26 @@ export default async function HomePage() {
                 aria-hidden="true"
                 className="hidden lg:flex w-full max-w-[32rem] justify-center py-2 pointer-events-none"
               >
-                <div id="sec2-rock-target" className="w-[240px] h-[150px] shrink-0">
+                <div
+                  id="sec2-rock-target"
+                  className="relative w-[240px] h-[150px] shrink-0 flex items-center justify-center"
+                >
+                  <svg
+                    id="sec2-rock-reticle"
+                    viewBox="0 0 220 140"
+                    className="absolute inset-0 w-full h-full text-[var(--color-border)] opacity-0 motion-reduce:opacity-70"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                  >
+                    <circle cx="110" cy="70" r="64" strokeDasharray="3 4" />
+                    <circle cx="110" cy="70" r="40" />
+                    <path d="M110 2v136M38 70h144" opacity="0.55" />
+                  </svg>
                   <img
                     src="/images/tectonic-island.png"
                     alt=""
-                    className="hidden motion-reduce:block w-full h-full object-contain select-none opacity-90"
+                    className="hidden motion-reduce:block relative z-10 w-full h-full object-contain select-none opacity-90"
                   />
                 </div>
               </div>
