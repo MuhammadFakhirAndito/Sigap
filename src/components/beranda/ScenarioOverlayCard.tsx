@@ -43,7 +43,7 @@ export function ScenarioOverlayCard({
   ariaLabel,
 }: ScenarioOverlayCardProps) {
   return (
-    <article className="group relative flex min-h-[430px] w-full flex-col justify-between overflow-hidden rounded-[28px] border border-[var(--color-border-strong)] bg-[var(--color-cta)] transition-[border-color,transform] duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:-translate-y-1.5 hover:border-[var(--color-cta)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+    <article className="group relative flex min-h-[430px] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-[var(--color-border-strong)] bg-[var(--color-cta)] transition-[border-color,transform] duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:-translate-y-1.5 hover:border-[var(--color-cta)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       {/* Latar foto penuh dengan zoom halus saat hover atau fokus */}
       <img
         src={imageUrl}
@@ -51,13 +51,13 @@ export function ScenarioOverlayCard({
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.2,0,0,1)] group-hover:scale-105 group-focus-within:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100 motion-reduce:group-focus-within:scale-100"
       />
 
-      {/* Scrim gelap berbasis --color-cta agar teks memenuhi rasio kontras WCAG AA */}
+      {/* Scrim bawah berbasis --color-cta: menjaga kontras AA tanpa menggelapkan bagian atas foto */}
       <div
         aria-hidden="true"
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(to top, color-mix(in srgb, var(--color-cta) 94%, transparent) 0%, color-mix(in srgb, var(--color-cta) 72%, transparent) 52%, color-mix(in srgb, var(--color-cta) 24%, transparent) 100%)",
+            "linear-gradient(to top, color-mix(in srgb, var(--color-cta) 88%, transparent) 0%, color-mix(in srgb, var(--color-cta) 68%, transparent) 44%, color-mix(in srgb, var(--color-cta) 34%, transparent) 64%, transparent 82%)",
         }}
       />
 
@@ -126,7 +126,7 @@ export function ScenarioOverlayCard({
       <Link
         href={href}
         aria-label={ariaLabel ?? `Simulasikan skenario ${title} (${magnitudeText} M)`}
-        className="absolute inset-0 z-20 rounded-[28px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+        className="absolute inset-0 z-20 rounded-[20px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
       />
     </article>
   );
