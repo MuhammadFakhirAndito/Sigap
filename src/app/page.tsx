@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ArticleNotchedCard } from "@/components/edukasi/ArticleNotchedCard";
 import { fetchBmkgAutogempa } from "@/lib/bmkg/client";
+import { formatTanggalIndonesia, getSafeExternalHref } from "@/lib/edukasi";
 import { ReloadPageButton } from "@/components/beranda/ReloadPageButton";
 import { HeroScrollRock } from "@/components/beranda/HeroScrollRock";
 import { ScenarioOverlayCard } from "@/components/beranda/ScenarioOverlayCard";
@@ -16,10 +17,12 @@ import {
   AlertTriangle,
   ArrowUpRight,
   CheckCircle2,
+  ExternalLink,
   Globe,
   HelpCircle,
   MessageSquareText,
   Mountain,
+  Newspaper,
   Radio,
   Send,
   Share2,
@@ -103,6 +106,7 @@ function getModuleVisual(slug: string, kategori: string): ModuleVisual {
 
 type ArtikelPreview = Prisma.ArtikelGetPayload<{ include: { sumber: true } }>;
 type SkenarioPreview = Prisma.SkenarioSimulasiGetPayload<Record<string, never>>;
+type BeritaPreview = Prisma.BeritaGetPayload<Record<string, never>>;
 
 export default async function HomePage() {
   let latestQuake: NormalizedGempa | null = await fetchBmkgAutogempa();
@@ -110,6 +114,7 @@ export default async function HomePage() {
   let lastSyncTime: Date | null = null;
   let skenarioList: SkenarioPreview[] = [];
   let artikelList: ArtikelPreview[] = [];
+  let beritaList: BeritaPreview[] = [];
   let totalGempa = 0;
   let totalSkenario = 0;
   let totalArtikel = 0;
@@ -142,9 +147,9 @@ export default async function HomePage() {
     }
   }
 
-  // 2. Ambil catatan sinkronisasi terakhir, statistik DB, skenario simulasi, & 3 modul edukasi inti
+  // 2. Ambil catatan sinkronisasi terakhir, statistik DB, skenario simulasi, berita, & 3 modul edukasi inti
   try {
-    const [syncLog, skenarios, allArtikels, countGempa, countSkenario] =
+    const [syncLog, skenarios, allArtikels, beritas, countGempa, countSkenario] =
       await Promise.all([
         prisma.syncLog.findFirst({
           where: { status: "OK" },
@@ -158,11 +163,16 @@ export default async function HomePage() {
           orderBy: [{ urutan: "asc" }, { updatedAt: "desc" }],
           include: { sumber: true },
         }),
+        prisma.berita.findMany({
+          orderBy: { tanggalTerbit: "desc" },
+          take: 3,
+        }),
         prisma.gempa.count(),
         prisma.skenarioSimulasi.count(),
       ]);
     if (syncLog) lastSyncTime = syncLog.createdAt;
     skenarioList = skenarios;
+    beritaList = beritas;
 
     // Pilih maksimal 3 modul representatif (Pengertian, Mitigasi, Penanggulangan) lalu lengkapi bila kurang
     const preferredCategories = ["PENGERTIAN", "MITIGASI", "PENANGGULANGAN", "PROSES"] as const;
@@ -183,6 +193,7 @@ export default async function HomePage() {
   } catch {
     skenarioList = [];
     artikelList = [];
+    beritaList = [];
     isDbDegraded = true;
   }
 
@@ -759,28 +770,28 @@ export default async function HomePage() {
                 const normalizedName = sk.nama.toLowerCase();
                 const media = normalizedName.includes("aceh")
                   ? {
-                      url: "/images/skenario-aceh.jpg",
-                      alt: "Lapisan batuan tektonik terangkat di bawah perairan jernih pesisir Aceh menghadap Samudra Hindia",
-                    }
+                    url: "/images/skenario-aceh.jpg",
+                    alt: "Lapisan batuan tektonik terangkat di bawah perairan jernih pesisir Aceh menghadap Samudra Hindia",
+                  }
                   : normalizedName.includes("nias")
                     ? {
-                        url: "/images/skenario-nias.jpg",
-                        alt: "Instrumen sensor seismometer terpasang di atas batuan vulkanik berlumut menghadap pesisir Nias",
-                      }
+                      url: "/images/skenario-nias.jpg",
+                      alt: "Instrumen sensor seismometer terpasang di atas batuan vulkanik berlumut menghadap pesisir Nias",
+                    }
                     : normalizedName.includes("yogyakarta") || normalizedName.includes("bantul")
                       ? {
-                          url: "/images/skenario-yogyakarta.jpg",
-                          alt: "Singkapan patahan sesar geologi kerak dangkal dengan lapisan batuan miring di perbukitan hijau",
-                        }
+                        url: "/images/skenario-yogyakarta.jpg",
+                        alt: "Singkapan patahan sesar geologi kerak dangkal dengan lapisan batuan miring di perbukitan hijau",
+                      }
                       : sk.tipeLokasi === "LAUT"
                         ? {
-                            url: "/images/skenario-aceh.jpg",
-                            alt: `Ilustrasi wilayah pesisir untuk skenario ${sk.nama}`,
-                          }
+                          url: "/images/skenario-aceh.jpg",
+                          alt: `Ilustrasi wilayah pesisir untuk skenario ${sk.nama}`,
+                        }
                         : {
-                            url: "/images/skenario-yogyakarta.jpg",
-                            alt: `Ilustrasi wilayah daratan untuk skenario ${sk.nama}`,
-                          };
+                          url: "/images/skenario-yogyakarta.jpg",
+                          alt: `Ilustrasi wilayah daratan untuk skenario ${sk.nama}`,
+                        };
 
                 const depthText = String(sk.kedalamanKm).replace(".", ",");
                 const locationTypeLabel =
@@ -814,90 +825,173 @@ export default async function HomePage() {
           )}
         </section>
 
-        {/* ================= SECTION 5: CHATBOT MITIGASI ================= */}
+        {/* ================= SECTION 5: BERITA TERKINI & CHATBOT MITIGASI ================= */}
         <section
-          aria-labelledby="chatbot-section-heading"
+          aria-labelledby="berita-chatbot-heading"
           className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-8"
         >
           <div className="flex flex-wrap items-end justify-between gap-4 pb-6 border-b border-[var(--color-border)]/80">
             <div className="space-y-1.5 max-w-[54ch]">
               <p className="text-xs font-medium text-[var(--color-primary-strong)] tnum">
-                03 · Konsultasi rujukan
+                03 · Berita &amp; konsultasi
               </p>
               <h2
-                id="chatbot-section-heading"
+                id="berita-chatbot-heading"
                 className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--color-text-primary)]"
               >
-                Tanya Chatbot SIGAP
+                Berita &amp; Chatbot SIGAP
               </h2>
+              <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                Ikuti ringkasan berita kebencanaan dari penerbit terverifikasi atau ajukan pertanyaan mitigasi kepada asisten SIGAP.
+              </p>
             </div>
-            <Link
-              href="/chatbot"
-              className="inline-flex items-center gap-1.5 min-h-[44px] px-1 text-sm font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary-strong)] transition-colors rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-            >
-              <span>Buka chatbot</span>
-              <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-            </Link>
+            <div className="flex flex-wrap items-center gap-4">
+              <Link
+                href="/edukasi#heading-berita"
+                className="inline-flex items-center gap-1.5 min-h-[44px] px-1 text-sm font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary-strong)] transition-colors rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+              >
+                <span>Semua berita</span>
+                <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/chatbot"
+                className="inline-flex items-center gap-1.5 min-h-[44px] px-1 text-sm font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary-strong)] transition-colors rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+              >
+                <span>Buka chatbot</span>
+                <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-            <div className="lg:col-span-6 space-y-5">
-              <div className="inline-flex items-center gap-2 text-xs font-medium text-[var(--color-text-secondary)]">
-                <MessageSquareText
-                  className="w-4 h-4 text-[var(--color-primary-strong)] shrink-0"
-                  aria-hidden="true"
-                />
-                <span>Asisten edukasi mitigasi berbasis rujukan</span>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+            {/* Kolom kiri: metadata berita dari database */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex items-center gap-2 text-xs font-medium text-[var(--color-text-secondary)]">
+                  <Newspaper
+                    className="w-4 h-4 text-[var(--color-primary-strong)] shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>Liputan media rujukan</span>
+                </div>
+                <span className="text-xs text-[var(--color-text-secondary)]">
+                  Tautan membuka situs penerbit asli
+                </span>
               </div>
 
-              <div className="space-y-2.5">
-                <h3 className="text-xl sm:text-2xl font-normal tracking-tight text-[var(--color-text-primary)] leading-snug">
-                  Tanya langkah keselamatan &amp; konteks gempa terkini
-                </h3>
-                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-[48ch]">
-                  Ajukan pertanyaan seputar tindakan darurat sebelum, saat, dan sesudah gempa, atau
-                  ringkasan data terbaru BMKG. Saat kuota model AI terbatas, jawaban otomatis beralih
-                  ke basis FAQ lokal.
-                </p>
-              </div>
+              {isDbDegraded && beritaList.length === 0 ? (
+                <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+                  <ErrorState
+                    title="Daftar berita belum dapat dimuat"
+                    message="Koneksi database lokal sedang terganggu saat mengambil metadata berita."
+                  />
+                </div>
+              ) : beritaList.length === 0 ? (
+                <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+                  <EmptyState message="Belum ada metadata berita tersimpan di database." />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {beritaList.map((berita) => {
+                    const safeHref = getSafeExternalHref(berita.url);
+                    return (
+                      <article
+                        key={berita.id}
+                        className="group relative rounded-[20px] border border-[var(--color-border)] bg-[var(--color-background)]/75 hover:bg-[var(--color-surface)]/70 hover:border-[var(--color-border-strong)] p-4 sm:p-5 transition-colors"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-secondary)]">
+                          <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-2.5 py-0.5 font-medium text-[var(--color-text-primary)]">
+                            {berita.sumber}
+                          </span>
+                          <span className="tnum">
+                            {formatTanggalIndonesia(berita.tanggalTerbit, "short")}
+                          </span>
+                        </div>
 
-              <div className="pt-1">
-                <Link
-                  href="/chatbot"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-full bg-[var(--color-cta)] px-5 text-sm font-medium text-[var(--color-on-cta)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] active:bg-[var(--color-primary-strong)] active:text-[var(--color-on-cta)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  <span>Mulai percakapan</span>
-                  <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-                </Link>
-              </div>
+                        <h3 className="mt-2.5 text-base font-medium text-[var(--color-text-primary)] leading-snug group-hover:text-[var(--color-primary-strong)] transition-colors">
+                          <a
+                            href={safeHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-primary-strong)] rounded inline-flex items-baseline gap-1.5"
+                            aria-label={`Buka berita "${berita.judul}" di ${berita.sumber} (tab baru)`}
+                          >
+                            <span>{berita.judul}</span>
+                            <ExternalLink
+                              className="w-3.5 h-3.5 shrink-0 translate-y-0.5 text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary-strong)]"
+                              aria-hidden="true"
+                            />
+                          </a>
+                        </h3>
+
+                        {berita.ringkasan && (
+                          <p className="mt-1.5 text-xs sm:text-sm text-[var(--color-text-secondary)] leading-relaxed line-clamp-2">
+                            {berita.ringkasan}
+                          </p>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            <div className="lg:col-span-6 space-y-2.5">
-              <p className="text-xs font-medium text-[var(--color-text-secondary)]">
-                Contoh pertanyaan
-              </p>
-              <div className="flex flex-col gap-2.5">
-                <Link
-                  href="/chatbot?q=Apa%20yang%20harus%20dilakukan%20saat%20gempa%20terjadi%3F"
-                  className="min-h-[44px] rounded-[16px] border border-[var(--color-border)] bg-[var(--color-surface)]/75 hover:bg-[var(--color-surface)] hover:border-[var(--color-border-strong)] active:bg-[var(--color-surface-sunken)] px-4 py-3 text-sm text-[var(--color-text-primary)] flex items-center justify-between gap-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  <span>Apa yang harus dilakukan saat gempa terjadi?</span>
-                  <ArrowUpRight className="w-4 h-4 shrink-0 text-[var(--color-text-secondary)]" aria-hidden="true" />
-                </Link>
-                <Link
-                  href="/chatbot?q=Cara%20menyiapkan%20tas%20siaga%20bencana%3F"
-                  className="min-h-[44px] rounded-[16px] border border-[var(--color-border)] bg-[var(--color-surface)]/75 hover:bg-[var(--color-surface)] hover:border-[var(--color-border-strong)] active:bg-[var(--color-surface-sunken)] px-4 py-3 text-sm text-[var(--color-text-primary)] flex items-center justify-between gap-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  <span>Cara menyiapkan tas siaga bencana?</span>
-                  <ArrowUpRight className="w-4 h-4 shrink-0 text-[var(--color-text-secondary)]" aria-hidden="true" />
-                </Link>
-                <Link
-                  href="/chatbot?q=Apa%20arti%20skala%20MMI%20pada%20dampak%20gempa%3F"
-                  className="min-h-[44px] rounded-[16px] border border-[var(--color-border)] bg-[var(--color-surface)]/75 hover:bg-[var(--color-surface)] hover:border-[var(--color-border-strong)] active:bg-[var(--color-surface-sunken)] px-4 py-3 text-sm text-[var(--color-text-primary)] flex items-center justify-between gap-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-                >
-                  <span>Apa arti skala MMI pada dampak gempa?</span>
-                  <ArrowUpRight className="w-4 h-4 shrink-0 text-[var(--color-text-secondary)]" aria-hidden="true" />
-                </Link>
+            {/* Kolom kanan: panel ringkas Chatbot SIGAP */}
+            <div className="lg:col-span-5 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 space-y-5">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 text-xs font-medium text-[var(--color-text-secondary)]">
+                  <MessageSquareText
+                    className="w-4 h-4 text-[var(--color-primary-strong)] shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>Asisten edukasi mitigasi berbasis rujukan</span>
+                </div>
+
+                <h3 className="text-xl font-normal tracking-tight text-[var(--color-text-primary)] leading-snug">
+                  Tanya langkah keselamatan &amp; konteks gempa terkini
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  Ajukan pertanyaan tindakan darurat atau ringkasan data BMKG terbaru. Saat kuota AI terbatas, jawaban otomatis beralih ke FAQ lokal.
+                </p>
+
+                <div className="pt-1">
+                  <Link
+                    href="/chatbot"
+                    className="inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-full bg-[var(--color-cta)] px-5 text-sm font-medium text-[var(--color-on-cta)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] active:bg-[var(--color-primary-strong)] active:text-[var(--color-on-cta)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  >
+                    <span>Mulai percakapan</span>
+                    <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-[var(--color-border)] space-y-2.5">
+                <p className="text-xs font-medium text-[var(--color-text-secondary)]">
+                  Contoh pertanyaan
+                </p>
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href="/chatbot?q=Apa%20yang%20harus%20dilakukan%20saat%20gempa%20terjadi%3F"
+                    className="min-h-[44px] rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface-raised)] hover:border-[var(--color-border-strong)] active:bg-[var(--color-surface-sunken)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] flex items-center justify-between gap-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  >
+                    <span>Apa yang harus dilakukan saat gempa terjadi?</span>
+                    <ArrowUpRight className="w-4 h-4 shrink-0 text-[var(--color-text-secondary)]" aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href="/chatbot?q=Cara%20menyiapkan%20tas%20siaga%20bencana%3F"
+                    className="min-h-[44px] rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface-raised)] hover:border-[var(--color-border-strong)] active:bg-[var(--color-surface-sunken)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] flex items-center justify-between gap-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  >
+                    <span>Cara menyiapkan tas siaga bencana?</span>
+                    <ArrowUpRight className="w-4 h-4 shrink-0 text-[var(--color-text-secondary)]" aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href="/chatbot?q=Apa%20arti%20skala%20MMI%20pada%20dampak%20gempa%3F"
+                    className="min-h-[44px] rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface-raised)] hover:border-[var(--color-border-strong)] active:bg-[var(--color-surface-sunken)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] flex items-center justify-between gap-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                  >
+                    <span>Apa arti skala MMI pada dampak gempa?</span>
+                    <ArrowUpRight className="w-4 h-4 shrink-0 text-[var(--color-text-secondary)]" aria-hidden="true" />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
