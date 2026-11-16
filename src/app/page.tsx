@@ -354,8 +354,8 @@ export default async function HomePage() {
           className="pt-2 sm:pt-4 lg:!mt-16 lg:min-h-[100svh] lg:flex lg:flex-col lg:justify-center lg:py-12"
         >
           {/* Dua kolom: heading kiri + data gempa terbaru kanan */}
-          <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10">
-            <div className="flex flex-col justify-between gap-10 lg:py-1">
+          <div className="grid items-stretch gap-10 lg:grid-cols-2 lg:gap-12">
+            <div className="flex flex-col justify-between gap-10 sm:gap-14 lg:gap-40 lg:py-1">
               <div>
                 <h2
                   id="ringkasan-sigap-heading"
@@ -368,13 +368,13 @@ export default async function HomePage() {
                   </span>
                   <br className="hidden lg:inline" /> guncangan datang
                 </h2>
-                <p className="mt-4 max-w-[40ch] text-sm leading-relaxed text-[var(--color-text-secondary)]">
+                <p className="mt-5 sm:mt-6 max-w-[40ch] text-sm leading-relaxed text-[var(--color-text-secondary)]">
                   Data resmi BMKG, kalkulator intensitas MMI &amp; gelombang P/S,
                   serta panduan mitigasi berbasis rujukan.
                 </p>
               </div>
 
-              <div className="space-y-6 sm:space-y-8">
+              <div className="space-y-8 sm:space-y-10">
                 <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-0 sm:-space-x-px">
                   {[
                     { href: "/riwayat", label: "Riwayat BMKG" },
