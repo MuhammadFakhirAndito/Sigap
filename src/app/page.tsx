@@ -11,13 +11,11 @@ import { prisma } from "@/lib/prisma";
 import { NormalizedGempa, StatusTsunamiType } from "@/types/bmkg";
 import type { Prisma } from "@prisma/client";
 import {
-  Activity,
   AlertTriangle,
   ArrowUpRight,
   CheckCircle2,
   Globe,
   HelpCircle,
-  History,
   MessageSquareText,
   Radio,
   Send,
@@ -108,6 +106,8 @@ export default async function HomePage() {
   let lastSyncTime: Date | null = null;
   let skenarioList: SkenarioPreview[] = [];
   let artikelList: ArtikelPreview[] = [];
+  let totalGempa = 0;
+  let totalSkenario = 0;
   let totalArtikel = 0;
   let isDbDegraded = false;
 
@@ -138,9 +138,9 @@ export default async function HomePage() {
     }
   }
 
-  // 2. Ambil catatan sinkronisasi terakhir, skenario simulasi, & 3 modul edukasi inti
+  // 2. Ambil catatan sinkronisasi terakhir, statistik DB, skenario simulasi, & 3 modul edukasi inti
   try {
-    const [syncLog, skenarios, allArtikels] =
+    const [syncLog, skenarios, allArtikels, countGempa, countSkenario] =
       await Promise.all([
         prisma.syncLog.findFirst({
           where: { status: "OK" },
@@ -154,6 +154,8 @@ export default async function HomePage() {
           orderBy: [{ urutan: "asc" }, { updatedAt: "desc" }],
           include: { sumber: true },
         }),
+        prisma.gempa.count(),
+        prisma.skenarioSimulasi.count(),
       ]);
     if (syncLog) lastSyncTime = syncLog.createdAt;
     skenarioList = skenarios;
@@ -171,6 +173,8 @@ export default async function HomePage() {
       if (!picked.some((p) => p.id === a.id)) picked.push(a);
     }
     artikelList = picked;
+    totalGempa = countGempa;
+    totalSkenario = countSkenario;
     totalArtikel = allArtikels.length;
   } catch {
     skenarioList = [];
@@ -351,59 +355,67 @@ export default async function HomePage() {
         >
           {/* Dua kolom: heading kiri + data gempa terbaru kanan */}
           <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10">
-            <div className="flex flex-col justify-center gap-7">
+            <div className="flex flex-col justify-between gap-10 lg:py-1">
               <div>
                 <h2
                   id="ringkasan-sigap-heading"
-                  className="max-w-[35rem] text-balance text-3xl sm:text-4xl lg:text-[2.75rem] font-normal leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)]"
+                  className="max-w-[32rem] text-3xl sm:text-4xl lg:text-[2.75rem] font-normal leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)]"
                 >
-                  <span className="font-semibold text-[var(--color-primary-strong)]">
-                    Pahami risiko gempa
-                  </span>{" "}
-                  sebelum guncangan datang
+                  Pahami{" "}
+                  <span className="text-[var(--color-primary-strong)]">
+                    risiko
+                    <br className="hidden lg:inline" /> gempa sebelum
+                  </span>
+                  <br className="hidden lg:inline" /> guncangan datang
                 </h2>
-                <p className="mt-4 max-w-[46ch] text-sm sm:text-base leading-relaxed text-[var(--color-text-secondary)]">
-                  Data resmi{" "}
-                  <span className="font-medium text-[var(--color-text-primary)]">
-                    BMKG
-                  </span>{" "}
-                  dipadukan kalkulator{" "}
-                  <span className="font-medium text-[var(--color-primary-strong)]">
-                    intensitas MMI
-                  </span>
-                  , waktu tiba{" "}
-                  <span className="font-medium text-[var(--color-primary-strong)]">
-                    gelombang P/S
-                  </span>
-                  , serta{" "}
-                  <span className="font-medium text-[var(--color-text-primary)]">
-                    panduan mitigasi
-                  </span>{" "}
-                  berbasis rujukan.
+                <p className="mt-4 max-w-[40ch] text-sm leading-relaxed text-[var(--color-text-secondary)]">
+                  Data resmi BMKG, kalkulator intensitas MMI &amp; gelombang P/S,
+                  serta panduan mitigasi berbasis rujukan.
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2.5">
-                {[
-                  { href: "/riwayat", label: "Riwayat BMKG", Icon: History },
-                  { href: "/simulasi", label: "Simulasi MMI & P/S", Icon: Activity },
-                  { href: "/chatbot", label: "Tanya chatbot", Icon: MessageSquareText },
-                ].map(({ href, label, Icon }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className="group inline-flex items-center gap-2.5 min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] pl-2 pr-4 py-1.5 text-xs sm:text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
-                  >
-                    <span className="w-7 h-7 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-primary-strong)] flex items-center justify-center shrink-0 transition-colors motion-reduce:transition-none group-hover:border-[var(--color-cta)] group-hover:bg-[var(--color-cta)] group-hover:text-[var(--color-on-cta)]">
-                      <Icon className="w-3.5 h-3.5" aria-hidden="true" />
-                    </span>
-                    <span>{label}</span>
-                    <ArrowUpRight
-                      className="w-3.5 h-3.5 text-[var(--color-text-secondary)] transition-colors motion-reduce:transition-none group-hover:text-[var(--color-on-primary)]"
-                      aria-hidden="true"
-                    />
-                  </Link>
-                ))}
+              <div className="space-y-6 sm:space-y-8">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-0 sm:-space-x-px">
+                  {[
+                    { href: "/riwayat", label: "Riwayat BMKG" },
+                    { href: "/simulasi", label: "Simulasi MMI & P/S" },
+                    { href: "/chatbot", label: "Tanya chatbot" },
+                  ].map(({ href, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="inline-flex items-center justify-center min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] px-5 sm:px-6 text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] whitespace-nowrap hover:relative hover:z-10 hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors motion-reduce:transition-none focus-visible:relative focus-visible:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+
+                <dl className="grid grid-cols-3 gap-3 sm:gap-8">
+                  {[
+                    {
+                      value: isDbDegraded ? "–" : nf.format(totalGempa),
+                      label: "catatan gempa",
+                    },
+                    {
+                      value: isDbDegraded ? "–" : nf.format(totalSkenario),
+                      label: "skenario simulasi",
+                    },
+                    {
+                      value: isDbDegraded ? "–" : nf.format(totalArtikel),
+                      label: "modul edukasi",
+                    },
+                  ].map(({ value, label }) => (
+                    <div key={label} className="space-y-1.5 min-w-0">
+                      <dd className="text-2xl sm:text-4xl font-normal tracking-[-0.03em] leading-none text-[var(--color-text-primary)] tnum">
+                        {value}
+                      </dd>
+                      <dt className="text-xs sm:text-sm leading-snug text-[var(--color-text-secondary)]">
+                        {label}
+                      </dt>
+                    </div>
+                  ))}
+                </dl>
               </div>
             </div>
 
