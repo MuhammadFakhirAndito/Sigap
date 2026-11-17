@@ -45,9 +45,14 @@ export const ArticleNotchedCard: React.FC<ArticleNotchedCardProps> = ({
   const labelKategori = getKategoriLabel(kategori);
 
   return (
-    <article className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+    <article
+      data-edu-row=""
+      data-reversed={reversed ? "true" : "false"}
+      className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch"
+    >
       {/* Kartu teks bernotch (di mobile selalu tampil di atas gambar) */}
       <div
+        data-edu-text=""
         className={`relative lg:col-span-5 ${
           reversed ? "lg:order-2" : "lg:order-1"
         }`}
@@ -117,17 +122,19 @@ export const ArticleNotchedCard: React.FC<ArticleNotchedCardProps> = ({
 
       {/* Panel visual lebar di sisi berlawanan */}
       <div
+        data-edu-media=""
         className={`lg:col-span-7 overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] h-[220px] sm:h-[260px] lg:h-[292px] ${
           reversed ? "lg:order-1" : "lg:order-2"
         }`}
       >
         <img
+          data-edu-img=""
           src={imageSrc}
           alt={imageAlt}
           width={imageWidth}
           height={imageHeight}
           loading="lazy"
-          className={`w-full h-full object-cover ${imagePosition}`}
+          className={`w-full h-full object-cover will-change-transform ${imagePosition}`}
         />
       </div>
     </article>

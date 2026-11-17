@@ -8,6 +8,7 @@ import { ArticleNotchedCard } from "@/components/edukasi/ArticleNotchedCard";
 import { fetchBmkgAutogempa } from "@/lib/bmkg/client";
 import { ReloadPageButton } from "@/components/beranda/ReloadPageButton";
 import { HeroScrollRock } from "@/components/beranda/HeroScrollRock";
+import { EduScrollDeck } from "@/components/beranda/EduScrollDeck";
 import { ScenarioOverlayCard } from "@/components/beranda/ScenarioOverlayCard";
 import { NewsPreviewCard } from "@/components/beranda/NewsPreviewCard";
 import { prisma } from "@/lib/prisma";
@@ -661,65 +662,70 @@ export default async function HomePage() {
           aria-labelledby="edukasi-modul-heading"
           className="lg:!mt-4 border-t border-[var(--color-border)]/80 pt-10 sm:pt-12"
         >
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-6 sm:mb-7">
-            <div className="space-y-1.5 max-w-[54ch]">
-              <p className="text-xs font-medium text-[var(--color-primary-strong)] tnum">
-                01 · Materi rujukan
-              </p>
-              <h2
-                id="edukasi-modul-heading"
-                className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--color-text-primary)]"
-              >
-                Modul edukasi
-              </h2>
-              <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                Pahami mekanisme patahan bumi, kesiapsiagaan rumah tangga, dan tindakan lindungi diri dari rujukan resmi.
-              </p>
-            </div>
-            <Link
-              href="/edukasi"
-              className="inline-flex items-center gap-1.5 min-h-[44px] px-1 text-sm font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary-strong)] transition-colors rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+          <EduScrollDeck>
+            <div
+              data-edu-header=""
+              className="flex flex-wrap items-end justify-between gap-4 mb-6 sm:mb-7"
             >
-              <span className="tnum">
-                {totalArtikel > 0 ? `Lihat semua (${nf.format(totalArtikel)} modul)` : "Lihat semua modul"}
-              </span>
-              <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-            </Link>
-          </div>
+              <div className="space-y-1.5 max-w-[54ch]">
+                <p className="text-xs font-medium text-[var(--color-primary-strong)] tnum">
+                  01 · Materi rujukan
+                </p>
+                <h2
+                  id="edukasi-modul-heading"
+                  className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--color-text-primary)]"
+                >
+                  Modul edukasi
+                </h2>
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  Pahami mekanisme patahan bumi, kesiapsiagaan rumah tangga, dan tindakan lindungi diri dari rujukan resmi.
+                </p>
+              </div>
+              <Link
+                href="/edukasi"
+                className="inline-flex items-center gap-1.5 min-h-[44px] px-1 text-sm font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary-strong)] transition-colors rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+              >
+                <span className="tnum">
+                  {totalArtikel > 0 ? `Lihat semua (${nf.format(totalArtikel)} modul)` : "Lihat semua modul"}
+                </span>
+                <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            </div>
 
-          {isDbDegraded && artikelList.length === 0 ? (
-            <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
-              <ErrorState
-                title="Modul edukasi belum dapat dimuat"
-                message="Koneksi database lokal sedang terganggu saat mengambil materi."
-              />
-            </div>
-          ) : artikelList.length === 0 ? (
-            <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
-              <EmptyState message="Belum ada modul edukasi mitigasi yang dipublikasikan." />
-            </div>
-          ) : (
-            <div className="space-y-4 sm:space-y-5">
-              {artikelList.slice(0, 3).map((artikel, idx) => {
-                const visual = getModuleVisual(artikel.slug, artikel.kategori);
-                return (
-                  <ArticleNotchedCard
-                    key={artikel.id}
-                    slug={artikel.slug}
-                    judul={artikel.judul}
-                    ringkasan={artikel.ringkasan}
-                    kategori={artikel.kategori}
-                    reversed={idx % 2 === 1}
-                    imageSrc={visual.src}
-                    imageAlt={visual.alt}
-                    imageWidth={visual.width}
-                    imageHeight={visual.height}
-                    imagePosition={visual.position}
-                  />
-                );
-              })}
-            </div>
-          )}
+            {isDbDegraded && artikelList.length === 0 ? (
+              <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+                <ErrorState
+                  title="Modul edukasi belum dapat dimuat"
+                  message="Koneksi database lokal sedang terganggu saat mengambil materi."
+                />
+              </div>
+            ) : artikelList.length === 0 ? (
+              <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+                <EmptyState message="Belum ada modul edukasi mitigasi yang dipublikasikan." />
+              </div>
+            ) : (
+              <div className="space-y-4 sm:space-y-5">
+                {artikelList.slice(0, 3).map((artikel, idx) => {
+                  const visual = getModuleVisual(artikel.slug, artikel.kategori);
+                  return (
+                    <ArticleNotchedCard
+                      key={artikel.id}
+                      slug={artikel.slug}
+                      judul={artikel.judul}
+                      ringkasan={artikel.ringkasan}
+                      kategori={artikel.kategori}
+                      reversed={idx % 2 === 1}
+                      imageSrc={visual.src}
+                      imageAlt={visual.alt}
+                      imageWidth={visual.width}
+                      imageHeight={visual.height}
+                      imagePosition={visual.position}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </EduScrollDeck>
         </section>
 
         {/* ================= SECTION 4: SKENARIO SIMULASI SEJARAH ================= */}
