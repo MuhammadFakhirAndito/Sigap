@@ -40,7 +40,7 @@ export function FormulaReferenceCard() {
 
       <div className="space-y-1">
         <h4 className="font-semibold text-[var(--color-text-primary)]">
-          1. Intensitas MMI (Allen, Wald &amp; Worden, 2012 — Jarak Hiposenter)
+          1. Intensitas MMI (Allen, Wald &amp; Worden, 2012, Jarak Hiposenter)
         </h4>
         <p className="tnum text-xs sm:text-sm">
           MMI = 2,085 + 1,428·M − 1,402·ln(√(R_hypo² + r_m²)) + 0,078·ln(R_hypo / 50) [untuk R_hypo &gt; 50 km],

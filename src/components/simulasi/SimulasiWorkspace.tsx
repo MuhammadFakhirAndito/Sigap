@@ -535,29 +535,6 @@ export function SimulasiWorkspace({
         </div>
       )}
 
-      {/* Ringkasan sticky atas di mobile (390px): tidak menutupi kontrol di atas saat initial viewport */}
-      <div
-        aria-label="Ringkasan hasil simulasi"
-        className="lg:hidden sticky top-2 z-30 rounded-[20px] bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] px-4 py-3 flex items-center justify-between gap-4"
-      >
-        <div>
-          <span className="block text-xs text-[var(--color-text-secondary)]">
-            Estimasi di {distanceSync.formattedActualDistance}
-          </span>
-          <span className="tnum text-base font-bold text-[var(--color-text-primary)]">
-            MMI {result.mmi.roman} · {result.mmi.label}
-          </span>
-        </div>
-        <div className="text-right shrink-0">
-          <span className="block text-xs text-[var(--color-text-secondary)]">
-            Golden time
-          </span>
-          <span className="tnum text-base font-bold text-[var(--color-text-primary)]">
-            {formatIdNumber(result.goldenTimeSeconds, 1)} dtk
-          </span>
-        </div>
-      </div>
-
       {/* Layout 2 kolom desktop: panel 3 kontrol + preset | panggung visualisasi & detail lanjutan */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-5">
@@ -579,73 +556,98 @@ export function SimulasiWorkspace({
         </div>
 
         <div className="lg:col-span-7 space-y-5">
-          {/* Baris atas hasil: Segmented Mode Switcher + Label wajib */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div
-              role="tablist"
-              aria-label="Pilih mode tampilan simulasi"
-              onKeyDown={handleModeKeyDown}
-              className="inline-flex rounded-full bg-[var(--color-surface)] border border-[var(--color-border-strong)] p-1 gap-1"
-            >
-              <button
-                ref={tabPetaRef}
-                id="tab-mode-peta"
-                type="button"
-                role="tab"
-                aria-selected={activeMode === "peta"}
-                aria-controls="panel-mode-peta"
-                tabIndex={activeMode === "peta" ? 0 : -1}
-                onClick={() => setActiveMode("peta")}
-                className={`inline-flex items-center gap-1.5 min-h-[44px] rounded-full px-4 text-xs sm:text-sm font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)] ${
-                  activeMode === "peta"
-                    ? "bg-[var(--color-cta)] text-[var(--color-on-cta)]"
-                    : "text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] active:bg-[var(--color-surface-sunken)]"
-                }`}
+          {/* Panggung visualisasi terpadu: header tab mode + area hasil aktif */}
+          <div className="bg-[var(--color-surface)] rounded-[28px] border border-[var(--color-border)]/70">
+            <div className="rounded-t-[28px] border-b border-[var(--color-border)] px-4 sm:px-6 pt-3 sm:pt-3.5 flex flex-col-reverse sm:flex-row sm:items-end sm:justify-between gap-2.5 sm:gap-4">
+              <div
+                role="tablist"
+                aria-label="Pilih mode tampilan simulasi"
+                onKeyDown={handleModeKeyDown}
+                className="grid grid-cols-2 sm:inline-flex items-stretch gap-1 sm:gap-1.5 -mb-px"
               >
-                <Compass className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>Peta dampak</span>
-              </button>
+                <button
+                  ref={tabPetaRef}
+                  id="tab-mode-peta"
+                  type="button"
+                  role="tab"
+                  aria-selected={activeMode === "peta"}
+                  aria-controls="panel-mode-peta"
+                  tabIndex={activeMode === "peta" ? 0 : -1}
+                  onClick={() => setActiveMode("peta")}
+                  className={`relative inline-flex items-center justify-center gap-2 min-h-[46px] px-3.5 sm:px-5 pt-2.5 pb-3 rounded-t-[14px] text-xs sm:text-sm border transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary-strong)] ${
+                    activeMode === "peta"
+                      ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] font-semibold border-[var(--color-border)] border-b-[var(--color-surface-raised)] z-10"
+                      : "bg-transparent text-[var(--color-text-secondary)] font-medium border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]/50 active:bg-[var(--color-surface-sunken)]/60"
+                  }`}
+                >
+                  <Compass
+                    className="w-4 h-4 shrink-0"
+                    strokeWidth={activeMode === "peta" ? 2.2 : 1.75}
+                    aria-hidden="true"
+                  />
+                  <span>Peta dampak</span>
+                  {activeMode === "peta" && (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-3.5 bottom-0 h-[2px] rounded-full bg-[var(--color-cta)]"
+                    />
+                  )}
+                </button>
 
-              <button
-                ref={tab3dRef}
-                id="tab-mode-3d"
-                type="button"
-                role="tab"
-                aria-selected={activeMode === "3d"}
-                aria-controls="panel-mode-3d"
-                tabIndex={activeMode === "3d" ? 0 : -1}
-                onClick={() => setActiveMode("3d")}
-                className={`inline-flex items-center gap-1.5 min-h-[44px] rounded-full px-4 text-xs sm:text-sm font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)] ${
-                  activeMode === "3d"
-                    ? "bg-[var(--color-cta)] text-[var(--color-on-cta)]"
-                    : "text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] active:bg-[var(--color-surface-sunken)]"
-                }`}
-              >
-                <Layers className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>Getaran 3D</span>
-              </button>
+                <button
+                  ref={tab3dRef}
+                  id="tab-mode-3d"
+                  type="button"
+                  role="tab"
+                  aria-selected={activeMode === "3d"}
+                  aria-controls="panel-mode-3d"
+                  tabIndex={activeMode === "3d" ? 0 : -1}
+                  onClick={() => setActiveMode("3d")}
+                  className={`relative inline-flex items-center justify-center gap-2 min-h-[46px] px-3.5 sm:px-5 pt-2.5 pb-3 rounded-t-[14px] text-xs sm:text-sm border transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary-strong)] ${
+                    activeMode === "3d"
+                      ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] font-semibold border-[var(--color-border)] border-b-[var(--color-surface-raised)] z-10"
+                      : "bg-transparent text-[var(--color-text-secondary)] font-medium border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]/50 active:bg-[var(--color-surface-sunken)]/60"
+                  }`}
+                >
+                  <Layers
+                    className="w-4 h-4 shrink-0"
+                    strokeWidth={activeMode === "3d" ? 2.2 : 1.75}
+                    aria-hidden="true"
+                  />
+                  <span>Getaran 3D</span>
+                  {activeMode === "3d" && (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-3.5 bottom-0 h-[2px] rounded-full bg-[var(--color-cta)]"
+                    />
+                  )}
+                </button>
+              </div>
+
+              <span className="w-full sm:w-auto justify-center sm:justify-start sm:mb-2.5 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)]">
+                <Info
+                  className="w-3.5 h-3.5 shrink-0 text-[var(--color-primary-strong)]"
+                  aria-hidden="true"
+                />
+                <span>Estimasi edukasi, bukan data resmi BMKG</span>
+              </span>
             </div>
 
-            <span className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] px-4 py-2 text-xs font-semibold text-[var(--color-text-primary)]">
-              <Info className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              Estimasi edukasi, bukan data resmi BMKG
-            </span>
+            {/* Panggung mode aktif: default Peta dampak; Getaran 3D dimuat dinamis HANYA saat dibuka */}
+            {activeMode === "peta" ? (
+              <ImpactMapPanel
+                input={inputWithActualDistance}
+                result={result}
+                epicenter={epicenterPoint}
+                observer={observerPoint}
+                distanceSync={distanceSync}
+                onEpicenterMove={handleEpicenterMoveFromMap}
+                onObserverMove={handleObserverMoveFromMap}
+              />
+            ) : (
+              <Vibration3DPanel result={result} />
+            )}
           </div>
-
-          {/* Panggung mode aktif: default Peta dampak; Getaran 3D dimuat dinamis HANYA saat dibuka */}
-          {activeMode === "peta" ? (
-            <ImpactMapPanel
-              input={inputWithActualDistance}
-              result={result}
-              epicenter={epicenterPoint}
-              observer={observerPoint}
-              distanceSync={distanceSync}
-              onEpicenterMove={handleEpicenterMoveFromMap}
-              onObserverMove={handleObserverMoveFromMap}
-            />
-          ) : (
-            <Vibration3DPanel result={result} />
-          )}
 
           {/* Detail lanjutan: tertutup secara default */}
           <AdvancedDetailsPanel
@@ -672,6 +674,29 @@ export function SimulasiWorkspace({
       <p className="sr-only" aria-live="polite">
         {liveAnnouncement}
       </p>
+
+      {/* Ringkasan sticky mobile (390px) saat menggeser kontrol */}
+      <div
+        aria-label="Ringkasan hasil simulasi"
+        className="lg:hidden sticky bottom-0 z-30 -mx-4 px-4 py-2.5 bg-[var(--color-surface-raised)] border-t border-[var(--color-border-strong)] flex items-center justify-between gap-4"
+      >
+        <div>
+          <span className="block text-xs text-[var(--color-text-secondary)]">
+            Estimasi di {distanceSync.formattedActualDistance}
+          </span>
+          <span className="tnum text-base font-bold text-[var(--color-text-primary)]">
+            MMI {result.mmi.roman} · {result.mmi.label}
+          </span>
+        </div>
+        <div className="text-right shrink-0">
+          <span className="block text-xs text-[var(--color-text-secondary)]">
+            Golden time
+          </span>
+          <span className="tnum text-base font-bold text-[var(--color-text-primary)]">
+            {formatIdNumber(result.goldenTimeSeconds, 1)} dtk
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

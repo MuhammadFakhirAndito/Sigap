@@ -64,55 +64,55 @@ export function ImpactMapPanel({
       id="panel-mode-peta"
       role="tabpanel"
       aria-labelledby="tab-mode-peta"
-      className="bg-[var(--color-surface)] rounded-[28px] p-5 sm:p-6 space-y-5"
+      className="p-4 sm:p-6 space-y-4 sm:space-y-5"
     >
-      {/* Pemilih target klik peta + kontrol keyboard marker "Anda" */}
+      {/* Bilah kontrol peta: target klik + kontrol keyboard marker "Anda" */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="space-y-1">
-          <span className="block text-xs font-semibold text-[var(--color-text-secondary)]">
-            Aksi saat mengklik peta
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+            Klik peta:
           </span>
           <div
             role="group"
             aria-label="Pilih target saat mengklik peta"
-            className="inline-flex rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] p-1 gap-1"
+            className="inline-flex rounded-[14px] bg-[var(--color-surface-sunken)] border border-[var(--color-border)] p-1 gap-1"
           >
             <button
               type="button"
               aria-pressed={clickTarget === "observer"}
               onClick={() => setClickTarget("observer")}
-              className={`min-h-[44px] rounded-full px-3.5 text-xs font-semibold transition-colors duration-150 ${
+              className={`min-h-[44px] rounded-[10px] px-3 text-xs transition-colors duration-150 ${
                 clickTarget === "observer"
-                  ? "bg-[var(--color-cta)] text-[var(--color-on-cta)]"
-                  : "text-[var(--color-text-primary)] hover:bg-[var(--color-background)]"
+                  ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] font-semibold border border-[var(--color-border)]"
+                  : "text-[var(--color-text-secondary)] font-medium border border-transparent hover:text-[var(--color-text-primary)]"
               }`}
             >
-              Pilih lokasi Anda
+              Lokasi Anda
             </button>
             <button
               type="button"
               aria-pressed={clickTarget === "epicenter"}
               onClick={() => setClickTarget("epicenter")}
-              className={`min-h-[44px] rounded-full px-3.5 text-xs font-semibold transition-colors duration-150 ${
+              className={`min-h-[44px] rounded-[10px] px-3 text-xs transition-colors duration-150 ${
                 clickTarget === "epicenter"
-                  ? "bg-[var(--color-cta)] text-[var(--color-on-cta)]"
-                  : "text-[var(--color-text-primary)] hover:bg-[var(--color-background)]"
+                  ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] font-semibold border border-[var(--color-border)]"
+                  : "text-[var(--color-text-secondary)] font-medium border border-transparent hover:text-[var(--color-text-primary)]"
               }`}
             >
-              Pindahkan pusat
+              Pusat gempa
             </button>
           </div>
         </div>
 
         {/* Jalur keyboard untuk memindahkan marker "Anda" tanpa mouse */}
-        <div className="space-y-1">
-          <span className="block text-xs font-semibold text-[var(--color-text-secondary)]">
-            Geser titik &ldquo;Anda&rdquo; ({KEYBOARD_STEP_KM} km)
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2">
+          <span className="text-xs font-medium text-[var(--color-text-secondary)] whitespace-nowrap">
+            Geser &ldquo;Anda&rdquo; ({KEYBOARD_STEP_KM} km)
           </span>
           <div
             role="group"
             aria-label="Kontrol keyboard posisi titik Anda"
-            className="flex flex-wrap items-center gap-1.5"
+            className="inline-flex items-center rounded-[14px] bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)]/60 divide-x divide-[var(--color-border)] overflow-hidden"
           >
             <button
               type="button"
@@ -120,7 +120,7 @@ export function ImpactMapPanel({
               onClick={() =>
                 onObserverMove(nudgePointByKm(observer, KEYBOARD_STEP_KM, 0))
               }
-              className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors duration-150"
+              className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] active:bg-[var(--color-surface-sunken)] transition-colors duration-150"
             >
               <ArrowUp className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -130,7 +130,7 @@ export function ImpactMapPanel({
               onClick={() =>
                 onObserverMove(nudgePointByKm(observer, -KEYBOARD_STEP_KM, 0))
               }
-              className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors duration-150"
+              className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] active:bg-[var(--color-surface-sunken)] transition-colors duration-150"
             >
               <ArrowDown className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -140,7 +140,7 @@ export function ImpactMapPanel({
               onClick={() =>
                 onObserverMove(nudgePointByKm(observer, 0, -KEYBOARD_STEP_KM))
               }
-              className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors duration-150"
+              className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] active:bg-[var(--color-surface-sunken)] transition-colors duration-150"
             >
               <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -150,7 +150,7 @@ export function ImpactMapPanel({
               onClick={() =>
                 onObserverMove(nudgePointByKm(observer, 0, KEYBOARD_STEP_KM))
               }
-              className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors duration-150"
+              className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] active:bg-[var(--color-surface-sunken)] transition-colors duration-150"
             >
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>

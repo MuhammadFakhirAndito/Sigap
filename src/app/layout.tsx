@@ -10,10 +10,10 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "SIGAP Gempa — Informasi Gempa Bumi Terkini & Mitigasi Indonesia",
+  title: "SIGAP",
   description:
     "Portal informasi gempa bumi Indonesia: data resmi BMKG, riwayat gempa persisten, simulasi dampak fisik edukasi, dan asisten mitigasi bencana.",
-  authors: [{ name: "SIGAP Gempa" }],
+  authors: [{ name: "SIGAP" }],
 };
 
 export const viewport: Viewport = {

@@ -30,9 +30,9 @@ interface Vibration3DPanelProps {
 function getPhaseLabel(phase: VibrationFrameSample["phase"]): string {
   switch (phase) {
     case "p_wave":
-      return "Gelombang Primer (P) — awal ringan";
+      return "Gelombang Primer (P): awal ringan";
     case "s_wave":
-      return "Gelombang Sekunder (S) — guncangan utama";
+      return "Gelombang Sekunder (S): guncangan utama";
     case "decay":
       return "Guncangan mereda";
     case "done":
@@ -97,7 +97,7 @@ export function Vibration3DPanel({ result }: Vibration3DPanelProps) {
       id="panel-mode-3d"
       role="tabpanel"
       aria-labelledby="tab-mode-3d"
-      className="bg-[var(--color-surface)] rounded-[28px] p-5 sm:p-6 space-y-5"
+      className="p-4 sm:p-6 space-y-5"
     >
       {/* Header kontrol Putar / Berhenti + label peringatan wajib */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -211,36 +211,6 @@ export function Vibration3DPanel({ result }: Vibration3DPanelProps) {
           Jeda gelombang P ke S di jarak ini: ±{" "}
           {formatIdNumber(result.goldenTimeSeconds, 1)} detik
         </p>
-      </div>
-
-      {/* Deskripsi terstruktur memisahkan kutipan BMKG vs efek ilustratif SIGAP */}
-      <div
-        aria-label="Penjelasan dampak BMKG dan ilustrasi adegan 3D"
-        className="grid grid-cols-1 md:grid-cols-2 gap-3"
-      >
-        <div className="rounded-[18px] bg-[var(--color-surface-raised)] border border-[var(--color-border)] p-4 space-y-1.5">
-          <span className="block text-xs font-semibold text-[var(--color-text-secondary)]">
-            Deskripsi dampak (Sumber: Skala MMI BMKG)
-          </span>
-          <p className="text-sm font-semibold text-[var(--color-text-primary)] tnum">
-            MMI {profile.roman}: {profile.bmkgLabel}
-          </p>
-          <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-            &ldquo;{profile.bmkgQuote}&rdquo;
-          </p>
-        </div>
-
-        <div className="rounded-[18px] bg-[var(--color-surface-raised)] border border-[var(--color-border)] p-4 space-y-1.5">
-          <span className="block text-xs font-semibold text-[var(--color-text-secondary)]">
-            Efek animasi 3D (Ilustrasi SIGAP)
-          </span>
-          <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-            {profile.illustrativeEffectTitle}
-          </p>
-          <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-            {profile.illustrativeEffectDescription} Catatan: gerak lampu, gelas, dan benda di rak adalah pilihan visual ilustratif SIGAP untuk membedakan tingkat guncangan, bukan teks resmi BMKG maupun perhitungan struktur bangunan.
-          </p>
-        </div>
       </div>
     </section>
   );

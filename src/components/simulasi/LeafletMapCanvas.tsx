@@ -327,7 +327,7 @@ export default function LeafletMapCanvas({
         </div>
       )}
 
-      <div className="relative rounded-[20px] overflow-hidden border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)]">
+      <div className="relative isolate rounded-[20px] overflow-hidden border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)]">
         <div
           ref={containerRef}
           role="region"

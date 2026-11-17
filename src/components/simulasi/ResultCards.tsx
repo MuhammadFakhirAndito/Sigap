@@ -83,11 +83,10 @@ export function MmiCard({ input, result }: MmiCardProps) {
             return (
               <div
                 key={seg.level}
-                className={`tnum flex items-center justify-center rounded-lg py-2 text-xs font-semibold border transition-colors duration-150 ${
-                  filled
-                    ? "bg-[var(--color-cta)] text-[var(--color-on-cta)] border-[var(--color-cta)]"
-                    : "bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border-transparent"
-                } ${isCurrent ? "ring-2 ring-[var(--color-border-strong)] ring-offset-1 ring-offset-[var(--color-surface)]" : ""}`}
+                className={`tnum flex items-center justify-center rounded-lg py-2 text-xs font-semibold border transition-colors duration-150 ${filled
+                  ? "bg-[var(--color-cta)] text-[var(--color-on-cta)] border-[var(--color-cta)]"
+                  : "bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border-transparent"
+                  } ${isCurrent ? "ring-2 ring-[var(--color-border-strong)] ring-offset-1 ring-offset-[var(--color-surface)]" : ""}`}
               >
                 {seg.roman}
               </div>
@@ -233,7 +232,7 @@ export function TravelTimeCard({ result }: TravelTimeCardProps) {
           <div className="h-3 w-full rounded-full bg-[var(--color-surface-sunken)] overflow-hidden">
             <div
               className="h-full w-full origin-left rounded-full bg-[var(--color-text-secondary)] transition-transform duration-200 motion-reduce:transition-none"
-              style={{ transform: `scaleX(${pPct / 100})` }}
+              style={{ transform: `scaleX(${(pPct / 100).toFixed(4)})` }}
             />
           </div>
         </div>

@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { RotateCcw, ExternalLink, AlertCircle, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { RotateCcw, ExternalLink, AlertCircle, MapPin, ChevronDown } from "lucide-react";
 import {
   SIMULASI_LIMITS,
   formatIdNumber,
@@ -18,6 +17,7 @@ export type SimulasiDraftStrings = Record<SimulasiNumericField, string>;
 interface SliderNumericRowProps {
   id: string;
   label: string;
+  prefix?: string;
   unit?: string;
   min: number;
   max: number;
@@ -35,6 +35,7 @@ interface SliderNumericRowProps {
 function SliderNumericRow({
   id,
   label,
+  prefix,
   unit,
   min,
   max,
@@ -62,7 +63,15 @@ function SliderNumericRow({
         >
           {label}
         </label>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 w-[112px] min-h-[46px] rounded-[14px] bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)]/70 px-3 transition-colors duration-150 focus-within:border-[var(--color-primary-strong)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--color-primary-strong)]">
+          {prefix && (
+            <span
+              aria-hidden="true"
+              className="text-xs font-medium text-[var(--color-text-secondary)] shrink-0"
+            >
+              {prefix}
+            </span>
+          )}
           <input
             id={`${id}-input`}
             type="number"
@@ -73,10 +82,10 @@ function SliderNumericRow({
             onChange={(e) => onDraftChange(e.target.value)}
             aria-invalid={Boolean(error)}
             aria-describedby={error ? errorId : helpId}
-            className="tnum w-24 min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] px-3 text-right text-sm font-semibold text-[var(--color-text-primary)]"
+            className="tnum w-full min-w-0 min-h-[44px] bg-transparent text-right text-sm font-semibold text-[var(--color-text-primary)] focus:outline-none disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
           {unit && (
-            <span className="text-xs font-medium text-[var(--color-text-secondary)] w-7">
+            <span className="text-xs font-medium text-[var(--color-text-secondary)] shrink-0">
               {unit}
             </span>
           )}
@@ -86,7 +95,7 @@ function SliderNumericRow({
       <div className="relative flex items-center">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 h-2 rounded-full bg-[var(--color-surface-sunken)] overflow-hidden"
+          className="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-[var(--color-surface-sunken)] overflow-hidden"
         >
           <div
             className="h-full bg-[var(--color-cta)] rounded-full"
@@ -169,10 +178,10 @@ export function ControlPanel({
   return (
     <section
       aria-label="Panel parameter simulasi gempa"
-      className="bg-[var(--color-surface)] rounded-[28px] p-6 space-y-6"
+      className="bg-[var(--color-surface)] rounded-[28px] border border-[var(--color-border)]/70 p-5 sm:p-6 space-y-5"
     >
       {/* Preset gempa bersejarah */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <div className="flex items-center justify-between gap-2">
           <label
             htmlFor="preset-select"
@@ -180,30 +189,35 @@ export function ControlPanel({
           >
             Pilih gempa bersejarah
           </label>
-          <Button
+          <button
             type="button"
-            variant="outline"
             onClick={onReset}
-            className="px-4 py-1.5 min-h-[44px] text-xs"
-            icon={<RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />}
+            className="inline-flex items-center gap-1.5 min-h-[44px] px-3 -mr-1.5 rounded-[12px] text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] active:bg-[var(--color-surface-sunken)] disabled:opacity-50 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
           >
-            Reset
-          </Button>
+            <RotateCcw className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>Reset</span>
+          </button>
         </div>
 
-        <select
-          id="preset-select"
-          value={selectedPresetId}
-          onChange={(e) => onSelectPreset(e.target.value)}
-          className="w-full min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] px-4 text-sm font-medium text-[var(--color-text-primary)]"
-        >
-          <option value="kustom">Kustom (atur manual)</option>
-          {presets.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nama}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id="preset-select"
+            value={selectedPresetId}
+            onChange={(e) => onSelectPreset(e.target.value)}
+            className="w-full min-h-[46px] appearance-none rounded-[14px] bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)]/70 pl-3.5 pr-10 text-sm font-medium text-[var(--color-text-primary)] transition-colors duration-150 hover:border-[var(--color-border-strong)] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+          >
+            <option value="kustom">Kustom (atur manual)</option>
+            {presets.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nama}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]"
+            aria-hidden="true"
+          />
+        </div>
 
         {presetsLoadError && (
           <p className="text-xs text-[var(--color-warning-strong)] leading-relaxed">
@@ -235,26 +249,27 @@ export function ControlPanel({
         )}
       </div>
 
-      <hr className="border-[var(--color-border)]" />
+      <div className="border-t border-[var(--color-border)]/70 pt-5">
+        {/* 1. Magnitudo */}
+        <SliderNumericRow
+          id="sim-mag"
+          label="Magnitudo"
+          prefix="M"
+          min={SIMULASI_LIMITS.MAG_MIN}
+          max={SIMULASI_LIMITS.MAG_MAX}
+          step={SIMULASI_LIMITS.MAG_STEP}
+          sliderValue={validInput.magnitudo}
+          draftValue={drafts.magnitudo}
+          ariaValueText={`Magnitudo ${formatIdNumber(validInput.magnitudo, 1)}`}
+          helperText="Kalibrasi MMI: Mw 5,0–7,9"
+          error={errors.magnitudo}
+          onSliderChange={(v) => onSliderChange("magnitudo", v)}
+          onDraftChange={(s) => onDraftChange("magnitudo", s)}
+        />
+      </div>
 
-      {/* 1. Magnitudo */}
-      <SliderNumericRow
-        id="sim-mag"
-        label="Magnitudo"
-        min={SIMULASI_LIMITS.MAG_MIN}
-        max={SIMULASI_LIMITS.MAG_MAX}
-        step={SIMULASI_LIMITS.MAG_STEP}
-        sliderValue={validInput.magnitudo}
-        draftValue={drafts.magnitudo}
-        ariaValueText={`Magnitudo ${formatIdNumber(validInput.magnitudo, 1)}`}
-        helperText="Kalibrasi MMI: Mw 5,0–7,9"
-        error={errors.magnitudo}
-        onSliderChange={(v) => onSliderChange("magnitudo", v)}
-        onDraftChange={(s) => onDraftChange("magnitudo", s)}
-      />
-
-      {/* 2. Kedalaman (3 preset cepat: Dangkal 10 / Menengah 70 / Dalam 200 km) */}
-      <div className="space-y-2.5">
+      <div className="border-t border-[var(--color-border)]/70 pt-5 space-y-2.5">
+        {/* 2. Kedalaman (3 preset cepat: Dangkal 10 / Menengah 70 / Dalam 200 km) */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span
             id="sim-depth-label"
@@ -270,7 +285,7 @@ export function ControlPanel({
         <div
           role="group"
           aria-labelledby="sim-depth-label"
-          className="grid grid-cols-3 gap-2"
+          className="grid grid-cols-3 gap-1 rounded-[16px] bg-[var(--color-surface-sunken)] border border-[var(--color-border)] p-1"
         >
           {KEDALAMAN_PRESETS.map((opt) => {
             const active = Math.abs(validInput.kedalamanKm - opt.valueKm) < 0.01;
@@ -280,20 +295,16 @@ export function ControlPanel({
                 type="button"
                 aria-pressed={active}
                 onClick={() => onKedalamanPresetSelect(opt.valueKm)}
-                className={`min-h-[44px] rounded-[16px] px-2 py-2 text-center border transition-colors duration-150 ${
+                className={`min-h-[48px] rounded-[12px] px-2 py-2 text-center border transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary-strong)] ${
                   active
-                    ? "bg-[var(--color-cta)] text-[var(--color-on-cta)] border-[var(--color-cta)]"
-                    : "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] border-[var(--color-border-strong)] hover:bg-[var(--color-background)]"
+                    ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] border-[var(--color-border)]"
+                    : "bg-transparent text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]/60"
                 }`}
               >
-                <span className="block text-xs font-semibold">{opt.label}</span>
-                <span
-                  className={`block tnum text-xs ${
-                    active
-                      ? "text-[var(--color-on-cta)] opacity-85"
-                      : "text-[var(--color-text-secondary)]"
-                  }`}
-                >
+                <span className={`block text-xs ${active ? "font-semibold" : "font-medium"}`}>
+                  {opt.label}
+                </span>
+                <span className="block tnum text-xs text-[var(--color-text-secondary)]">
                   {opt.shortNote}
                 </span>
               </button>
@@ -322,25 +333,26 @@ export function ControlPanel({
         )}
       </div>
 
-      {/* 3. Jarak dari pusat gempa */}
-      <SliderNumericRow
-        id="sim-dist"
-        label="Jarak dari pusat gempa"
-        unit="km"
-        min={SIMULASI_LIMITS.DIST_MIN}
-        max={SIMULASI_LIMITS.DIST_MAX}
-        step={1}
-        sliderValue={validInput.jarakPengamatKm}
-        draftValue={drafts.jarakPengamatKm}
-        ariaValueText={
-          distanceSync.isBeyondCalibratedRange
-            ? `Jarak marker Anda ${distanceSync.formattedActualDistance} dari pusat gempa, di luar batas slider 300 km`
-            : `Jarak pengamat ${formatIdNumber(validInput.jarakPengamatKm, 0)} kilometer dari pusat gempa`
-        }
-        helperText="Tersinkron dengan posisi marker Anda di peta"
-        error={errors.jarakPengamatKm}
-        onSliderChange={(v) => onSliderChange("jarakPengamatKm", v)}
-        onDraftChange={(s) => onDraftChange("jarakPengamatKm", s)}
+      <div className="border-t border-[var(--color-border)]/70 pt-5">
+        {/* 3. Jarak dari pusat gempa */}
+        <SliderNumericRow
+          id="sim-dist"
+          label="Jarak dari pusat gempa"
+          unit="km"
+          min={SIMULASI_LIMITS.DIST_MIN}
+          max={SIMULASI_LIMITS.DIST_MAX}
+          step={1}
+          sliderValue={validInput.jarakPengamatKm}
+          draftValue={drafts.jarakPengamatKm}
+          ariaValueText={
+            distanceSync.isBeyondCalibratedRange
+              ? `Jarak marker Anda ${distanceSync.formattedActualDistance} dari pusat gempa, di luar batas slider 300 km`
+              : `Jarak pengamat ${formatIdNumber(validInput.jarakPengamatKm, 0)} kilometer dari pusat gempa`
+          }
+          helperText="Tersinkron dengan posisi marker Anda di peta"
+          error={errors.jarakPengamatKm}
+          onSliderChange={(v) => onSliderChange("jarakPengamatKm", v)}
+          onDraftChange={(s) => onDraftChange("jarakPengamatKm", s)}
         extraNotice={
           distanceSync.isBeyondCalibratedRange ? (
             <div
@@ -358,7 +370,8 @@ export function ControlPanel({
             </div>
           ) : undefined
         }
-      />
+        />
+      </div>
     </section>
   );
 }
