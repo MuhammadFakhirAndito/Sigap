@@ -18,21 +18,27 @@ export default function RiwayatLoading() {
           </div>
         </section>
 
-        <Skeleton className="h-52 w-full rounded-[28px]" />
+        <div className="grid gap-4 sm:gap-5 lg:grid-cols-[320px_1fr]">
+          <Skeleton className="h-60 w-full rounded-[28px]" />
+          <Skeleton className="h-60 w-full rounded-[28px]" />
+        </div>
 
         <div
           aria-busy="true"
           aria-label="Memuat 5 baris riwayat gempa"
-          className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] divide-y divide-[var(--color-border)] overflow-hidden"
+          className="space-y-2.5 sm:space-y-3"
         >
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="px-6 py-4 flex items-center justify-between gap-4">
-              <Skeleton className="h-8 w-14 rounded-lg bg-[var(--color-surface-raised)]" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-2/3 rounded-md bg-[var(--color-surface-raised)]" />
-                <Skeleton className="h-3 w-1/3 rounded-md bg-[var(--color-surface-raised)]" />
+            <div
+              key={i}
+              className="flex items-center gap-4 md:gap-6 rounded-[24px] border border-[var(--color-border)]/75 bg-[var(--color-surface-raised)] px-4 py-4 md:px-5"
+            >
+              <Skeleton className="h-14 w-16 md:w-[72px] shrink-0 rounded-[16px]" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <Skeleton className="h-4 w-2/3 rounded-md" />
+                <Skeleton className="h-3 w-1/3 rounded-md" />
               </div>
-              <Skeleton className="h-9 w-28 rounded-full bg-[var(--color-surface-raised)]" />
+              <Skeleton className="hidden md:block h-11 w-32 shrink-0 rounded-full" />
             </div>
           ))}
         </div>

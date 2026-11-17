@@ -39,15 +39,15 @@ function formatCoordinate(lat: number, lon: number): string {
 const tsunamiStyle: Record<StatusTsunami, { icon: React.ReactNode; cls: string }> = {
   AMAN: {
     icon: <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
-    cls: "border-[var(--color-border)] text-[var(--color-success-strong)]",
+    cls: "text-[var(--color-success-strong)]",
   },
   BERPOTENSI: {
     icon: <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
-    cls: "border-[var(--color-error)]/50 text-[var(--color-error-strong)] font-semibold",
+    cls: "text-[var(--color-error-strong)] font-semibold",
   },
   TIDAK_DINYATAKAN: {
     icon: <HelpCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
-    cls: "border-[var(--color-border)] text-[var(--color-text-secondary)]",
+    cls: "text-[var(--color-text-secondary)]",
   },
 };
 
@@ -58,9 +58,9 @@ export function HistoryRow({ gempa }: { gempa: GempaItem }) {
   const ts = tsunamiStyle[gempa.statusTsunami] ?? tsunamiStyle.TIDAK_DINYATAKAN;
 
   return (
-    <article className="group grid grid-cols-[64px_1fr] md:grid-cols-[72px_minmax(0,1fr)_104px_180px_auto] items-center gap-x-4 md:gap-x-6 gap-y-3 rounded-[24px] border border-[var(--color-border)]/75 bg-[var(--color-surface)] px-4 py-4 md:px-6 md:py-4 transition-colors duration-200 hover:bg-[var(--color-surface-raised)] hover:border-[var(--color-border-strong)]">
-      <div className="row-span-2 md:row-span-1 self-start md:self-center flex h-14 w-16 md:h-[56px] md:w-[72px] items-center justify-center rounded-[16px] border border-[var(--color-border)]/70 bg-[var(--color-surface-raised)] group-hover:bg-[var(--color-surface)] transition-colors duration-200">
-        <p className="text-xl md:text-2xl font-semibold leading-none tracking-tight text-[var(--color-text-primary)] tnum">
+    <article className="group grid grid-cols-[64px_1fr] md:grid-cols-[72px_minmax(0,1fr)_104px_180px_auto] items-center gap-x-4 md:gap-x-6 gap-y-3 rounded-[24px] border border-[var(--color-border)]/75 bg-[var(--color-surface-raised)] px-4 py-4 md:px-5 md:py-4 transition-colors duration-200 hover:border-[var(--color-border-strong)]">
+      <div className="row-span-2 md:row-span-1 self-start md:self-center flex h-14 w-16 md:h-[56px] md:w-[72px] items-center justify-center rounded-[16px] bg-[var(--color-cta)]">
+        <p className="text-xl md:text-2xl font-semibold leading-none tracking-tight text-[var(--color-on-cta)] tnum">
           <span className="sr-only">Magnitudo </span>
           {mag}
         </p>
@@ -88,18 +88,23 @@ export function HistoryRow({ gempa }: { gempa: GempaItem }) {
         </span>
       </div>
 
-      <p
-        className={`col-start-2 md:col-start-auto justify-self-start inline-flex items-center gap-1.5 rounded-full border bg-[var(--color-surface-raised)] group-hover:bg-[var(--color-surface)] px-3 py-1 text-xs font-medium transition-colors duration-200 ${ts.cls}`}
-        title={gempa.potensiTeks || undefined}
-      >
-        {ts.icon}
-        <span>{tsunamiShortLabel(gempa.statusTsunami)}</span>
-      </p>
+      <div className="col-start-2 md:col-start-auto min-w-0" title={gempa.potensiTeks || undefined}>
+        <span className="hidden md:block text-xs leading-none text-[var(--color-text-secondary)]">
+          Potensi tsunami
+        </span>
+        <p className={`md:mt-1.5 flex items-center gap-1.5 text-xs md:text-sm font-medium ${ts.cls}`}>
+          {ts.icon}
+          <span>
+            <span className="md:hidden">Tsunami: </span>
+            {tsunamiShortLabel(gempa.statusTsunami)}
+          </span>
+        </p>
+      </div>
 
       <Link
         href={hrefSimulasi}
         aria-label={`Simulasikan gempa M ${mag} ${gempa.wilayah}`}
-        className="col-span-2 md:col-span-1 inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-transparent px-4 text-xs font-medium text-[var(--color-text-primary)] transition-colors duration-150 hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] hover:border-[var(--color-cta)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
+        className="col-span-2 md:col-span-1 inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-full border border-[var(--color-border-strong)] bg-transparent px-4 text-xs font-medium text-[var(--color-text-primary)] transition-colors duration-150 group-hover:bg-[var(--color-cta)] group-hover:text-[var(--color-on-cta)] group-hover:border-[var(--color-cta)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
       >
         Simulasikan
         <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />

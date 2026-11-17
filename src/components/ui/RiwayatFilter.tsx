@@ -76,7 +76,7 @@ export function RiwayatFilter({
           <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
           Filter
           {hasActive && <span className="text-xs text-[var(--color-primary-strong)]">(aktif)</span>}
-          <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+          <ChevronDown className={`w-4 h-4 transition-transform motion-reduce:transition-none ${open ? "rotate-180" : ""}`} aria-hidden="true" />
         </button>
         {hasActive && (
           <Link
@@ -100,7 +100,7 @@ export function RiwayatFilter({
           <span id="filter-mag-label" className={labelCls}>
             Magnitudo minimum
           </span>
-          <div className="flex md:inline-flex w-full md:w-auto h-12 items-center gap-0.5 overflow-x-auto rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-sunken)] p-[1px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex md:inline-flex w-full md:w-auto h-12 items-center gap-0.5 overflow-x-auto rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)] p-[1px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {MAG_OPTIONS.map((o) => (
               <label key={o.value || "all"} className="flex-1 md:flex-initial shrink-0">
                 <input
@@ -111,7 +111,7 @@ export function RiwayatFilter({
                   onChange={submit}
                   className="peer sr-only"
                 />
-                <span className="flex h-[44px] min-w-[48px] cursor-pointer items-center justify-center rounded-full px-3.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:text-[var(--color-text-primary)] peer-checked:bg-[var(--color-surface-raised)] peer-checked:text-[var(--color-text-primary)] peer-checked:font-semibold peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-primary-strong)] tnum">
+                <span className="flex h-[44px] min-w-[48px] cursor-pointer items-center justify-center rounded-full px-3.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:text-[var(--color-text-primary)] peer-checked:bg-[var(--color-cta)] peer-checked:text-[var(--color-on-cta)] peer-checked:font-semibold peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-primary-strong)] tnum">
                   {o.label}
                 </span>
               </label>
@@ -197,7 +197,7 @@ export function RiwayatFilter({
             />
             <button
               type="submit"
-              className="inline-flex h-[42px] min-h-[44px] shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] px-4 text-xs font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-cta)] hover:text-[var(--color-on-cta)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)] transition-colors duration-150"
+              className="inline-flex h-[42px] min-h-[44px] shrink-0 items-center justify-center rounded-full bg-[var(--color-cta)] px-5 text-xs font-semibold text-[var(--color-on-cta)] hover:bg-[var(--color-border-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)] transition-colors duration-150"
             >
               Cari
             </button>
