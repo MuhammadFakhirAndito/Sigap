@@ -43,3 +43,9 @@ DockerDesktopInstaller.exe
 # Local database dumps
 /backups/
 *.dump
+
+# Vercel local project link
+.vercel
+
+.vercel
+.env*
