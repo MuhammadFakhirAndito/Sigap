@@ -86,14 +86,14 @@ export function RiwayatChart({ series, total, maxMagnitudo, rentangText }: Riway
             )}
 
             <div className="relative z-10 h-full flex items-end gap-[3px] sm:gap-[5px]">
-              {series.map((d) => {
+              {series.map((d, idx) => {
                 const isPeak = d === peakDay && d.jumlah > 0;
                 const heightPct = (d.jumlah / peak) * 100;
                 return (
                   <div
                     key={d.hari}
                     title={`${formatDay(d.hari, true)}: ${nf.format(d.jumlah)} gempa`}
-                    className={`flex-1 min-w-0 rounded-t-[4px] transition-colors duration-150 ${
+                    className={`sigap-bar-grow flex-1 min-w-0 rounded-t-[4px] transition-colors duration-150 ${
                       d.jumlah === 0
                         ? "bg-[var(--color-surface-sunken)]"
                         : isPeak
@@ -102,6 +102,7 @@ export function RiwayatChart({ series, total, maxMagnitudo, rentangText }: Riway
                     }`}
                     style={{
                       height: d.jumlah === 0 ? "2px" : `max(4px, ${heightPct}%)`,
+                      animationDelay: `${idx * 25}ms`,
                     }}
                   />
                 );

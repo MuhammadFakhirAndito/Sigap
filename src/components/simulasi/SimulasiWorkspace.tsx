@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Compass, Info, Layers } from "lucide-react";
 import {
-  DEFAULT_SIMULASI_INPUT,
   formatIdNumber,
   validateSimulasiInput,
   type ParsedSimulasiUrlResult,
@@ -14,7 +13,6 @@ import {
 } from "@/lib/simulasi";
 import {
   DEFAULT_OBSERVER_BEARING_DEG,
-  calculateBearingDeg,
   destinationPointFromBearingKm,
   normalizeLongitude,
   runVisualSimulasiCalculation,
@@ -34,10 +32,11 @@ import {
   type ObserverValidationErrors,
 } from "./AdvancedDetailsPanel";
 import { SafetyAndFormulaSection } from "./SafetyAndFormulaSection";
+import { RevealOnScroll } from "@/components/edukasi/RevealOnScroll";
 
 interface SimulasiWorkspaceProps {
   presets: PresetScenarioItem[];
-  presetsLoadError: boolean;
+  presetsLoadError?: boolean;
   initialUrlState: ParsedSimulasiUrlResult;
   hasExplicitUrlLokasi: boolean;
 }
@@ -84,7 +83,6 @@ function validateObserverCoord(field: "lat" | "lon", val: number): string | unde
 
 export function SimulasiWorkspace({
   presets,
-  presetsLoadError,
   initialUrlState,
   hasExplicitUrlLokasi,
 }: SimulasiWorkspaceProps) {
@@ -121,8 +119,14 @@ export function SimulasiWorkspace({
 
   const [errors, setErrors] = useState<SimulasiValidationErrors>({});
   const [observerErrors, setObserverErrors] = useState<ObserverValidationErrors>({});
-  const [selectedPresetId, setSelectedPresetId] = useState<string>("kustom");
-  const [urlWarnings, setUrlWarnings] = useState<string[]>(initialUrlState.warnings);
+  const [selectedPresetId, setSelectedPresetId] = useState<string>(() => {
+    if (initialUrlState.presetWilayah) {
+      const matched = presets.find((p) => p.nama === initialUrlState.presetWilayah);
+      if (matched) return matched.id;
+    }
+    return "kustom";
+  });
+  const urlWarnings = initialUrlState.warnings;
 
   const tabPetaRef = useRef<HTMLButtonElement | null>(null);
   const tab3dRef = useRef<HTMLButtonElement | null>(null);
@@ -177,42 +181,6 @@ export function SimulasiWorkspace({
     result.mmi.label,
     result.goldenTimeSeconds,
   ]);
-
-  const handleSelectPreset = (presetId: string) => {
-    setSelectedPresetId(presetId);
-    setUrlWarnings([]);
-    if (presetId === "kustom") return;
-
-    const found = presets.find((p) => p.id === presetId);
-    if (!found) return;
-
-    const preservedKm = validInput.jarakPengamatKm;
-    const prevBearing = calculateBearingDeg(epicenterPoint, observerPoint);
-    const nextEpicenter: GeoPoint = { lat: clampSafeLat(found.lat), lon: normalizeLongitude(found.lon) };
-    const nextObserver = destinationPointFromBearingKm(
-      nextEpicenter,
-      preservedKm,
-      Number.isFinite(prevBearing) ? prevBearing : DEFAULT_OBSERVER_BEARING_DEG
-    );
-
-    const nextInput: SimulasiInput = {
-      magnitudo: found.magnitudo,
-      kedalamanKm: found.kedalamanKm,
-      lat: nextEpicenter.lat,
-      lon: nextEpicenter.lon,
-      jarakPengamatKm: preservedKm,
-      tipeLokasi: found.tipeLokasi,
-      wilayah: found.nama,
-    };
-
-    setValidInput(nextInput);
-    setUiTipeLokasi(found.tipeLokasi);
-    setObserverPoint(nextObserver);
-    setDrafts(inputToDrafts(nextInput));
-    setObserverDrafts(pointToObserverDrafts(nextObserver));
-    setErrors({});
-    setObserverErrors({});
-  };
 
   const handleSliderOrDistChange = (
     field: "magnitudo" | "jarakPengamatKm",
@@ -463,27 +431,6 @@ export function SimulasiWorkspace({
     setValidInput((prev) => ({ ...prev, tipeLokasi: tipe, wilayah: undefined }));
   };
 
-  const handleReset = () => {
-    const defaultEpicenter: GeoPoint = {
-      lat: DEFAULT_SIMULASI_INPUT.lat,
-      lon: DEFAULT_SIMULASI_INPUT.lon,
-    };
-    const defaultObserver = destinationPointFromBearingKm(
-      defaultEpicenter,
-      DEFAULT_SIMULASI_INPUT.jarakPengamatKm,
-      DEFAULT_OBSERVER_BEARING_DEG
-    );
-    setSelectedPresetId("kustom");
-    setValidInput(DEFAULT_SIMULASI_INPUT);
-    setUiTipeLokasi("BELUM_DIPILIH");
-    setObserverPoint(defaultObserver);
-    setDrafts(inputToDrafts(DEFAULT_SIMULASI_INPUT));
-    setObserverDrafts(pointToObserverDrafts(defaultObserver));
-    setErrors({});
-    setObserverErrors({});
-    setUrlWarnings([]);
-  };
-
   const handleModeKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "Home" || e.key === "End") {
       e.preventDefault();
@@ -535,23 +482,18 @@ export function SimulasiWorkspace({
         </div>
       )}
 
-      {/* Layout 2 kolom desktop: panel 3 kontrol + preset | panggung visualisasi & detail lanjutan */}
+      {/* Layout 2 kolom desktop: panel 3 kontrol | panggung visualisasi & detail lanjutan */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-5">
           <ControlPanel
-            presets={presets}
-            presetsLoadError={presetsLoadError}
-            selectedPresetId={selectedPresetId}
-            activePreset={activePreset}
             validInput={validInput}
             drafts={drafts}
             errors={errors}
             distanceSync={distanceSync}
-            onSelectPreset={handleSelectPreset}
+            result={result}
             onSliderChange={handleSliderOrDistChange}
             onDraftChange={handleSliderDraftChange}
             onKedalamanPresetSelect={handleKedalamanPresetSelect}
-            onReset={handleReset}
           />
         </div>
 
@@ -574,11 +516,10 @@ export function SimulasiWorkspace({
                   aria-controls="panel-mode-peta"
                   tabIndex={activeMode === "peta" ? 0 : -1}
                   onClick={() => setActiveMode("peta")}
-                  className={`relative inline-flex items-center justify-center gap-2 min-h-[46px] px-3.5 sm:px-5 pt-2.5 pb-3 rounded-t-[14px] text-xs sm:text-sm border transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary-strong)] ${
-                    activeMode === "peta"
-                      ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] font-semibold border-[var(--color-border)] border-b-[var(--color-surface-raised)] z-10"
-                      : "bg-transparent text-[var(--color-text-secondary)] font-medium border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]/50 active:bg-[var(--color-surface-sunken)]/60"
-                  }`}
+                  className={`relative inline-flex items-center justify-center gap-2 min-h-[46px] px-3.5 sm:px-5 pt-2.5 pb-3 rounded-t-[14px] text-xs sm:text-sm border transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary-strong)] ${activeMode === "peta"
+                    ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] font-semibold border-[var(--color-border)] border-b-[var(--color-surface-raised)] z-10"
+                    : "bg-transparent text-[var(--color-text-secondary)] font-medium border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]/50 active:bg-[var(--color-surface-sunken)]/60"
+                    }`}
                 >
                   <Compass
                     className="w-4 h-4 shrink-0"
@@ -603,11 +544,10 @@ export function SimulasiWorkspace({
                   aria-controls="panel-mode-3d"
                   tabIndex={activeMode === "3d" ? 0 : -1}
                   onClick={() => setActiveMode("3d")}
-                  className={`relative inline-flex items-center justify-center gap-2 min-h-[46px] px-3.5 sm:px-5 pt-2.5 pb-3 rounded-t-[14px] text-xs sm:text-sm border transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary-strong)] ${
-                    activeMode === "3d"
-                      ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] font-semibold border-[var(--color-border)] border-b-[var(--color-surface-raised)] z-10"
-                      : "bg-transparent text-[var(--color-text-secondary)] font-medium border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]/50 active:bg-[var(--color-surface-sunken)]/60"
-                  }`}
+                  className={`relative inline-flex items-center justify-center gap-2 min-h-[46px] px-3.5 sm:px-5 pt-2.5 pb-3 rounded-t-[14px] text-xs sm:text-sm border transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary-strong)] ${activeMode === "3d"
+                    ? "bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] font-semibold border-[var(--color-border)] border-b-[var(--color-surface-raised)] z-10"
+                    : "bg-transparent text-[var(--color-text-secondary)] font-medium border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]/50 active:bg-[var(--color-surface-sunken)]/60"
+                    }`}
                 >
                   <Layers
                     className="w-4 h-4 shrink-0"
@@ -634,39 +574,45 @@ export function SimulasiWorkspace({
             </div>
 
             {/* Panggung mode aktif: default Peta dampak; Getaran 3D dimuat dinamis HANYA saat dibuka */}
-            {activeMode === "peta" ? (
-              <ImpactMapPanel
-                input={inputWithActualDistance}
-                result={result}
-                epicenter={epicenterPoint}
-                observer={observerPoint}
-                distanceSync={distanceSync}
-                onEpicenterMove={handleEpicenterMoveFromMap}
-                onObserverMove={handleObserverMoveFromMap}
-              />
-            ) : (
-              <Vibration3DPanel result={result} />
-            )}
+            <div key={activeMode} className="sigap-page-enter">
+              {activeMode === "peta" ? (
+                <ImpactMapPanel
+                  input={inputWithActualDistance}
+                  result={result}
+                  epicenter={epicenterPoint}
+                  observer={observerPoint}
+                  distanceSync={distanceSync}
+                  onEpicenterMove={handleEpicenterMoveFromMap}
+                  onObserverMove={handleObserverMoveFromMap}
+                />
+              ) : (
+                <Vibration3DPanel result={result} />
+              )}
+            </div>
           </div>
 
           {/* Detail lanjutan: tertutup secara default */}
-          <AdvancedDetailsPanel
-            inputWithActualDistance={inputWithActualDistance}
-            result={result}
-            activePreset={activePreset}
-            uiTipeLokasi={uiTipeLokasi}
-            drafts={drafts}
-            errors={errors}
-            observerDrafts={observerDrafts}
-            observerErrors={observerErrors}
-            onTipeLokasiChange={handleTipeLokasiChange}
-            onKedalamanDraftChange={handleKedalamanDraftChange}
-            onEpicenterCoordDraftChange={handleEpicenterCoordDraftChange}
-            onObserverCoordDraftChange={handleObserverCoordDraftChange}
-          />
+          <RevealOnScroll>
+            <AdvancedDetailsPanel
+              inputWithActualDistance={inputWithActualDistance}
+              result={result}
+              activePreset={activePreset}
+              uiTipeLokasi={uiTipeLokasi}
+              drafts={drafts}
+              errors={errors}
+              observerDrafts={observerDrafts}
+              observerErrors={observerErrors}
+              onTipeLokasiChange={handleTipeLokasiChange}
+              onKedalamanDraftChange={handleKedalamanDraftChange}
+              onEpicenterCoordDraftChange={handleEpicenterCoordDraftChange}
+              onObserverCoordDraftChange={handleObserverCoordDraftChange}
+            />
+          </RevealOnScroll>
 
           {/* Rekomendasi kesiapsiagaan & tautan langsung ke Chatbot */}
-          <SafetyAndFormulaSection input={inputWithActualDistance} result={result} />
+          <RevealOnScroll>
+            <SafetyAndFormulaSection input={inputWithActualDistance} result={result} />
+          </RevealOnScroll>
         </div>
       </div>
 

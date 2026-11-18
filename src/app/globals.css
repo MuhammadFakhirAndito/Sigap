@@ -37,6 +37,61 @@
   --transition-slow: 300ms cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* Skala intensitas panel simulasi: 6 kelas magnitudo / pita MMI. Dipakai untuk angka besar,
+   penanda, pita track, dan lingkaran peta (selalu disertai teks kelas), bukan untuk teks kecil.
+   Sengaja di :root, bukan @theme: Tailwind v4 membuang variabel @theme yang tidak dipakai kelas
+   utilitas, padahal token ini hanya dipakai lewat var() di style inline. */
+:root {
+  --color-intensity-1: #4D8B31;
+  --color-intensity-2: #A38400;
+  --color-intensity-3: #D97706;
+  --color-intensity-4: #DC2626;
+  --color-intensity-5: #A61B1B;
+  --color-intensity-6: #5B1010;
+}
+
+/* Lingkaran radius peta Leaflet: warna lewat CSS karena atribut SVG tidak membaca var(). */
+.sigap-circle-felt {
+  stroke: var(--color-intensity-2);
+  fill: var(--color-intensity-2);
+}
+
+.sigap-circle-damaging {
+  stroke: var(--color-intensity-4);
+  fill: var(--color-intensity-4);
+}
+
+.sigap-wave-felt {
+  stroke: var(--color-intensity-2);
+  fill: none;
+}
+
+.sigap-wave-damaging {
+  stroke: var(--color-intensity-4);
+  fill: none;
+}
+
+@keyframes sigapEpicenterPulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.85;
+  }
+
+  100% {
+    transform: scale(2.35);
+    opacity: 0;
+  }
+}
+
+.sigap-epicenter-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--color-intensity-4);
+  animation: sigapEpicenterPulse 2.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  pointer-events: none;
+}
+
 /* Animasi melayang organik */
 @keyframes floaty {
 
@@ -52,6 +107,42 @@
 
 .animate-floaty {
   animation: floaty 7s ease-in-out infinite;
+}
+
+/* Transisi halaman, kemunculan bertahap, & batang grafik */
+@keyframes sigapFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sigapBarGrow {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.sigap-page-enter {
+  animation: sigapFadeUp 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sigap-stagger-item {
+  animation: sigapFadeUp 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sigap-bar-grow {
+  transform-origin: bottom;
+  animation: sigapBarGrow 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Angka tabular (wajib untuk data numerik seismik) */
@@ -90,6 +181,10 @@ textarea:disabled,
 }
 
 /* Kanvas dasar */
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   background-color: var(--color-background);
@@ -105,13 +200,15 @@ body {
   appearance: none;
   background: transparent;
   width: 100%;
-  height: 44px;
+  height: 48px;
   margin: 0;
   cursor: pointer;
 }
 
+/* Thumb 28px: titik tengahnya bergerak dari 14px sampai (lebar - 14px), dan lapisan dekoratif
+   track di ControlPanel diberi inset 14px yang sama agar posisinya persis. */
 .simulasi-range::-webkit-slider-runnable-track {
-  height: 8px;
+  height: 12px;
   background: transparent;
   border-radius: 9999px;
 }
@@ -119,32 +216,57 @@ body {
 .simulasi-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
   border-radius: 9999px;
   background: var(--color-surface-raised);
-  border: 2px solid var(--color-cta);
-  margin-top: -6px;
-  transition: transform 150ms cubic-bezier(0.2, 0, 0, 1);
+  border: 4px solid var(--range-accent, var(--color-cta));
+  margin-top: -8px;
+  transition: transform 150ms cubic-bezier(0.2, 0, 0, 1), border-color 200ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .simulasi-range:hover::-webkit-slider-thumb {
-  transform: scale(1.1);
+  transform: scale(1.08);
+}
+
+.simulasi-range:active::-webkit-slider-thumb {
+  transform: scale(1.14);
 }
 
 .simulasi-range::-moz-range-track {
-  height: 8px;
+  height: 12px;
   background: transparent;
   border-radius: 9999px;
 }
 
 .simulasi-range::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
   border-radius: 9999px;
   background: var(--color-surface-raised);
-  border: 2px solid var(--color-cta);
-  transition: transform 150ms cubic-bezier(0.2, 0, 0, 1);
+  border: 4px solid var(--range-accent, var(--color-cta));
+  transition: transform 150ms cubic-bezier(0.2, 0, 0, 1), border-color 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.simulasi-range:hover::-moz-range-thumb {
+  transform: scale(1.08);
+}
+
+/* Fokus keyboard dipindah dari kotak input ke thumb (ring 2px primary-strong, offset 2px). */
+.simulasi-range:focus-visible {
+  outline: none;
+}
+
+.simulasi-range:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--color-primary-strong);
+  outline-offset: 2px;
+}
+
+.simulasi-range:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--color-primary-strong);
+  outline-offset: 2px;
 }
 
 button:not(:disabled):active,

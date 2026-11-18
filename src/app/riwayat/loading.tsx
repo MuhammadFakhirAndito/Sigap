@@ -14,7 +14,10 @@ export default function RiwayatLoading() {
               <Skeleton className="h-10 w-64 rounded-xl bg-[var(--color-surface-raised)]" />
               <Skeleton className="h-4 w-96 max-w-full rounded-lg bg-[var(--color-surface-raised)]" />
             </div>
-            <Skeleton className="h-14 w-full rounded-full bg-[var(--color-surface-raised)]" />
+            <div className="space-y-4">
+              <Skeleton className="h-14 w-full rounded-lg bg-[var(--color-surface-raised)]" />
+              <Skeleton className="h-11 w-2/3 rounded-lg bg-[var(--color-surface-raised)]" />
+            </div>
           </div>
         </section>
 

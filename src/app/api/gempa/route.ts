@@ -1,6 +1,24 @@
 import { prisma } from "@/lib/prisma";
+import { fetchBmkgAutogempa } from "@/lib/bmkg/client";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+
+function mapNormalizedToApiRow(q: NonNullable<Awaited<ReturnType<typeof fetchBmkgAutogempa>>>) {
+  return {
+    id: q.bmkgKey,
+    bmkgKey: q.bmkgKey,
+    waktuUtc: q.waktuUtc,
+    lat: q.lat,
+    lon: q.lon,
+    magnitudo: q.magnitudo,
+    kedalamanKm: q.kedalamanKm,
+    wilayah: q.wilayah,
+    potensiTeks: q.potensiTeks,
+    statusTsunami: q.statusTsunami,
+    dirasakan: q.dirasakan ?? null,
+    shakemapUrl: q.shakemapUrl ?? null,
+  };
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -74,6 +92,25 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    const hasFilters = Boolean(mag || dari || sampai || (wilayah && wilayah.trim().length > 0) || tipe);
+    if (data.length === 0 && hal === 1 && !hasFilters) {
+      const auto = await fetchBmkgAutogempa();
+      if (auto) {
+        return NextResponse.json({
+          success: true,
+          data: [mapNormalizedToApiRow(auto)],
+          pagination: {
+            total: 1,
+            hal: 1,
+            totalHalaman: 1,
+            limit,
+          },
+          lastSyncTime: auto.waktuUtc,
+          isBmkgDegraded: latestSync?.status === "ERROR",
+        });
+      }
+    }
+
     const totalHalaman = Math.ceil(total / limit) || 1;
 
     return NextResponse.json({
@@ -90,6 +127,26 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: unknown) {
     console.error("Error reading gempa from DB:", err);
+    const hasFilters = Boolean(mag || dari || sampai || (wilayah && wilayah.trim().length > 0) || tipe);
+    if (hal === 1 && !hasFilters) {
+      const auto = await fetchBmkgAutogempa();
+      if (auto) {
+        return NextResponse.json({
+          success: true,
+          degraded: true,
+          data: [mapNormalizedToApiRow(auto)],
+          pagination: {
+            total: 1,
+            hal: 1,
+            totalHalaman: 1,
+            limit,
+          },
+          lastSyncTime: auto.waktuUtc,
+          isBmkgDegraded: false,
+        });
+      }
+    }
+
     return NextResponse.json(
       {
         success: false,

@@ -7,14 +7,16 @@ import {
   getSafeExternalHref,
   getUrlHostname,
 } from "@/lib/edukasi";
+import { NewsThumbnailImg } from "@/components/edukasi/NewsThumbnailImg";
 
 export interface NewsPreviewCardProps {
   judul: string;
   sumber: string;
+  domain?: string | null;
   url: string;
   tanggalTerbit: Date;
   ringkasan?: string | null;
-  thumbnailSrc?: string;
+  thumbnailSrc?: string | null;
   thumbnailAlt?: string;
 }
 
@@ -25,6 +27,7 @@ export interface NewsPreviewCardProps {
 export function NewsPreviewCard({
   judul,
   sumber,
+  domain,
   url,
   tanggalTerbit,
   ringkasan,
@@ -33,9 +36,9 @@ export function NewsPreviewCard({
 }: NewsPreviewCardProps) {
   const safeHref = getSafeExternalHref(url);
   const publisher = getNewsPublisherSpec(sumber);
-  const hostname = getUrlHostname(url);
+  const hostname = domain || getUrlHostname(url);
   const visual = getNewsThumbnailVisual(judul);
-  const imgSrc = thumbnailSrc ?? visual.src;
+  const imgSrc = thumbnailSrc || visual.src;
   const imgAlt = thumbnailAlt ?? visual.alt;
 
   return (
@@ -91,8 +94,9 @@ export function NewsPreviewCard({
         </div>
 
         <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 overflow-hidden rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface)] self-center">
-          <img
+          <NewsThumbnailImg
             src={imgSrc}
+            fallbackSrc={visual.src}
             alt={imgAlt}
             className="w-full h-full object-cover"
           />

@@ -105,7 +105,11 @@ export function SafetyAndFormulaSection({ input, result }: SafetyAndFormulaSecti
   });
 
   return (
-    <section aria-label="Rekomendasi keselamatan dan tautan chatbot" className="bg-[var(--color-surface)] rounded-[28px] p-6 space-y-5">
+    <section
+      id="rekomendasi-keselamatan"
+      aria-label="Rekomendasi keselamatan dan tautan chatbot"
+      className="scroll-mt-6 bg-[var(--color-surface)] rounded-[28px] p-6 space-y-5"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">

@@ -92,6 +92,36 @@ export function getNewsPublisherSpec(sumber: string): PublisherBadgeSpec {
       badgeClassName: "bg-[var(--color-cta)] text-[var(--color-on-cta)]",
     };
   }
+  if (normalized.includes("kompas")) {
+    return {
+      initials: "KM",
+      badgeClassName: "bg-[var(--color-cta)] text-[var(--color-on-cta)]",
+    };
+  }
+  if (normalized.includes("detik")) {
+    return {
+      initials: "DT",
+      badgeClassName: "bg-[var(--color-cta)] text-[var(--color-on-cta)]",
+    };
+  }
+  if (normalized.includes("antara")) {
+    return {
+      initials: "AN",
+      badgeClassName: "bg-[var(--color-primary-strong)] text-[var(--color-on-cta)]",
+    };
+  }
+  if (normalized.includes("tempo")) {
+    return {
+      initials: "TM",
+      badgeClassName: "bg-[var(--color-error)] text-[var(--color-on-cta)]",
+    };
+  }
+  if (normalized.includes("bmkg")) {
+    return {
+      initials: "BMKG",
+      badgeClassName: "bg-[var(--color-primary-strong)] text-[var(--color-on-cta)]",
+    };
+  }
   const letters = sumber
     .trim()
     .split(/\s+/)
@@ -120,27 +150,27 @@ export interface NewsThumbnailVisual {
 
 export function getNewsThumbnailVisual(judul: string): NewsThumbnailVisual {
   const lower = judul.toLowerCase();
-  if (lower.includes("disiapkan") || lower.includes("siaga megathrust guncang")) {
+  if (lower.includes("disiapkan") || lower.includes("siaga") || lower.includes("mitigasi")) {
     return {
       src: "/images/berita-siaga-megathrust.jpg",
-      alt: "Tas siaga bencana, air minum kemasan, senter engkol, dan kotak P3K tersusun rapi di dekat pintu rumah",
+      alt: "Perlengkapan tas siaga bencana berupa ransel darurat, kotak P3K, senter, power bank, peluit, air minum, dan dokumen di atas meja kayu",
     };
   }
-  if (lower.includes("13 zona") || lower.includes("ancaman")) {
+  if (lower.includes("13 zona") || lower.includes("ancaman") || lower.includes("zona") || lower.includes("megathrust")) {
     return {
       src: "/images/berita-zona-megathrust.jpg",
-      alt: "Maket relief geologi kepulauan Indonesia dan palung zona subduksi di atas batu travertine",
+      alt: "Layar pemantauan geofisika di pusat observasi seismik menampilkan peta batimetri dan garis zona subduksi kepulauan Indonesia",
     };
   }
-  if (lower.includes("tsunami") || lower.includes("penyebab ri")) {
+  if (lower.includes("tsunami") || lower.includes("pantai") || lower.includes("pesisir")) {
     return {
       src: "/images/berita-rawan-tsunami.jpg",
-      alt: "Model penampang pesisir hijau dan paparan samudra berstrata batuan di atas batu travertine",
+      alt: "Garis pantai Indonesia menghadap Samudra Hindia dengan menara sirene peringatan tsunami di dekat jalan evakuasi menuju perbukitan hijau",
     };
   }
   return {
     src: "/images/berita-tiga-lempeng.jpg",
-    alt: "Model tiga lempeng tektonik berlapis batuan yang saling bertemu di atas batu travertine",
+    alt: "Foto udara tebing sesar tektonik yang membelah lembah hijau Indonesia dengan jajaran pegunungan vulkanik di kejauhan",
   };
 }
 

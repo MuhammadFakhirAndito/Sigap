@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { HistoryRow, GempaItem } from "@/components/ui/HistoryRow";
 import { RiwayatFilter } from "@/components/ui/RiwayatFilter";
 import { RiwayatChart } from "@/components/ui/RiwayatChart";
+import { RevealOnScroll } from "@/components/edukasi/RevealOnScroll";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import {
@@ -292,7 +293,7 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
+            <div className="mt-8">
               <RiwayatFilter
                 embedded
                 initialMag={mag}
@@ -307,12 +308,14 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
         <main className="flex-1 flex flex-col space-y-6 sm:space-y-8">
           {/* Ringkasan & Grafik Jumlah Gempa per Hari */}
           {!isDbError && total > 0 && (
-            <RiwayatChart
-              series={dailySeries}
-              total={total}
-              maxMagnitudo={maxMagnitudo}
-              rentangText={rentangText}
-            />
+            <RevealOnScroll>
+              <RiwayatChart
+                series={dailySeries}
+                total={total}
+                maxMagnitudo={maxMagnitudo}
+                rentangText={rentangText}
+              />
+            </RevealOnScroll>
           )}
 
           {/* Daftar Riwayat Gempa */}
@@ -341,15 +344,17 @@ export default async function RiwayatPage({ searchParams }: RiwayatPageProps) {
                 </Link>
               </div>
             ) : (
-              <div
-                role="feed"
-                aria-label="Daftar gempa"
-                className="space-y-2.5 sm:space-y-3"
-              >
-                {data.map((gempa) => (
-                  <HistoryRow key={gempa.id} gempa={gempa} />
-                ))}
-              </div>
+              <RevealOnScroll>
+                <div
+                  role="feed"
+                  aria-label="Daftar gempa"
+                  className="space-y-2.5 sm:space-y-3"
+                >
+                  {data.map((gempa) => (
+                    <HistoryRow key={gempa.id} gempa={gempa} />
+                  ))}
+                </div>
+              </RevealOnScroll>
             )}
 
             {/* Paginasi 15 Baris/Halaman (Prev/Next + Nomor Ringkas >= 44px) */}

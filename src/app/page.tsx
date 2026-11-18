@@ -11,6 +11,9 @@ import { HeroScrollRock } from "@/components/beranda/HeroScrollRock";
 import { EduScrollDeck } from "@/components/beranda/EduScrollDeck";
 import { ScenarioOverlayCard } from "@/components/beranda/ScenarioOverlayCard";
 import { NewsPreviewCard } from "@/components/beranda/NewsPreviewCard";
+import { HeroQuickToolbar } from "@/components/beranda/HeroQuickToolbar";
+import { RevealOnScroll } from "@/components/edukasi/RevealOnScroll";
+import { getLatestEarthquakeNews, type DynamicBeritaItem } from "@/lib/news-rss";
 import { prisma } from "@/lib/prisma";
 import { NormalizedGempa, StatusTsunamiType } from "@/types/bmkg";
 import type { Prisma } from "@prisma/client";
@@ -18,14 +21,10 @@ import {
   AlertTriangle,
   ArrowUpRight,
   CheckCircle2,
-  Globe,
   HelpCircle,
   MessageSquareText,
   Mountain,
   Newspaper,
-  Radio,
-  Send,
-  Share2,
   Waves,
 } from "lucide-react";
 
@@ -106,7 +105,6 @@ function getModuleVisual(slug: string, kategori: string): ModuleVisual {
 
 type ArtikelPreview = Prisma.ArtikelGetPayload<{ include: { sumber: true } }>;
 type SkenarioPreview = Prisma.SkenarioSimulasiGetPayload<Record<string, never>>;
-type BeritaPreview = Prisma.BeritaGetPayload<Record<string, never>>;
 
 export default async function HomePage() {
   let latestQuake: NormalizedGempa | null = await fetchBmkgAutogempa();
@@ -114,7 +112,7 @@ export default async function HomePage() {
   let lastSyncTime: Date | null = null;
   let skenarioList: SkenarioPreview[] = [];
   let artikelList: ArtikelPreview[] = [];
-  let beritaList: BeritaPreview[] = [];
+  let beritaList: DynamicBeritaItem[] = [];
   let totalGempa = 0;
   let totalSkenario = 0;
   let totalArtikel = 0;
@@ -147,9 +145,11 @@ export default async function HomePage() {
     }
   }
 
-  // 2. Ambil catatan sinkronisasi terakhir, statistik DB, skenario simulasi, berita, & 3 modul edukasi inti
+  // 2. Ambil berita otomatis (Google News RSS + fallback) dan data DB secara paralel
+  const newsPromise = getLatestEarthquakeNews().catch(() => []);
+
   try {
-    const [syncLog, skenarios, allArtikels, beritas, countGempa, countSkenario] =
+    const [syncLog, skenarios, allArtikels, countGempa, countSkenario] =
       await Promise.all([
         prisma.syncLog.findFirst({
           where: { status: "OK" },
@@ -163,16 +163,11 @@ export default async function HomePage() {
           orderBy: [{ urutan: "asc" }, { updatedAt: "desc" }],
           include: { sumber: true },
         }),
-        prisma.berita.findMany({
-          orderBy: { tanggalTerbit: "desc" },
-          take: 3,
-        }),
         prisma.gempa.count(),
         prisma.skenarioSimulasi.count(),
       ]);
     if (syncLog) lastSyncTime = syncLog.createdAt;
     skenarioList = skenarios;
-    beritaList = beritas;
 
     // Pilih maksimal 3 modul representatif (Pengertian, Mitigasi, Penanggulangan) lalu lengkapi bila kurang
     const preferredCategories = ["PENGERTIAN", "MITIGASI", "PENANGGULANGAN", "PROSES"] as const;
@@ -193,9 +188,10 @@ export default async function HomePage() {
   } catch {
     skenarioList = [];
     artikelList = [];
-    beritaList = [];
     isDbDegraded = true;
   }
+
+  beritaList = (await newsPromise).slice(0, 3);
 
   const hrefSimulasiLatest = latestQuake
     ? `/simulasi?m=${latestQuake.magnitudo}&d=${latestQuake.kedalamanKm}&lat=${latestQuake.lat}&lon=${latestQuake.lon}&wilayah=${encodeURIComponent(latestQuake.wilayah)}`
@@ -207,6 +203,10 @@ export default async function HomePage() {
       latestQuake.dirasakan.trim() !== "-"
       ? latestQuake.dirasakan.trim()
       : "Tidak tercatat dirasakan";
+
+  const shareSummary = latestQuake
+    ? `Gempa M ${formatMagnitude(latestQuake.magnitudo)} di ${latestQuake.wilayah} (${formatWibDate(latestQuake.waktuUtc)}) — SIGAP Gempa`
+    : "SIGAP Gempa: Informasi gempa BMKG & edukasi mitigasi terukur";
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)] overflow-x-clip">
@@ -220,39 +220,8 @@ export default async function HomePage() {
           {/* lg: rasio tetap agar posisi batu (persen) konsisten di semua lebar desktop */}
           <div className="relative w-full lg:aspect-[15/8] rounded-b-[40px] md:rounded-b-[48px] bg-[var(--color-surface)] border-b border-x border-[var(--color-border)]/60 px-6 sm:px-9 lg:px-11 pt-4 sm:pt-6 lg:pt-10 pb-6 lg:pb-0 flex flex-col lg:block">
 
-            {/* TOOLBAR KIRI: SOSIAL + BAHASA (VERTIKAL) */}
-            <div className="hidden lg:flex flex-col gap-10 absolute top-[6%] left-11 z-30">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="Instagram SIGAP"
-                  className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] flex items-center justify-center hover:opacity-85 transition-opacity"
-                >
-                  <Radio className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Kanal Telegram SIGAP"
-                  className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] flex items-center justify-center hover:opacity-85 transition-opacity"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Bagikan informasi"
-                  className="w-7 h-7 rounded-full bg-[var(--color-cta)] text-[var(--color-on-cta)] flex items-center justify-center hover:opacity-85 transition-opacity"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <div className="flex flex-col items-start gap-2 pl-1 text-[12px] leading-none">
-                <span className="w-6 h-6 rounded-full bg-[var(--color-surface-raised)] flex items-center justify-center">
-                  <Globe className="w-3.5 h-3.5 text-[var(--color-text-primary)]" />
-                </span>
-                <span className="pt-1 font-medium text-[var(--color-text-primary)]">ID</span>
-                <span className="text-[var(--color-text-secondary)]">EN</span>
-              </div>
-            </div>
+            {/* TOOLBAR KIRI: AKSI CEPAT + BAHASA */}
+            <HeroQuickToolbar shareSummary={shareSummary} />
 
             {/* KOLOM KANAN: HEADLINE + CTA */}
             <div className="relative z-30 lg:ml-auto lg:w-fit">
@@ -729,10 +698,11 @@ export default async function HomePage() {
         </section>
 
         {/* ================= SECTION 4: SKENARIO SIMULASI SEJARAH ================= */}
-        <section
-          aria-labelledby="skenario-heading"
-          className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-8 lg:p-10"
-        >
+        <RevealOnScroll>
+          <section
+            aria-labelledby="skenario-heading"
+            className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-8 lg:p-10"
+          >
           <div className="flex flex-wrap items-end justify-between gap-4 mb-6 sm:mb-7">
             <div className="space-y-1.5 max-w-[54ch]">
               <p className="text-xs font-medium text-[var(--color-primary-strong)] tnum">
@@ -776,26 +746,26 @@ export default async function HomePage() {
                 const media = normalizedName.includes("aceh")
                   ? {
                     url: "/images/skenario-aceh.jpg",
-                    alt: "Lapisan batuan tektonik terangkat di bawah perairan jernih pesisir Aceh menghadap Samudra Hindia",
+                    alt: "Foto arsip Masjid Rahmatullah yang tetap berdiri di tengah kawasan pesisir Lampuuk, Aceh yang luluh lantak akibat tsunami 26 Desember 2004 (U.S. Navy / Wikimedia Commons, Public Domain)",
                   }
                   : normalizedName.includes("nias")
                     ? {
                       url: "/images/skenario-nias.jpg",
-                      alt: "Instrumen sensor seismometer terpasang di atas batuan vulkanik berlumut menghadap pesisir Nias",
+                      alt: "Foto arsip warga berdiri di antara puing rumah kayu yang runtuh akibat gempa Nias 28 Maret 2005 (U.S. Navy / Wikimedia Commons, Public Domain)",
                     }
                     : normalizedName.includes("yogyakarta") || normalizedName.includes("bantul")
                       ? {
                         url: "/images/skenario-yogyakarta.jpg",
-                        alt: "Singkapan patahan sesar geologi kerak dangkal dengan lapisan batuan miring di perbukitan hijau",
+                        alt: "Foto arsip kerusakan permukiman bata pascagempa Yogyakarta 27 Mei 2006 (Foto Muhammad Bundhowi, DFAT / Wikimedia Commons, CC BY 2.0)",
                       }
                       : sk.tipeLokasi === "LAUT"
                         ? {
                           url: "/images/skenario-aceh.jpg",
-                          alt: `Ilustrasi wilayah pesisir untuk skenario ${sk.nama}`,
+                          alt: `Foto arsip dampak gempa pesisir untuk skenario ${sk.nama} (Wikimedia Commons)`,
                         }
                         : {
                           url: "/images/skenario-yogyakarta.jpg",
-                          alt: `Ilustrasi wilayah daratan untuk skenario ${sk.nama}`,
+                          alt: `Foto arsip dampak gempa darat untuk skenario ${sk.nama} (Wikimedia Commons)`,
                         };
 
                 const depthText = String(sk.kedalamanKm).replace(".", ",");
@@ -828,13 +798,15 @@ export default async function HomePage() {
               })}
             </div>
           )}
-        </section>
+          </section>
+        </RevealOnScroll>
 
         {/* ================= SECTION 5: BERITA TERKINI & CHATBOT MITIGASI ================= */}
-        <section
-          aria-labelledby="berita-chatbot-heading"
-          className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-8"
-        >
+        <RevealOnScroll>
+          <section
+            aria-labelledby="berita-chatbot-heading"
+            className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-8"
+          >
           <div className="flex flex-wrap items-end justify-between gap-4 pb-6 border-b border-[var(--color-border)]/80">
             <div className="space-y-1.5 max-w-[54ch]">
               <p className="text-xs font-medium text-[var(--color-primary-strong)] tnum">
@@ -869,7 +841,7 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-            {/* Kolom kiri: metadata berita dari database */}
+            {/* Kolom kiri: liputan media rujukan otomatis */}
             <div className="lg:col-span-7 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="inline-flex items-center gap-2 text-xs font-medium text-[var(--color-text-secondary)]">
@@ -884,16 +856,9 @@ export default async function HomePage() {
                 </span>
               </div>
 
-              {isDbDegraded && beritaList.length === 0 ? (
+              {beritaList.length === 0 ? (
                 <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-                  <ErrorState
-                    title="Daftar berita belum dapat dimuat"
-                    message="Koneksi database lokal sedang terganggu saat mengambil metadata berita."
-                  />
-                </div>
-              ) : beritaList.length === 0 ? (
-                <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-                  <EmptyState message="Belum ada metadata berita tersimpan di database." />
+                  <EmptyState message="Berita belum tersedia." />
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -902,9 +867,11 @@ export default async function HomePage() {
                       key={berita.id}
                       judul={berita.judul}
                       sumber={berita.sumber}
+                      domain={berita.domain}
                       url={berita.url}
                       tanggalTerbit={berita.tanggalTerbit}
                       ringkasan={berita.ringkasan}
+                      thumbnailSrc={berita.thumbnailUrl}
                     />
                   ))}
                 </div>
@@ -970,7 +937,8 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
-        </section>
+          </section>
+        </RevealOnScroll>
 
       </div>
 

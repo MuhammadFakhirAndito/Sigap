@@ -58,7 +58,7 @@ export function HistoryRow({ gempa }: { gempa: GempaItem }) {
   const ts = tsunamiStyle[gempa.statusTsunami] ?? tsunamiStyle.TIDAK_DINYATAKAN;
 
   return (
-    <article className="group grid grid-cols-[64px_1fr] md:grid-cols-[72px_minmax(0,1fr)_104px_180px_auto] items-center gap-x-4 md:gap-x-6 gap-y-3 rounded-[24px] border border-[var(--color-border)]/75 bg-[var(--color-surface-raised)] px-4 py-4 md:px-5 md:py-4 transition-colors duration-200 hover:border-[var(--color-border-strong)]">
+    <article className="group grid grid-cols-[64px_1fr] md:grid-cols-[72px_minmax(0,1fr)_104px_180px_auto] items-center gap-x-4 md:gap-x-6 gap-y-3 rounded-[24px] border border-[var(--color-border)]/75 bg-[var(--color-surface-raised)] px-4 py-4 md:px-5 md:py-4 transition-[border-color,transform,background-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] motion-reduce:hover:translate-y-0">
       <div className="row-span-2 md:row-span-1 self-start md:self-center flex h-14 w-16 md:h-[56px] md:w-[72px] items-center justify-center rounded-[16px] bg-[var(--color-cta)]">
         <p className="text-xl md:text-2xl font-semibold leading-none tracking-tight text-[var(--color-on-cta)] tnum">
           <span className="sr-only">Magnitudo </span>

@@ -4,8 +4,11 @@ import type { NormalizedGempa } from '@/types/bmkg';
 
 export interface QuakeSummaryItem {
   waktuWib: string;
+  waktuUtcIso?: string;
   magnitudo: number;
   kedalamanKm: number;
+  lat?: number;
+  lon?: number;
   koordinat: string;
   wilayah: string;
   potensiTeks: string;
@@ -52,8 +55,11 @@ function toQuakeSummary(item: {
 }): QuakeSummaryItem {
   return {
     waktuWib: formatWibDateTime(item.waktuUtc),
+    waktuUtcIso: item.waktuUtc.toISOString(),
     magnitudo: item.magnitudo,
     kedalamanKm: item.kedalamanKm,
+    lat: item.lat,
+    lon: item.lon,
     koordinat: formatKoordinatLsBt(item.lat, item.lon),
     wilayah: item.wilayah,
     potensiTeks: item.potensiTeks,

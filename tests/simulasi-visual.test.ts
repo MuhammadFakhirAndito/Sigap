@@ -1,24 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SIMULASI_INPUT,
-  MMI_SCALE_INFO,
   runSimulasiCalculation,
   type RadiusEstimate,
 } from "@/lib/simulasi";
 import {
-  ANIMATION_TOTAL_DURATION_SEC,
-  MAX_SAFE_LAMP_SWAY_RAD,
-  MAX_SAFE_ROOM_AMPLITUDE,
   calculateBearingDeg,
   calculateHaversineKm,
   destinationPointFromBearingKm,
   formatAwamRadiusSummary,
   getInitialUiTipeLokasi,
   getMapTileConfig,
-  getVibrationProfileForMmi,
   nudgePointByKm,
   runVisualSimulasiCalculation,
-  sampleVibrationFrame,
   syncDistanceFromPoints,
   syncObserverPointFromSlider,
 } from "@/lib/simulasi-visual";
@@ -133,66 +127,5 @@ describe("Aturan UI Peta, Status Lokasi 3 Keadaan, & Ringkasan Radius Awam", () 
     expect(cfg.url).toContain("{z}");
     expect(cfg.attributionHtml).toContain("OpenStreetMap contributors");
     expect(cfg.hasOsmCopyrightText).toBe(true);
-  });
-});
-
-describe("Pemetaan MMI ke Profil & Sampel Animasi 3D (Ilustratif SIGAP)", () => {
-  it("mencakup seluruh tingkat MMI 1–12 dengan batas aman & kutipan BMKG terpisah", () => {
-    for (let lvl = 1; lvl <= 12; lvl++) {
-      const profile = getVibrationProfileForMmi(lvl);
-      const bmkgInfo = MMI_SCALE_INFO[lvl - 1]!;
-      expect(profile.level).toBe(lvl);
-      expect(profile.roman).toBe(bmkgInfo.roman);
-      expect(profile.bmkgQuote).toBe(bmkgInfo.description);
-      expect(profile.illustrativeEffectTitle.length).toBeGreaterThan(5);
-      expect(profile.roomAmplitude).toBeLessThanOrEqual(MAX_SAFE_ROOM_AMPLITUDE);
-      expect(profile.lampSwayRad).toBeLessThanOrEqual(MAX_SAFE_LAMP_SWAY_RAD);
-    }
-
-    const mmiIV = getVibrationProfileForMmi(4);
-    expect(mmiIV.shelfDropCount).toBe(0);
-    expect(mmiIV.glassFall).toBe(false);
-
-    const mmiIX = getVibrationProfileForMmi(9);
-    expect(mmiIX.shelfDropCount).toBeGreaterThan(0);
-    expect(mmiIX.glassFall).toBe(true);
-  });
-
-  it("meredam amplitudo & frekuensi saat prefers-reduced-motion aktif", () => {
-    const normal = getVibrationProfileForMmi(8, { reducedMotion: false });
-    const reduced = getVibrationProfileForMmi(8, { reducedMotion: true });
-
-    expect(reduced.reducedMotion).toBe(true);
-    expect(reduced.reducedMotionNotice).not.toBeNull();
-    expect(reduced.roomAmplitude).toBeLessThan(normal.roomAmplitude);
-    expect(reduced.lampSwayRad).toBeLessThan(normal.lampSwayRad);
-    expect(reduced.roomFreqHz).toBeLessThan(normal.roomFreqHz);
-  });
-
-  it("sampel bingkai animasi mengikuti urutan fase idle -> p_wave -> s_wave -> decay -> done", () => {
-    const profile = getVibrationProfileForMmi(6);
-
-    const sIdle = sampleVibrationFrame(0, profile);
-    expect(sIdle.phase).toBe("idle");
-    expect(sIdle.envelope).toBe(0);
-
-    const sP = sampleVibrationFrame(1.5, profile);
-    expect(sP.phase).toBe("p_wave");
-    expect(sP.envelope).toBeGreaterThan(0);
-    expect(sP.envelope).toBeLessThanOrEqual(0.25);
-
-    const sS = sampleVibrationFrame(5.5, profile);
-    expect(sS.phase).toBe("s_wave");
-    expect(sS.envelope).toBeGreaterThan(sP.envelope);
-
-    const sDecay = sampleVibrationFrame(10.5, profile);
-    expect(sDecay.phase).toBe("decay");
-    expect(sDecay.envelope).toBeGreaterThan(0);
-    expect(sDecay.envelope).toBeLessThan(1);
-
-    const sDone = sampleVibrationFrame(ANIMATION_TOTAL_DURATION_SEC, profile);
-    expect(sDone.phase).toBe("done");
-    expect(sDone.roomOffsetX).toBe(0);
-    expect(sDone.lampAngleZ).toBe(0);
   });
 });

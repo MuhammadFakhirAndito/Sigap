@@ -24,8 +24,9 @@ function createEpicenterIcon(): L.DivIcon {
     className: "sigap-map-divicon",
     iconSize: [28, 28],
     iconAnchor: [14, 14],
-    html: `<span style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;" aria-hidden="true">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    html: `<span style="position:relative;display:flex;align-items:center;justify-content:center;width:28px;height:28px;" aria-hidden="true">
+      <span class="sigap-epicenter-ring"></span>
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:1;">
         <circle cx="14" cy="14" r="12" fill="#FFFDFB" stroke="#1A1613" stroke-width="2.5"/>
         <circle cx="14" cy="14" r="5" fill="#1A1613"/>
       </svg>
@@ -59,6 +60,8 @@ export default function LeafletMapCanvas({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layersGroupRef = useRef<L.LayerGroup | null>(null);
+  const waveGroupRef = useRef<L.LayerGroup | null>(null);
+  const prevRadiiRef = useRef<{ felt: number; damaging: number }>({ felt: 0, damaging: 0 });
   const epicenterMarkerRef = useRef<L.Marker | null>(null);
   const observerMarkerRef = useRef<L.Marker | null>(null);
 
@@ -68,6 +71,7 @@ export default function LeafletMapCanvas({
   onEpicenterMoveRef.current = onEpicenterMove;
   const onObserverMoveRef = useRef(onObserverMove);
   onObserverMoveRef.current = onObserverMove;
+  const skipNextAutoFitRef = useRef(false);
 
   const [tileFailed, setTileFailed] = useState(false);
   const [tileLoadedOnce, setTileLoadedOnce] = useState(false);
@@ -131,6 +135,8 @@ export default function LeafletMapCanvas({
 
     const circlesGroup = L.layerGroup().addTo(map);
     layersGroupRef.current = circlesGroup;
+    const waveGroup = L.layerGroup().addTo(map);
+    waveGroupRef.current = waveGroup;
 
     const epicMarker = L.marker([epicenter.lat, epicenter.lon], {
       draggable: true,
@@ -141,6 +147,7 @@ export default function LeafletMapCanvas({
     }).addTo(map);
     epicMarker.bindTooltip("Pusat gempa", { direction: "top", offset: [0, -14] });
     epicMarker.on("dragend", () => {
+      skipNextAutoFitRef.current = true;
       const pos = epicMarker.getLatLng();
       onEpicenterMoveRef.current({ lat: pos.lat, lon: pos.lng });
     });
@@ -155,26 +162,65 @@ export default function LeafletMapCanvas({
     }).addTo(map);
     obsMarker.bindTooltip("Anda", { direction: "top", offset: [0, -28] });
     obsMarker.on("dragend", () => {
+      skipNextAutoFitRef.current = true;
       const pos = obsMarker.getLatLng();
       onObserverMoveRef.current({ lat: pos.lat, lon: pos.lng });
     });
     observerMarkerRef.current = obsMarker;
 
-    map.on("click", (ev: L.LeafletMouseEvent) => {
-      const point: GeoPoint = { lat: ev.latlng.lat, lon: ev.latlng.lng };
-      if (clickTargetRef.current === "epicenter") {
-        onEpicenterMoveRef.current(point);
-      } else {
-        onObserverMoveRef.current(point);
+    // Tunda klik tunggal agar double-click / double-tap (zoom) tidak ikut memindahkan penanda lokasi.
+    let clickDelayTimer: number | null = null;
+    const clearPendingClick = () => {
+      if (clickDelayTimer !== null) {
+        window.clearTimeout(clickDelayTimer);
+        clickDelayTimer = null;
       }
+    };
+
+    map.on("click", (ev: L.LeafletMouseEvent) => {
+      const originalEv = ev.originalEvent as MouseEvent | undefined;
+      if (originalEv && originalEv.detail > 1) {
+        clearPendingClick();
+        return;
+      }
+
+      clearPendingClick();
+      const point: GeoPoint = { lat: ev.latlng.lat, lon: ev.latlng.lng };
+      clickDelayTimer = window.setTimeout(() => {
+        clickDelayTimer = null;
+        skipNextAutoFitRef.current = true;
+        if (clickTargetRef.current === "epicenter") {
+          onEpicenterMoveRef.current(point);
+        } else {
+          onObserverMoveRef.current(point);
+        }
+      }, 280);
     });
+
+    map.on("dblclick zoomstart dragstart", clearPendingClick);
 
     mapRef.current = map;
 
+    const timer = window.setTimeout(() => {
+      map.invalidateSize();
+    }, 120);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        map.invalidateSize();
+      });
+      resizeObserver.observe(el);
+    }
+
     return () => {
+      clearPendingClick();
+      window.clearTimeout(timer);
+      resizeObserver?.disconnect();
       map.remove();
       mapRef.current = null;
       layersGroupRef.current = null;
+      waveGroupRef.current = null;
       epicenterMarkerRef.current = null;
       observerMarkerRef.current = null;
     };
@@ -249,55 +295,158 @@ export default function LeafletMapCanvas({
     });
   };
 
-  // Sinkronisasi marker, lingkaran dampak netral, dan fitBounds otomatis.
+  // Sinkronisasi marker, lingkaran dampak, transisi radius halus (300 ms), & gelombang seismik geografis.
   useEffect(() => {
     const map = mapRef.current;
     const circlesGroup = layersGroupRef.current;
+    const waveGroup = waveGroupRef.current;
     const epicMarker = epicenterMarkerRef.current;
     const obsMarker = observerMarkerRef.current;
-    if (!map || !circlesGroup || !epicMarker || !obsMarker) return;
+    if (!map || !circlesGroup || !waveGroup || !epicMarker || !obsMarker) return;
 
     epicMarker.setLatLng([epicenter.lat, epicenter.lon]);
     obsMarker.setLatLng([observer.lat, observer.lon]);
     circlesGroup.clearLayers();
+    waveGroup.clearLayers();
 
-    const drawRadiusCircle = (
-      estimate: RadiusEstimate,
-      variant: "felt" | "damaging"
-    ) => {
+    const resolveTarget = (estimate: RadiusEstimate) => {
       if (
         estimate.status === "out_of_mag_calibration" ||
         estimate.status === "not_reached"
       ) {
-        return;
+        return { meters: 0, isBeyond300: false };
       }
-
       const isBeyond300 = estimate.status === "beyond_300";
-      const radiusMeters = isBeyond300
+      const meters = isBeyond300
         ? 300_000
         : estimate.radiusKm !== null && estimate.radiusKm > 0
           ? estimate.radiusKm * 1000
           : 0;
-
-      if (radiusMeters <= 0) return;
-
-      L.circle([epicenter.lat, epicenter.lon], {
-        radius: radiusMeters,
-        color: "#1A1613",
-        weight: variant === "damaging" ? 2 : 1.5,
-        opacity: isBeyond300 ? 0.55 : variant === "damaging" ? 0.85 : 0.6,
-        fillColor: "#1A1613",
-        fillOpacity: isBeyond300 ? 0.04 : variant === "damaging" ? 0.14 : 0.06,
-        dashArray: isBeyond300 ? "8 6" : undefined,
-        interactive: false,
-      }).addTo(circlesGroup);
+      return { meters, isBeyond300 };
     };
 
-    // Urutan: lingkaran luar (terasa >= III) lalu lingkaran dalam (merusak ringan >= VI)
-    drawRadiusCircle(radiusFeltIII, "felt");
-    drawRadiusCircle(radiusDamagingVI, "damaging");
+    const feltSpec = resolveTarget(radiusFeltIII);
+    const damagingSpec = resolveTarget(radiusDamagingVI);
 
-    fitMapToContent(false);
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    const fromFelt = prevRadiiRef.current.felt;
+    const fromDamaging = prevRadiiRef.current.damaging;
+    const shouldLerpFelt = !reducedMotion && fromFelt > 0 && feltSpec.meters > 0 && fromFelt !== feltSpec.meters;
+    const shouldLerpDamaging =
+      !reducedMotion &&
+      fromDamaging > 0 &&
+      damagingSpec.meters > 0 &&
+      fromDamaging !== damagingSpec.meters;
+
+    let feltCircle: L.Circle | null = null;
+    if (feltSpec.meters > 0) {
+      feltCircle = L.circle([epicenter.lat, epicenter.lon], {
+        radius: feltSpec.meters,
+        className: "sigap-circle-felt",
+        weight: 2,
+        opacity: feltSpec.isBeyond300 ? 0.6 : 0.9,
+        fillOpacity: feltSpec.isBeyond300 ? 0.06 : 0.12,
+        dashArray: feltSpec.isBeyond300 ? "8 6" : undefined,
+        interactive: false,
+      }).addTo(circlesGroup);
+    }
+
+    let damagingCircle: L.Circle | null = null;
+    if (damagingSpec.meters > 0) {
+      damagingCircle = L.circle([epicenter.lat, epicenter.lon], {
+        radius: damagingSpec.meters,
+        className: "sigap-circle-damaging",
+        weight: 2.5,
+        opacity: damagingSpec.isBeyond300 ? 0.6 : 0.9,
+        fillOpacity: damagingSpec.isBeyond300 ? 0.06 : 0.28,
+        dashArray: damagingSpec.isBeyond300 ? "8 6" : undefined,
+        interactive: false,
+      }).addTo(circlesGroup);
+    }
+
+    if (skipNextAutoFitRef.current) {
+      skipNextAutoFitRef.current = false;
+    } else {
+      fitMapToContent(false);
+    }
+
+    prevRadiiRef.current = {
+      felt: feltSpec.meters,
+      damaging: damagingSpec.meters,
+    };
+
+    if (shouldLerpFelt && feltCircle) feltCircle.setRadius(fromFelt);
+    if (shouldLerpDamaging && damagingCircle) damagingCircle.setRadius(fromDamaging);
+
+    const hasWaveTarget = feltSpec.meters > 0 || damagingSpec.meters > 0;
+    if (reducedMotion || !hasWaveTarget) {
+      return;
+    }
+
+    const wave1Max = damagingSpec.meters > 0 ? damagingSpec.meters : feltSpec.meters;
+    const wave1Class = damagingSpec.meters > 0 ? "sigap-wave-damaging" : "sigap-wave-felt";
+    const wave2Max = feltSpec.meters > 0 ? feltSpec.meters : damagingSpec.meters;
+    const wave2Class = feltSpec.meters > 0 ? "sigap-wave-felt" : "sigap-wave-damaging";
+
+    const waveRing1 = L.circle([epicenter.lat, epicenter.lon], {
+      radius: 100,
+      className: wave1Class,
+      weight: 2,
+      opacity: 0.75,
+      fillOpacity: 0,
+      interactive: false,
+    }).addTo(waveGroup);
+
+    const waveRing2 = L.circle([epicenter.lat, epicenter.lon], {
+      radius: 100,
+      className: wave2Class,
+      weight: 2,
+      opacity: 0.75,
+      fillOpacity: 0,
+      interactive: false,
+    }).addTo(waveGroup);
+
+    const CYCLE_MS = 2600;
+    const LERP_MS = 300;
+    const startTs = performance.now();
+    let rafId = 0;
+
+    const tick = (now: number) => {
+      if (!document.hidden) {
+        const elapsed = now - startTs;
+
+        if (shouldLerpFelt || shouldLerpDamaging) {
+          const t = Math.min(1, elapsed / LERP_MS);
+          const ease = 1 - Math.pow(1 - t, 3);
+          if (shouldLerpFelt && feltCircle) {
+            feltCircle.setRadius(fromFelt + (feltSpec.meters - fromFelt) * ease);
+          }
+          if (shouldLerpDamaging && damagingCircle) {
+            damagingCircle.setRadius(fromDamaging + (damagingSpec.meters - fromDamaging) * ease);
+          }
+        }
+
+        const p1 = (elapsed % CYCLE_MS) / CYCLE_MS;
+        waveRing1.setRadius(Math.max(100, wave1Max * p1));
+        waveRing1.setStyle({ opacity: Math.pow(1 - p1, 1.3) * 0.85 });
+
+        const p2 = ((elapsed + CYCLE_MS * 0.5) % CYCLE_MS) / CYCLE_MS;
+        waveRing2.setRadius(Math.max(100, wave2Max * p2));
+        waveRing2.setStyle({ opacity: Math.pow(1 - p2, 1.3) * 0.85 });
+      }
+
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      waveGroup.clearLayers();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     epicenter.lat,
@@ -327,7 +476,7 @@ export default function LeafletMapCanvas({
         </div>
       )}
 
-      <div className="relative isolate rounded-[20px] overflow-hidden border border-[var(--color-border-strong)] bg-[var(--color-surface-raised)]">
+      <div className="relative isolate rounded-[20px] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface-raised)]">
         <div
           ref={containerRef}
           role="region"
@@ -335,7 +484,7 @@ export default function LeafletMapCanvas({
           style={{
             touchAction: isTouchDevice && !touchMapUnlocked ? "pan-y" : "none",
           }}
-          className="w-full h-[320px] sm:h-[380px] z-0"
+          className="w-full h-[360px] sm:h-[460px] z-0"
         />
 
         {/* Kontrol tampilan peta & kunci gulir sentuh */}
@@ -344,7 +493,7 @@ export default function LeafletMapCanvas({
             type="button"
             onClick={() => fitMapToContent(true)}
             aria-label="Sesuaikan tampilan agar pusat gempa, Anda, dan lingkaran terlihat"
-            className="inline-flex items-center gap-1.5 min-h-[44px] rounded-full bg-[var(--color-surface-raised)] border border-[var(--color-border-strong)] px-3 text-xs font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] transition-colors duration-150"
+            className="inline-flex items-center gap-1.5 min-h-[44px] rounded-full bg-[var(--color-cta)] px-4 text-xs font-semibold text-[var(--color-on-cta)] hover:bg-[var(--color-border-strong)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-strong)]"
           >
             <RotateCcw className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span>Paskan peta</span>
@@ -373,25 +522,12 @@ export default function LeafletMapCanvas({
         </div>
       </div>
 
-      {/* Catatan atribusi & panduan sentuh yang selalu terlihat & aksesibel */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-secondary)]">
-        <span>
-          Sumber peta dasar:{" "}
-          <a
-            href="https://www.openstreetmap.org/copyright"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2 text-[var(--color-text-primary)] font-medium"
-          >
-            © OpenStreetMap contributors
-          </a>
-        </span>
-        {isTouchDevice && !touchMapUnlocked && (
-          <span>
-            Gunakan dua jari atau tombol &ldquo;Geser peta&rdquo; untuk menggeser peta.
-          </span>
-        )}
-      </div>
+      {/* Atribusi OSM sudah tampil di pojok kanan bawah peta (docs/03-simulasi.md); di sini hanya panduan sentuh. */}
+      {isTouchDevice && !touchMapUnlocked && (
+        <p className="text-xs text-[var(--color-text-secondary)]">
+          Gunakan dua jari atau tombol &ldquo;Geser peta&rdquo; untuk menggeser peta.
+        </p>
+      )}
     </div>
   );
 }
