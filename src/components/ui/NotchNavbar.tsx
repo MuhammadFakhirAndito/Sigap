@@ -3,7 +3,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowUpRight, Bell, Menu, RotateCcw, Search, ShieldAlert, X } from "lucide-react";
+import { ArrowUpRight, Bell, Globe, Menu, RotateCcw, Search, ShieldAlert, X } from "lucide-react";
+import {
+  LANG_EVENT,
+  getSavedLanguage,
+  setPageLanguage,
+  type UiLanguage,
+} from "@/lib/i18n";
 
 interface NotchNavbarProps {
   className?: string;
@@ -79,9 +85,21 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
   const [quakeLoading, setQuakeLoading] = useState(false);
   const [quakeError, setQuakeError] = useState(false);
   const [quakeLoadedOnce, setQuakeLoadedOnce] = useState(false);
+  const [lang, setLang] = useState<UiLanguage>("id");
 
   const headerRef = useRef<HTMLElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setLang(getSavedLanguage());
+    const sync = () => setLang(getSavedLanguage());
+    window.addEventListener(LANG_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(LANG_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
   const isLinkActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -394,6 +412,36 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="pt-3 border-t border-[var(--color-border)] flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
+                <Globe className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>Bahasa</span>
+              </span>
+              <div data-no-translate="true" className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-background)] p-1">
+                {(["id", "en"] as const).map((code) => {
+                  const active = lang === code;
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      onClick={() => {
+                        setLang(code);
+                        setPageLanguage(code);
+                      }}
+                      aria-pressed={active}
+                      className={`min-h-[44px] min-w-[44px] rounded-full px-3 text-xs font-semibold uppercase transition-colors ${focusRing} ${
+                        active
+                          ? "bg-[var(--color-cta)] text-[var(--color-on-cta)]"
+                          : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                      }`}
+                    >
+                      {code}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
