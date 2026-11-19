@@ -196,11 +196,14 @@ export function HeroScrollRock({
   return (
     <div
       ref={rockRef}
-      className="order-3 relative z-10 pointer-events-none mt-6 -mx-[8%] w-[116%] lg:mx-0 lg:mt-0 lg:absolute lg:top-[16%] lg:w-[78%] lg:left-[max(-7%,calc((100%_-_100vw)/2_+_16px))] lg:will-change-transform motion-reduce:will-change-auto"
+      className="relative z-10 pointer-events-none -mx-5 sm:-mx-9 w-[calc(100%+40px)] sm:w-[calc(100%+72px)] pt-3 lg:order-none lg:mx-0 lg:mt-0 lg:pt-0 lg:absolute lg:top-[16%] lg:w-[78%] lg:left-[max(-7%,calc((100%_-_100vw)/2_+_16px))] lg:will-change-transform motion-reduce:will-change-auto"
     >
       <img
         src="/images/tectonic-island.png"
         alt="Fragmen lempeng tektonik bumi dengan batuan berlumut dan retakan seismik"
+        width={1519}
+        height={948}
+        fetchPriority="high"
         className="w-full h-auto object-contain select-none"
       />
     </div>

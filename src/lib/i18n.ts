@@ -108,6 +108,22 @@ const ID_TO_EN: Record<string, string> = {
     "How do I prepare an emergency go-bag?",
   "Apa arti skala MMI pada dampak gempa?":
     "What does the MMI scale mean for quake impact?",
+  "Estimasi guncangan & gelombang P/S": "Shaking & P/S wave estimate",
+  "mitigasi gempa bumi": "earthquakes & mitigation",
+  "Materi rujukan": "Reference modules",
+  "Skenario simulasi": "Historical simulation",
+  sejarah: "scenarios",
+  "Tanya langkah keselamatan": "Ask safety steps",
+  "& konteks gempa terkini": "& latest earthquake context",
+  "Saat gempa": "During quake",
+  "Tas siaga": "Go-bag",
+  "Skala MMI": "MMI scale",
+  "Kesiapsiagaan gempa": "Earthquake readiness",
+  "untuk masyarakat Indonesia": "for Indonesian communities",
+  "Pantau data resmi BMKG dan latih langkah mitigasi bersama SIGAP Gempa.":
+    "Track official BMKG data and practice mitigation steps with SIGAP Gempa.",
+  "Data resmi": "Official data",
+  "Buka edukasi": "Open education",
 
   // Riwayat (/riwayat)
   "Riwayat gempa": "Earthquake history",
@@ -308,6 +324,7 @@ const PLACEHOLDER_ID_TO_EN: Record<string, string> = {
   "Cari nama kota, provinsi, atau pulau…": "Search city, province, or island…",
   "misal: Bengkulu": "e.g. Bengkulu",
   "Tulis pertanyaan tentang gempa atau mitigasi...": "Ask a question about earthquakes or mitigation...",
+  "Tulis pertanyaan gempa...": "Ask an earthquake question...",
   "Cari judul atau lembaga": "Search title or agency",
 };
 
@@ -362,6 +379,18 @@ function translateDynamicPattern(trimmed: string): string | null {
   const syncMatch = trimmed.match(/^Sumber: BMKG · disinkronkan (.+)$/);
   if (syncMatch) return `Source: BMKG · synced ${syncMatch[1]}`;
 
+  const disclaimerMatch = trimmed.match(
+    /^Sumber: BMKG · diperbarui (.+)\. Bukan sistem peringatan dini resmi\.$/
+  );
+  if (disclaimerMatch) {
+    return `Source: BMKG · updated ${disclaimerMatch[1]}. Not an official early warning system.`;
+  }
+
+  const bmkgDownMatch = trimmed.match(/^BMKG tidak dapat diakses\. Data terakhir (.+)\.$/);
+  if (bmkgDownMatch) {
+    return `BMKG is unreachable. Last data ${bmkgDownMatch[1]}.`;
+  }
+
   const mmiDesc = trimmed.match(/^Skala MMI ([IVX]+) \(BMKG\):$/);
   if (mmiDesc) return `MMI Scale ${mmiDesc[1]} (BMKG):`;
 
@@ -369,6 +398,16 @@ function translateDynamicPattern(trimmed: string): string | null {
   if (realTime) return `Real time: P ${realTime[1]} s · S ${realTime[2]} s · Golden time ${realTime[3]} s`;
 
   return null;
+}
+
+export function detectReactFiberKey(el?: Element | null): string | undefined {
+  const target =
+    el ??
+    (typeof document !== "undefined"
+      ? document.querySelector("[data-sigap-lang-marker]")
+      : null);
+  if (!target) return undefined;
+  return Object.keys(target).find((key) => key.startsWith("__reactFiber$"));
 }
 
 export function getSavedLanguage(): UiLanguage {
@@ -380,9 +419,15 @@ export function getSavedLanguage(): UiLanguage {
   }
 }
 
-export function applyPageLanguage(lang: UiLanguage): void {
-  if (typeof document === "undefined" || !document.body) return;
+export function applyPageLanguage(
+  lang: UiLanguage,
+  options?: { requireHydratedKey?: string }
+): { skippedUnhydrated: boolean } {
+  if (typeof document === "undefined" || !document.body) {
+    return { skippedUnhydrated: false };
+  }
   isApplyingTranslation = true;
+  let skippedUnhydrated = false;
   try {
     document.documentElement.lang = lang;
 
@@ -407,9 +452,10 @@ export function applyPageLanguage(lang: UiLanguage): void {
           field.placeholder = originalPh;
         }
       }
-      return;
+      return { skippedUnhydrated: false };
     }
 
+    const fiberKey = options?.requireHydratedKey ?? detectReactFiberKey();
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     let current: Node | null;
     while ((current = walker.nextNode())) {
@@ -426,6 +472,12 @@ export function applyPageLanguage(lang: UiLanguage): void {
 
       const translated = ID_TO_EN[trimmed] ?? translateDynamicPattern(trimmed);
       if (!translated) continue;
+
+      // Hindari mutasi DOM sebelum React menyelesaikan hidrasi node di dalam Suspense.
+      if (fiberKey && !(fiberKey in parent)) {
+        skippedUnhydrated = true;
+        continue;
+      }
 
       if (!recordedOriginalText.has(textNode)) {
         recordedOriginalText.set(textNode, raw);
@@ -448,6 +500,10 @@ export function applyPageLanguage(lang: UiLanguage): void {
       const ph = field.placeholder;
       const translatedPh = PLACEHOLDER_ID_TO_EN[ph];
       if (!translatedPh) continue;
+      if (fiberKey && !(fiberKey in field)) {
+        skippedUnhydrated = true;
+        continue;
+      }
       if (!recordedOriginalPlaceholder.has(field)) {
         recordedOriginalPlaceholder.set(field, ph);
         trackedPlaceholders.add(field);
@@ -456,6 +512,7 @@ export function applyPageLanguage(lang: UiLanguage): void {
         field.placeholder = translatedPh;
       }
     }
+    return { skippedUnhydrated };
   } finally {
     isApplyingTranslation = false;
   }

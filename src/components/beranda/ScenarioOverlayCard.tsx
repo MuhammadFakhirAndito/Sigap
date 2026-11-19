@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 export interface ScenarioOverlayCardProps {
   /** URL foto lanskap lokal (disimpan di public/images/) */
@@ -43,7 +43,7 @@ export function ScenarioOverlayCard({
   ariaLabel,
 }: ScenarioOverlayCardProps) {
   return (
-    <article className="group relative flex min-h-[430px] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-[var(--color-border-strong)] bg-[var(--color-cta)] transition-[border-color,transform] duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:-translate-y-1.5 hover:border-[var(--color-cta)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+    <article className="group relative flex min-h-[344px] md:min-h-[430px] w-full flex-col justify-between overflow-hidden rounded-[24px] md:rounded-[20px] border border-[var(--color-border-strong)] bg-[var(--color-cta)] transition-[border-color,transform] duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:-translate-y-1.5 hover:border-[var(--color-cta)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       {/* Latar foto penuh dengan zoom halus saat hover atau fokus */}
       <img
         src={imageUrl}
@@ -61,21 +61,27 @@ export function ScenarioOverlayCard({
         }}
       />
 
-      <div className="pointer-events-none relative z-10 flex flex-1 flex-col justify-between p-6 text-[var(--color-on-cta)]">
-        {/* Bagian atas: badge ikon bulat */}
-        <div className="flex h-28 items-start lg:h-32">
+      <div className="pointer-events-none relative z-10 flex flex-1 flex-col justify-between p-5 md:p-6 text-[var(--color-on-cta)]">
+        {/* Bagian atas: badge ikon bulat & penanda aksi mobile */}
+        <div className="flex h-14 md:h-28 lg:h-32 items-start justify-between">
           <span
             aria-hidden="true"
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-on-cta)]/40 bg-[var(--color-cta)]/55 text-[var(--color-on-cta)] backdrop-blur-sm"
+            className="flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-full border border-[var(--color-on-cta)]/40 bg-[var(--color-cta)]/55 text-[var(--color-on-cta)] backdrop-blur-sm"
           >
             {icon}
+          </span>
+          <span
+            aria-hidden="true"
+            className="md:hidden flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]"
+          >
+            <ArrowUpRight className="w-4 h-4" />
           </span>
         </div>
 
         {/* Bagian tengah: metadata skenario; terangkat di desktop saat hover/fokus */}
-        <div className="space-y-4 pb-24 lg:pb-0 motion-reduce:lg:pb-24 lg:transition-transform lg:duration-500 lg:ease-[cubic-bezier(0.2,0,0,1)] lg:group-hover:-translate-y-20 lg:group-focus-within:-translate-y-20 motion-reduce:transition-none motion-reduce:lg:group-hover:translate-y-0 motion-reduce:lg:group-focus-within:translate-y-0">
+        <div className="space-y-3 md:space-y-4 pb-20 md:pb-24 lg:pb-0 motion-reduce:lg:pb-24 lg:transition-transform lg:duration-500 lg:ease-[cubic-bezier(0.2,0,0,1)] lg:group-hover:-translate-y-20 lg:group-focus-within:-translate-y-20 motion-reduce:transition-none motion-reduce:lg:group-hover:translate-y-0 motion-reduce:lg:group-focus-within:translate-y-0">
           <div>
-            <h3 className="text-2xl font-medium tracking-tight text-[var(--color-on-cta)] leading-snug">
+            <h3 className="text-xl sm:text-2xl font-medium tracking-tight text-[var(--color-on-cta)] leading-snug">
               {title}
             </h3>
             <p className="mt-1 text-xs sm:text-sm text-[var(--color-surface)] tnum">
@@ -87,14 +93,14 @@ export function ScenarioOverlayCard({
             <h4 className="text-xs font-medium text-[var(--color-on-cta)]">
               Ringkasan skenario
             </h4>
-            <p className="mt-1 text-sm text-[var(--color-surface)] leading-relaxed line-clamp-3 md:min-h-[68px]">
+            <p className="mt-1 text-xs sm:text-sm text-[var(--color-surface)] leading-relaxed line-clamp-3 md:min-h-[68px]">
               {overview}
             </p>
           </div>
         </div>
 
         {/* Bagian bawah: magnitudo & CTA; selalu tampil di sentuh/reduced-motion, muncul halus di desktop */}
-        <div className="absolute inset-x-0 bottom-0 p-6 opacity-100 translate-y-0 lg:translate-y-4 lg:opacity-0 motion-reduce:lg:opacity-100 motion-reduce:lg:translate-y-0 lg:transition-[opacity,transform] lg:duration-500 lg:ease-[cubic-bezier(0.2,0,0,1)] lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-within:translate-y-0 lg:group-focus-within:opacity-100 motion-reduce:transition-none">
+        <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 opacity-100 translate-y-0 lg:translate-y-4 lg:opacity-0 motion-reduce:lg:opacity-100 motion-reduce:lg:translate-y-0 lg:transition-[opacity,transform] lg:duration-500 lg:ease-[cubic-bezier(0.2,0,0,1)] lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-within:translate-y-0 lg:group-focus-within:opacity-100 motion-reduce:transition-none">
           <div className="flex items-end justify-between gap-3">
             <div>
               <div className="flex items-baseline gap-1">

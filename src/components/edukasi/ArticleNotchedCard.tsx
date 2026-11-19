@@ -57,7 +57,7 @@ export const ArticleNotchedCard: React.FC<ArticleNotchedCardProps> = ({
           reversed ? "lg:order-2" : "lg:order-1"
         }`}
       >
-        <div className="group relative h-full min-h-[260px] lg:min-h-[292px] rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 sm:p-7 flex flex-col justify-between gap-5 transition-colors duration-200 hover:border-[var(--color-border-strong)] motion-reduce:transition-none">
+        <div className="group relative h-full min-h-[208px] lg:min-h-[292px] rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-5 sm:p-6 lg:p-7 flex flex-col justify-between gap-4 lg:gap-5 transition-colors duration-200 hover:border-[var(--color-border-strong)] motion-reduce:transition-none">
           {/* Cekungan notch sudut kanan atas menyatu dengan latar halaman */}
           <svg
             width="88"
@@ -123,7 +123,7 @@ export const ArticleNotchedCard: React.FC<ArticleNotchedCardProps> = ({
       {/* Panel visual lebar di sisi berlawanan */}
       <div
         data-edu-media=""
-        className={`lg:col-span-7 overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] h-[220px] sm:h-[260px] lg:h-[292px] ${
+        className={`lg:col-span-7 overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] h-[204px] sm:h-[248px] lg:h-[292px] ${
           reversed ? "lg:order-1" : "lg:order-2"
         }`}
       >

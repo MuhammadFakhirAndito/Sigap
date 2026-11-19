@@ -46,6 +46,3 @@ DockerDesktopInstaller.exe
 
 # Vercel local project link
 .vercel
-
-.vercel
-.env*

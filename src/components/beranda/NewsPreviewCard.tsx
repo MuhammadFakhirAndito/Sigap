@@ -42,14 +42,14 @@ export function NewsPreviewCard({
   const imgAlt = thumbnailAlt ?? visual.alt;
 
   return (
-    <article className="group relative rounded-[20px] border border-[var(--color-border)] bg-[var(--color-background)]/75 hover:bg-[var(--color-surface)]/75 active:bg-[var(--color-surface-sunken)] hover:border-[var(--color-border-strong)] p-4 sm:p-5 transition-colors">
-      <div className="flex items-start gap-4">
-        <div className="min-w-0 flex-1 space-y-2.5">
+    <article className="group relative rounded-[20px] border border-[var(--color-border)] bg-[var(--color-background)]/75 hover:bg-[var(--color-surface)]/75 active:bg-[var(--color-surface-sunken)] hover:border-[var(--color-border-strong)] p-3.5 sm:p-5 transition-colors">
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <span
                 aria-hidden="true"
-                className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-xs font-semibold tracking-tight ${publisher.badgeClassName}`}
+                className={`inline-flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-[10px] text-xs font-semibold tracking-tight ${publisher.badgeClassName}`}
               >
                 {publisher.initials}
               </span>
@@ -70,7 +70,7 @@ export function NewsPreviewCard({
             </span>
           </div>
 
-          <h3 className="text-base font-medium text-[var(--color-text-primary)] leading-snug group-hover:text-[var(--color-primary-strong)] transition-colors">
+          <h3 className="text-[15px] sm:text-base font-medium text-[var(--color-text-primary)] leading-snug line-clamp-2 sm:line-clamp-none group-hover:text-[var(--color-primary-strong)] transition-colors">
             <a
               href={safeHref}
               target="_blank"

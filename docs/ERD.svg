@@ -1,0 +1,598 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="1176" viewBox="0 0 1480 1176" font-family="'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif">
+  <rect width="1480" height="1176" fill="#FFFFFF"/>
+
+  <!-- Header Dokumen -->
+  <text x="56" y="46" font-size="22" font-weight="700" fill="#1A1613">Entity Relationship Diagram (ERD) — SIGAP Gempa</text>
+  <text x="56" y="70" font-size="13" fill="#5E5750">Skema PostgreSQL + Prisma ORM (9 entitas utama, 1 tabel penghubung implisit _ArtikelSumber, 4 enum)</text>
+  <rect x="1210" y="30" width="214" height="32" rx="16" fill="#F6F4F1" stroke="#C4BDB4" stroke-width="1"/>
+  <text x="1317" y="50" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1A1613">prisma/schema.prisma</text>
+
+  <!-- Zona Latar Relasi -->
+  <rect x="36" y="88" width="1408" height="354" rx="16" fill="#F8F7F4" stroke="#E8E4DF" stroke-width="1"/>
+  <text x="56" y="103" font-size="10.5" font-weight="700" letter-spacing="0.06em" fill="#477100">RELASI KONTEN &amp; SKENARIO SIMULASI</text>
+
+  <line x1="36" y1="454" x2="1444" y2="454" stroke="#E8E4DF" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="56" y="446" font-size="10.5" font-weight="700" letter-spacing="0.06em" fill="#5E5750">ENTITAS MANDIRI (BMKG ARCHIVE, BERITA, CHATBOT &amp; KUOTA)</text>
+
+  <!-- Konektor M:N artikel ke sumber -->
+  <g stroke="#1A1613" stroke-width="1.8" fill="none" stroke-linecap="round">
+    <line x1="416" y1="167" x2="560" y2="167"/>
+    <!-- Kiri (artikel side: crow's foot + 0 circle) -->
+    <line x1="416" y1="160" x2="430" y2="167"/>
+    <line x1="416" y1="174" x2="430" y2="167"/>
+    <circle cx="436" cy="167" r="4.5" fill="#FFFFFF"/>
+    <!-- Kanan (sumber side: crow's foot + 0 circle) -->
+    <line x1="560" y1="160" x2="546" y2="167"/>
+    <line x1="560" y1="174" x2="546" y2="167"/>
+    <circle cx="540" cy="167" r="4.5" fill="#FFFFFF"/>
+  </g>
+  <rect x="441" y="128" width="94" height="30" rx="6" fill="#FFFFFF" stroke="#C4BDB4" stroke-width="1"/>
+  <text x="488" y="142" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1A1613">M : N</text>
+  <text x="488" y="154" text-anchor="middle" font-size="9.5" fill="#5E5750">_ArtikelSumber</text>
+
+  <!-- Konektor 0..1 : 0..* sumber ke skenario_simulasi.sumberId -->
+  <g stroke="#477100" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 910 167 H 982 V 401 H 1054"/>
+    <!-- Kiri (sumber side: 0..1 -> bar + circle) -->
+    <line x1="921" y1="160" x2="921" y2="174"/>
+    <circle cx="930" cy="167" r="4.5" fill="#FFFFFF"/>
+    <!-- Kanan (skenario_simulasi.sumberId side: 0..* -> crow's foot + circle) -->
+    <line x1="1054" y1="394" x2="1040" y2="401"/>
+    <line x1="1054" y1="408" x2="1040" y2="401"/>
+    <circle cx="1034" cy="401" r="4.5" fill="#FFFFFF"/>
+  </g>
+  <rect x="932" y="254" width="100" height="34" rx="6" fill="#FFFFFF" stroke="#477100" stroke-width="1"/>
+  <text x="982" y="269" text-anchor="middle" font-size="10.5" font-weight="700" fill="#477100">0..1 : 0..*</text>
+  <text x="982" y="282" text-anchor="middle" font-size="9.5" fill="#5E5750">via sumberId (FK)</text>
+
+  <!-- Tabel-tabel -->
+  
+    <g>
+      <rect x="56" y="112" width="360" height="258" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 68 112 H 404 Q 416 112 416 124 V 152 H 56 V 124 Q 56 112 68 112 Z" fill="#1A1613"/>
+      <text x="70" y="137" font-size="14" font-weight="700" fill="#FFFDFB">artikel</text>
+      <text x="402" y="136" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">Konten Edukasi</text>
+      
+        
+        
+    <rect x="68" y="158" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="84" y="170.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="108" y="171" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="402" y="171" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="57" y="178" width="358" height="26" fill="#FAF9F7"/>
+        
+    <rect x="68" y="184" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="84" y="196.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK</text>
+  
+        <text x="108" y="197" font-size="12.5" font-weight="500" fill="#1A1613">slug</text>
+        <text x="402" y="197" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+        <text x="108" y="223" font-size="12.5" font-weight="500" fill="#1A1613">judul</text>
+        <text x="402" y="223" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        <rect x="57" y="230" width="358" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="249" font-size="12.5" font-weight="500" fill="#1A1613">ringkasan</text>
+        <text x="402" y="249" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String?</text>
+      
+        
+        
+        <text x="108" y="275" font-size="12.5" font-weight="500" fill="#1A1613">kategori</text>
+        <text x="402" y="275" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">KategoriArtikel</text>
+      
+        <rect x="57" y="282" width="358" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="301" font-size="12.5" font-weight="500" fill="#1A1613">isi</text>
+        <text x="402" y="301" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Text</text>
+      
+        
+        
+        <text x="108" y="327" font-size="12.5" font-weight="500" fill="#1A1613">urutan</text>
+        <text x="402" y="327" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Int (0)</text>
+      
+        <rect x="57" y="334" width="358" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="353" font-size="12.5" font-weight="500" fill="#1A1613">updatedAt</text>
+        <text x="402" y="353" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime</text>
+      
+    </g>
+  
+    <g>
+      <rect x="560" y="112" width="350" height="180" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 572 112 H 898 Q 910 112 910 124 V 152 H 560 V 124 Q 560 112 572 112 Z" fill="#1A1613"/>
+      <text x="574" y="137" font-size="14" font-weight="700" fill="#FFFDFB">sumber</text>
+      <text x="896" y="136" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">Referensi Resmi</text>
+      
+        
+        
+    <rect x="572" y="158" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="588" y="170.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="612" y="171" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="896" y="171" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="561" y="178" width="348" height="26" fill="#FAF9F7"/>
+        
+        <text x="612" y="197" font-size="12.5" font-weight="500" fill="#1A1613">judul</text>
+        <text x="896" y="197" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+        <text x="612" y="223" font-size="12.5" font-weight="500" fill="#1A1613">penerbit</text>
+        <text x="896" y="223" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        <rect x="561" y="230" width="348" height="26" fill="#FAF9F7"/>
+        
+    <rect x="572" y="236" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="588" y="248.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK</text>
+  
+        <text x="612" y="249" font-size="12.5" font-weight="500" fill="#1A1613">url</text>
+        <text x="896" y="249" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+        <text x="612" y="275" font-size="12.5" font-weight="500" fill="#1A1613">tanggalAkses</text>
+        <text x="896" y="275" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime</text>
+      
+    </g>
+  
+    <g>
+      <rect x="1054" y="112" width="370" height="310" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 1066 112 H 1412 Q 1424 112 1424 124 V 152 H 1054 V 124 Q 1054 112 1066 112 Z" fill="#1A1613"/>
+      <text x="1068" y="137" font-size="14" font-weight="700" fill="#FFFDFB">skenario_simulasi</text>
+      <text x="1410" y="136" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">Preset Simulasi</text>
+      
+        
+        
+    <rect x="1066" y="158" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="1082" y="170.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="1106" y="171" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="1410" y="171" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="1055" y="178" width="368" height="26" fill="#FAF9F7"/>
+        
+    <rect x="1066" y="184" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="1082" y="196.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK</text>
+  
+        <text x="1106" y="197" font-size="12.5" font-weight="500" fill="#1A1613">nama</text>
+        <text x="1410" y="197" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+        <text x="1106" y="223" font-size="12.5" font-weight="500" fill="#1A1613">magnitudo</text>
+        <text x="1410" y="223" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Float</text>
+      
+        <rect x="1055" y="230" width="368" height="26" fill="#FAF9F7"/>
+        
+        <text x="1106" y="249" font-size="12.5" font-weight="500" fill="#1A1613">kedalamanKm</text>
+        <text x="1410" y="249" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Float</text>
+      
+        
+        
+        <text x="1106" y="275" font-size="12.5" font-weight="500" fill="#1A1613">lat</text>
+        <text x="1410" y="275" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Float</text>
+      
+        <rect x="1055" y="282" width="368" height="26" fill="#FAF9F7"/>
+        
+        <text x="1106" y="301" font-size="12.5" font-weight="500" fill="#1A1613">lon</text>
+        <text x="1410" y="301" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Float</text>
+      
+        
+        
+        <text x="1106" y="327" font-size="12.5" font-weight="500" fill="#1A1613">tipeLokasi</text>
+        <text x="1410" y="327" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">TipeLokasi</text>
+      
+        <rect x="1055" y="334" width="368" height="26" fill="#FAF9F7"/>
+        
+        <text x="1106" y="353" font-size="12.5" font-weight="500" fill="#1A1613">deskripsiSingkat</text>
+        <text x="1410" y="353" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String?</text>
+      
+        
+        
+        <text x="1106" y="379" font-size="12.5" font-weight="500" fill="#1A1613">urutan</text>
+        <text x="1410" y="379" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Int (0)</text>
+      
+        <rect x="1055" y="386" width="368" height="26" fill="#FAF9F7"/>
+        
+    <rect x="1066" y="392" width="32" height="17" rx="5" fill="#477100" />
+    <text x="1082" y="404.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">FK</text>
+  
+        <text x="1106" y="405" font-size="12.5" font-weight="600" fill="#1A1613">sumberId</text>
+        <text x="1410" y="405" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String?</text>
+      
+    </g>
+  
+    <g>
+      <rect x="56" y="472" width="420" height="492" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 68 472 H 464 Q 476 472 476 484 V 512 H 56 V 484 Q 56 472 68 472 Z" fill="#1A1613"/>
+      <text x="70" y="497" font-size="14" font-weight="700" fill="#FFFDFB">gempa</text>
+      <text x="462" y="496" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">Arsip Gempa BMKG</text>
+      
+        
+        
+    <rect x="68" y="518" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="84" y="530.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="108" y="531" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="462" y="531" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="57" y="538" width="418" height="26" fill="#FAF9F7"/>
+        
+    <rect x="68" y="544" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="84" y="556.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK</text>
+  
+        <text x="108" y="557" font-size="12.5" font-weight="500" fill="#1A1613">bmkgKey</text>
+        <text x="462" y="557" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+    <rect x="68" y="570" width="32" height="17" rx="5" fill="#F6F4F1" stroke="#C4BDB4" stroke-width="1"/>
+    <text x="84" y="582.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#5E5750" font-family="monospace">IDX</text>
+  
+        <text x="108" y="583" font-size="12.5" font-weight="500" fill="#1A1613">waktuUtc</text>
+        <text x="462" y="583" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime DESC</text>
+      
+        <rect x="57" y="590" width="418" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="609" font-size="12.5" font-weight="500" fill="#1A1613">lat</text>
+        <text x="462" y="609" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Float</text>
+      
+        
+        
+        <text x="108" y="635" font-size="12.5" font-weight="500" fill="#1A1613">lon</text>
+        <text x="462" y="635" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Float</text>
+      
+        <rect x="57" y="642" width="418" height="26" fill="#FAF9F7"/>
+        
+    <rect x="68" y="648" width="32" height="17" rx="5" fill="#F6F4F1" stroke="#C4BDB4" stroke-width="1"/>
+    <text x="84" y="660.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#5E5750" font-family="monospace">IDX</text>
+  
+        <text x="108" y="661" font-size="12.5" font-weight="500" fill="#1A1613">magnitudo</text>
+        <text x="462" y="661" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Float</text>
+      
+        
+        
+        <text x="108" y="687" font-size="12.5" font-weight="500" fill="#1A1613">kedalamanKm</text>
+        <text x="462" y="687" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Float</text>
+      
+        <rect x="57" y="694" width="418" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="713" font-size="12.5" font-weight="500" fill="#1A1613">wilayah</text>
+        <text x="462" y="713" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+        <text x="108" y="739" font-size="12.5" font-weight="500" fill="#1A1613">potensiTeks</text>
+        <text x="462" y="739" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        <rect x="57" y="746" width="418" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="765" font-size="12.5" font-weight="500" fill="#1A1613">statusTsunami</text>
+        <text x="462" y="765" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">StatusTsunami</text>
+      
+        
+        
+        <text x="108" y="791" font-size="12.5" font-weight="500" fill="#1A1613">dirasakan</text>
+        <text x="462" y="791" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String?</text>
+      
+        <rect x="57" y="798" width="418" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="817" font-size="12.5" font-weight="500" fill="#1A1613">shakemapUrl</text>
+        <text x="462" y="817" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String?</text>
+      
+        
+        
+        <text x="108" y="843" font-size="12.5" font-weight="500" fill="#1A1613">isAuto</text>
+        <text x="462" y="843" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Boolean (false)</text>
+      
+        <rect x="57" y="850" width="418" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="869" font-size="12.5" font-weight="500" fill="#1A1613">isTerkini</text>
+        <text x="462" y="869" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Boolean (false)</text>
+      
+        
+        
+        <text x="108" y="895" font-size="12.5" font-weight="500" fill="#1A1613">isDirasakan</text>
+        <text x="462" y="895" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Boolean (false)</text>
+      
+        <rect x="57" y="902" width="418" height="26" fill="#FAF9F7"/>
+        
+        <text x="108" y="921" font-size="12.5" font-weight="500" fill="#1A1613">createdAt</text>
+        <text x="462" y="921" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime</text>
+      
+        
+        
+        <text x="108" y="947" font-size="12.5" font-weight="500" fill="#1A1613">updatedAt</text>
+        <text x="462" y="947" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime</text>
+      
+    </g>
+  
+    <g>
+      <rect x="524" y="472" width="430" height="258" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 536 472 H 942 Q 954 472 954 484 V 512 H 524 V 484 Q 524 472 536 472 Z" fill="#1A1613"/>
+      <text x="538" y="497" font-size="14" font-weight="700" fill="#FFFDFB">sync_log</text>
+      <text x="940" y="496" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">Log Sinkronisasi</text>
+      
+        
+        
+    <rect x="536" y="518" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="552" y="530.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="576" y="531" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="940" y="531" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="525" y="538" width="428" height="26" fill="#FAF9F7"/>
+        
+        <text x="576" y="557" font-size="12.5" font-weight="500" fill="#1A1613">sumber</text>
+        <text x="940" y="557" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+        <text x="576" y="583" font-size="12.5" font-weight="500" fill="#1A1613">status</text>
+        <text x="940" y="583" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        <rect x="525" y="590" width="428" height="26" fill="#FAF9F7"/>
+        
+        <text x="576" y="609" font-size="12.5" font-weight="500" fill="#1A1613">jumlahBaru</text>
+        <text x="940" y="609" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Int (0)</text>
+      
+        
+        
+        <text x="576" y="635" font-size="12.5" font-weight="500" fill="#1A1613">jumlahDiperbarui</text>
+        <text x="940" y="635" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Int (0)</text>
+      
+        <rect x="525" y="642" width="428" height="26" fill="#FAF9F7"/>
+        
+        <text x="576" y="661" font-size="12.5" font-weight="500" fill="#1A1613">pesanError</text>
+        <text x="940" y="661" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String?</text>
+      
+        
+        
+        <text x="576" y="687" font-size="12.5" font-weight="500" fill="#1A1613">durasiMs</text>
+        <text x="940" y="687" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Int</text>
+      
+        <rect x="525" y="694" width="428" height="26" fill="#FAF9F7"/>
+        
+    <rect x="536" y="700" width="32" height="17" rx="5" fill="#F6F4F1" stroke="#C4BDB4" stroke-width="1"/>
+    <text x="552" y="712.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#5E5750" font-family="monospace">IDX</text>
+  
+        <text x="576" y="713" font-size="12.5" font-weight="500" fill="#1A1613">createdAt</text>
+        <text x="940" y="713" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime DESC</text>
+      
+    </g>
+  
+    <g>
+      <rect x="524" y="758" width="430" height="232" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 536 758 H 942 Q 954 758 954 770 V 798 H 524 V 770 Q 524 758 536 758 Z" fill="#1A1613"/>
+      <text x="538" y="783" font-size="14" font-weight="700" fill="#FFFDFB">berita</text>
+      <text x="940" y="782" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">Arsip Berita</text>
+      
+        
+        
+    <rect x="536" y="804" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="552" y="816.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="576" y="817" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="940" y="817" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="525" y="824" width="428" height="26" fill="#FAF9F7"/>
+        
+        <text x="576" y="843" font-size="12.5" font-weight="500" fill="#1A1613">judul</text>
+        <text x="940" y="843" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+        <text x="576" y="869" font-size="12.5" font-weight="500" fill="#1A1613">sumber</text>
+        <text x="940" y="869" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        <rect x="525" y="876" width="428" height="26" fill="#FAF9F7"/>
+        
+    <rect x="536" y="882" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="552" y="894.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK</text>
+  
+        <text x="576" y="895" font-size="12.5" font-weight="500" fill="#1A1613">url</text>
+        <text x="940" y="895" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+        <text x="576" y="921" font-size="12.5" font-weight="500" fill="#1A1613">tanggalTerbit</text>
+        <text x="940" y="921" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime</text>
+      
+        <rect x="525" y="928" width="428" height="26" fill="#FAF9F7"/>
+        
+        <text x="576" y="947" font-size="12.5" font-weight="500" fill="#1A1613">ringkasan</text>
+        <text x="940" y="947" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String?</text>
+      
+        
+        
+        <text x="576" y="973" font-size="12.5" font-weight="500" fill="#1A1613">createdAt</text>
+        <text x="940" y="973" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime</text>
+      
+    </g>
+  
+    <g>
+      <rect x="1002" y="472" width="422" height="284" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 1014 472 H 1412 Q 1424 472 1424 484 V 512 H 1002 V 484 Q 1002 472 1014 472 Z" fill="#1A1613"/>
+      <text x="1016" y="497" font-size="14" font-weight="700" fill="#FFFDFB">chat_log</text>
+      <text x="1410" y="496" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">Riwayat Chat (30 hr)</text>
+      
+        
+        
+    <rect x="1014" y="518" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="1030" y="530.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="1054" y="531" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="1410" y="531" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="1003" y="538" width="420" height="26" fill="#FAF9F7"/>
+        
+        <text x="1054" y="557" font-size="12.5" font-weight="500" fill="#1A1613">pertanyaan</text>
+        <text x="1410" y="557" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Text</text>
+      
+        
+        
+        <text x="1054" y="583" font-size="12.5" font-weight="500" fill="#1A1613">jawaban</text>
+        <text x="1410" y="583" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Text</text>
+      
+        <rect x="1003" y="590" width="420" height="26" fill="#FAF9F7"/>
+        
+        <text x="1054" y="609" font-size="12.5" font-weight="500" fill="#1A1613">source</text>
+        <text x="1410" y="609" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">ChatSource</text>
+      
+        
+        
+        <text x="1054" y="635" font-size="12.5" font-weight="500" fill="#1A1613">model</text>
+        <text x="1410" y="635" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String?</text>
+      
+        <rect x="1003" y="642" width="420" height="26" fill="#FAF9F7"/>
+        
+        <text x="1054" y="661" font-size="12.5" font-weight="500" fill="#1A1613">responseTimeMs</text>
+        <text x="1410" y="661" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Int?</text>
+      
+        
+        
+        <text x="1054" y="687" font-size="12.5" font-weight="500" fill="#1A1613">isHelpful</text>
+        <text x="1410" y="687" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Boolean?</text>
+      
+        <rect x="1003" y="694" width="420" height="26" fill="#FAF9F7"/>
+        
+        <text x="1054" y="713" font-size="12.5" font-weight="500" fill="#1A1613">ipHash</text>
+        <text x="1410" y="713" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String? (HMAC)</text>
+      
+        
+        
+    <rect x="1014" y="726" width="32" height="17" rx="5" fill="#F6F4F1" stroke="#C4BDB4" stroke-width="1"/>
+    <text x="1030" y="738.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#5E5750" font-family="monospace">IDX</text>
+  
+        <text x="1054" y="739" font-size="12.5" font-weight="500" fill="#1A1613">createdAt</text>
+        <text x="1410" y="739" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">DateTime DESC</text>
+      
+    </g>
+  
+    <g>
+      <rect x="1002" y="782" width="422" height="180" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 1014 782 H 1412 Q 1424 782 1424 794 V 822 H 1002 V 794 Q 1002 782 1014 782 Z" fill="#1A1613"/>
+      <text x="1016" y="807" font-size="14" font-weight="700" fill="#FFFDFB">faq_gempa</text>
+      <text x="1410" y="806" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">FAQ Cadangan</text>
+      
+        
+        
+    <rect x="1014" y="828" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="1030" y="840.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="1054" y="841" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="1410" y="841" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="1003" y="848" width="420" height="26" fill="#FAF9F7"/>
+        
+        <text x="1054" y="867" font-size="12.5" font-weight="500" fill="#1A1613">kataKunci</text>
+        <text x="1410" y="867" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String[]</text>
+      
+        
+        
+    <rect x="1014" y="880" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="1030" y="892.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK</text>
+  
+        <text x="1054" y="893" font-size="12.5" font-weight="500" fill="#1A1613">pertanyaan</text>
+        <text x="1410" y="893" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        <rect x="1003" y="900" width="420" height="26" fill="#FAF9F7"/>
+        
+        <text x="1054" y="919" font-size="12.5" font-weight="500" fill="#1A1613">jawaban</text>
+        <text x="1410" y="919" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Text</text>
+      
+        
+        
+        <text x="1054" y="945" font-size="12.5" font-weight="500" fill="#1A1613">aktif</text>
+        <text x="1410" y="945" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Boolean (true)</text>
+      
+    </g>
+  
+    <g>
+      <rect x="1002" y="988" width="422" height="154" rx="12" fill="#FFFFFF" stroke="#7A726A" stroke-width="1.3"/>
+      <path d="M 1014 988 H 1412 Q 1424 988 1424 1000 V 1028 H 1002 V 1000 Q 1002 988 1014 988 Z" fill="#1A1613"/>
+      <text x="1016" y="1013" font-size="14" font-weight="700" fill="#FFFDFB">kuota_harian</text>
+      <text x="1410" y="1012" text-anchor="end" font-size="10.5" font-weight="500" fill="#C4BDB4">Kuota Gemini Harian</text>
+      
+        
+        
+    <rect x="1014" y="1034" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="1030" y="1046.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+        <text x="1054" y="1047" font-size="12.5" font-weight="600" fill="#1A1613">id</text>
+        <text x="1410" y="1047" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String (cuid)</text>
+      
+        <rect x="1003" y="1054" width="420" height="26" fill="#FAF9F7"/>
+        
+    <rect x="1014" y="1060" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="1030" y="1072.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK*</text>
+  
+        <text x="1054" y="1073" font-size="12.5" font-weight="500" fill="#1A1613">model</text>
+        <text x="1410" y="1073" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">String</text>
+      
+        
+        
+    <rect x="1014" y="1086" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="1030" y="1098.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK*</text>
+  
+        <text x="1054" y="1099" font-size="12.5" font-weight="500" fill="#1A1613">tanggal</text>
+        <text x="1410" y="1099" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Date</text>
+      
+        <rect x="1003" y="1106" width="420" height="26" fill="#FAF9F7"/>
+        
+        <text x="1054" y="1125" font-size="12.5" font-weight="500" fill="#1A1613">jumlah</text>
+        <text x="1410" y="1125" text-anchor="end" font-size="11.5" fill="#5E5750" font-family="'Consolas','Courier New',monospace">Int (0)</text>
+      
+    </g>
+  
+
+  <!-- Legenda & Enum Footer (kiri bawah sejajar bawah Col 3) -->
+  <g>
+    <rect x="56" y="1006" width="898" height="134" rx="12" fill="#F8F7F4" stroke="#C4BDB4" stroke-width="1.2"/>
+    <text x="74" y="1030" font-size="12.5" font-weight="700" fill="#1A1613">Enum &amp; Notasi Skema</text>
+
+    <!-- Kolom Kiri: Enum -->
+    <text x="74" y="1054" font-size="11.5" font-weight="700" fill="#1A1613">StatusTsunami:</text>
+    <text x="190" y="1054" font-size="11" fill="#5E5750" font-family="monospace">AMAN | BERPOTENSI | TIDAK_DINYATAKAN</text>
+
+    <text x="74" y="1076" font-size="11.5" font-weight="700" fill="#1A1613">KategoriArtikel:</text>
+    <text x="190" y="1076" font-size="11" fill="#5E5750" font-family="monospace">PENGERTIAN | PROSES | PENANGGULANGAN | MITIGASI | LAINNYA</text>
+
+    <text x="74" y="1098" font-size="11.5" font-weight="700" fill="#1A1613">TipeLokasi:</text>
+    <text x="190" y="1098" font-size="11" fill="#5E5750" font-family="monospace">DARAT | LAUT</text>
+    <text x="350" y="1098" font-size="11.5" font-weight="700" fill="#1A1613">ChatSource:</text>
+    <text x="434" y="1098" font-size="11" fill="#5E5750" font-family="monospace">LLM | FALLBACK</text>
+
+    <!-- Baris Bawah: Legenda Badge -->
+    <g transform="translate(0, 1122)">
+      
+    <rect x="74" y="-9" width="32" height="17" rx="5" fill="#1A1613" />
+    <text x="90" y="3.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">PK</text>
+  
+      <text x="112" y="4" font-size="11" fill="#5E5750">Primary Key</text>
+
+      
+    <rect x="204" y="-9" width="32" height="17" rx="5" fill="#477100" />
+    <text x="220" y="3.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#FFFDFB" font-family="monospace">FK</text>
+  
+      <text x="242" y="4" font-size="11" fill="#5E5750">Foreign Key</text>
+
+      
+    <rect x="334" y="-9" width="32" height="17" rx="5" fill="#E8E4DF" stroke="#7A726A" stroke-width="1"/>
+    <text x="350" y="3.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1A1613" font-family="monospace">UK</text>
+  
+      <text x="372" y="4" font-size="11" fill="#5E5750">Unique Constraint (UK* = Composite Unique model+tanggal)</text>
+
+      
+    <rect x="726" y="-9" width="32" height="17" rx="5" fill="#F6F4F1" stroke="#C4BDB4" stroke-width="1"/>
+    <text x="742" y="3.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#5E5750" font-family="monospace">IDX</text>
+  
+      <text x="764" y="4" font-size="11" fill="#5E5750">Indexed Column</text>
+    </g>
+  </g>
+</svg>

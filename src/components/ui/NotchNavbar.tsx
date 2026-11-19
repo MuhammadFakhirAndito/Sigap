@@ -169,7 +169,7 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
     router.push(trimmed ? `/riwayat?wilayah=${encodeURIComponent(trimmed)}` : "/riwayat");
   };
 
-  const actionBtnClass = (isOpen: boolean, sizeClass = "w-10 h-10") =>
+  const actionBtnClass = (isOpen: boolean, sizeClass = "w-11 h-11 lg:w-10 lg:h-10") =>
     `${sizeClass} rounded-full border flex items-center justify-center transition-all active:scale-95 ${focusRing} ${
       isOpen
         ? "border-[var(--color-cta)] bg-[var(--color-cta)] text-[var(--color-on-cta)]"
@@ -639,54 +639,77 @@ export const NotchNavbar: React.FC<NotchNavbarProps> = ({
         </div>
       </div>
 
-      {/* MOBILE NAVBAR (< 1024px) */}
-      <div className="lg:hidden w-full bg-[var(--color-surface)] rounded-t-[32px] p-4 flex items-center justify-between border-b border-[var(--color-border)]/40">
-        <Link
-          href="/"
-          className={`flex items-center rounded-full ${focusRing}`}
-          aria-label="SIGAP Gempa beranda"
-        >
-          <img
-            src="/logo/logo-primary.svg"
-            alt="SIGAP Gempa"
-            width={107}
-            height={44}
-            className="h-11 w-auto object-contain"
-          />
-        </Link>
+      {/* MOBILE NOTCH BAR (< 1024px) */}
+      <div className="lg:hidden flex items-end w-full relative z-30 -mb-[1px]">
+        <div className="h-[56px] pl-1 pr-2 pb-1.5 flex items-center shrink-0">
+          <Link
+            href="/"
+            className={`min-h-[44px] flex items-center rounded-full ${focusRing}`}
+            aria-label="SIGAP Gempa beranda"
+          >
+            <img
+              src="/logo/logo-primary.svg"
+              alt="SIGAP Gempa"
+              width={107}
+              height={44}
+              className="h-9 w-auto object-contain"
+            />
+          </Link>
+        </div>
 
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            className={actionBtnClass(activePanel === "search")}
-            aria-label="Cari wilayah gempa"
-            aria-expanded={activePanel === "search"}
-            onClick={() => togglePanel("search")}
-          >
-            <Search className="w-4 h-4" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={actionBtnClass(activePanel === "bell")}
-            aria-label="Notifikasi gempa terkini"
-            aria-expanded={activePanel === "bell"}
-            onClick={() => togglePanel("bell")}
-          >
-            <Bell className="w-4 h-4" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={actionBtnClass(activePanel === "menu")}
-            onClick={() => togglePanel("menu")}
-            aria-label={activePanel === "menu" ? "Tutup menu" : "Buka menu"}
-            aria-expanded={activePanel === "menu"}
-          >
-            {activePanel === "menu" ? (
-              <X className="w-4 h-4" aria-hidden="true" />
-            ) : (
-              <Menu className="w-4 h-4" aria-hidden="true" />
-            )}
-          </button>
+        <svg
+          width="40"
+          height="56"
+          viewBox="0 0 40 56"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="shrink-0 block -mr-[1px]"
+          aria-hidden="true"
+        >
+          <path d="M 0 56 C 20 56, 20 0, 40 0 L 40 56 Z" fill="var(--color-surface)" />
+        </svg>
+
+        <div className="flex-1 h-[56px] bg-[var(--color-surface)] rounded-tr-[32px] pr-2.5 pl-1 flex items-center justify-end gap-0.5">
+          {[
+            {
+              panel: "search" as const,
+              label: "Cari wilayah gempa",
+              icon: <Search className="w-4 h-4" strokeWidth={2} aria-hidden="true" />,
+            },
+            {
+              panel: "bell" as const,
+              label: "Notifikasi gempa terkini",
+              icon: <Bell className="w-4 h-4" strokeWidth={2} aria-hidden="true" />,
+            },
+            {
+              panel: "menu" as const,
+              label: activePanel === "menu" ? "Tutup menu" : "Buka menu",
+              icon:
+                activePanel === "menu" ? (
+                  <X className="w-5 h-5" strokeWidth={2} aria-hidden="true" />
+                ) : (
+                  <Menu className="w-5 h-5" strokeWidth={1.8} aria-hidden="true" />
+                ),
+            },
+          ].map(({ panel, label, icon }) => {
+            const isOpen = activePanel === panel;
+            return (
+              <button
+                key={panel}
+                type="button"
+                aria-label={label}
+                aria-expanded={isOpen}
+                onClick={() => togglePanel(panel)}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${focusRing} ${
+                  isOpen
+                    ? "bg-[var(--color-cta)] text-[var(--color-on-cta)]"
+                    : "text-[var(--color-text-primary)] hover:bg-[var(--color-background)]/60"
+                }`}
+              >
+                {icon}
+              </button>
+            );
+          })}
         </div>
       </div>
 
